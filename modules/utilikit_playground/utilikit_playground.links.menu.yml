@@ -1,0 +1,6 @@
+utilikit_playground.admin:
+  title: 'Playground'
+  description: 'Test utility classes with live preview'
+  parent: utilikit.admin
+  route_name: utilikit_playground.page
+  weight: 1

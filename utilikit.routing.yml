@@ -1,0 +1,124 @@
+# UtiliKit Module Routing Definitions
+#
+# This file defines all URL routes for the UtiliKit module, including
+# administrative interfaces, AJAX endpoints, and public-facing utilities.
+#
+# Route Categories:
+# - Administrative: Configuration forms and settings management
+# - AJAX Endpoints: Real-time CSS updates and dynamic content rendering
+# - Reference Pages: Documentation and utility class reference
+#
+# Security Features:
+# - Permission-based access control for all routes
+# - CSRF protection via cookie authentication for AJAX endpoints
+# - Cache bypassing for dynamic content and real-time updates
+
+# =============================================================================
+# ADMINISTRATIVE ROUTES
+# =============================================================================
+
+# Main settings and configuration page
+# Provides the primary administrative interface for configuring UtiliKit
+# including rendering modes, scope settings, caching options, and development tools
+utilikit.settings:
+  path: '/admin/config/utilikit/settings'
+  defaults:
+    _form: '\Drupal\utilikit\Form\UtilikitSettingsForm'
+    _title: 'UtiliKit Settings'
+  requirements:
+    _permission: 'administer utilikit'
+  # Located under Configuration > UtiliKit in the admin menu
+  # Requires 'administer utilikit' permission for access
+  # Uses Drupal's standard form system for configuration management
+
+# =============================================================================
+# AJAX ENDPOINTS
+# =============================================================================
+
+# Real-time CSS update endpoint
+# Handles AJAX requests for updating CSS when new utility classes are discovered
+# Used by both automatic entity scanning and manual update operations
+utilikit.update_css:
+  path: '/utilikit/update-css'
+  defaults:
+    _controller: '\Drupal\utilikit\Controller\UtilikitAjaxController::updateCss'
+    _title: 'Update CSS'
+  requirements:
+    _permission: 'access content'
+  options:
+    _auth: ['cookie']  # CSRF protection via session cookies
+    no_cache: TRUE     # Prevents caching for real-time updates
+  # Used for:
+  # - Automatic CSS updates when entities are saved
+  # - Manual CSS regeneration from admin interface
+  # - Real-time style updates during content editing
+  # - Performance monitoring and rate limiting
+
+# Dynamic update button rendering endpoint
+# Provides AJAX rendering for the floating update button used in static mode
+# Allows real-time button state updates without full page reloads
+utilikit.render_button:
+  path: '/utilikit/render-button'
+  defaults:
+    _controller: '\Drupal\utilikit\Controller\UtilikitAjaxController::renderButton'
+    _title: 'Render Update Button'
+  requirements:
+    _permission: 'use utilikit update button'
+  options:
+    _auth: ['cookie']  # CSRF protection for authenticated requests
+    no_cache: TRUE     # Dynamic content must bypass cache
+  # Features:
+  # - Shows current CSS generation status
+  # - Displays utility class count and file information
+  # - Provides one-click CSS regeneration in static mode
+  # - Updates automatically based on content changes
+
+# =============================================================================
+# REFERENCE AND DOCUMENTATION ROUTES
+# =============================================================================
+
+# Utility class reference page
+# Comprehensive documentation page listing all available utility classes,
+# their CSS properties, usage examples, and responsive variants
+utilikit.reference:
+  path: '/utilikit/reference'
+  defaults:
+    _controller: '\Drupal\utilikit\Controller\UtilikitReferenceController::referencePage'
+    _title: 'UtiliKit Reference'
+  requirements:
+    _permission: 'access utilikit reference'
+  # Features:
+  # - Interactive utility class browser and search
+  # - Copy-to-clipboard functionality for class names
+  # - Live examples with responsive previews
+  # - Organized by CSS property categories (layout, spacing, typography, etc.)
+  # - Searchable and filterable interface
+  # - Integration with site's active breakpoints and configuration
+
+# =============================================================================
+# ROUTE SECURITY AND PERFORMANCE NOTES
+# =============================================================================
+#
+# Permission Architecture:
+# - 'administer utilikit': Full administrative access to settings and configuration
+# - 'access content': Basic authenticated user access for CSS updates
+# - 'use utilikit update button': Permission to use the manual update interface
+# - 'access utilikit reference': Access to the utility class documentation
+#
+# AJAX Security Features:
+# - Cookie-based authentication prevents CSRF attacks
+# - Permission checks on every request
+# - Rate limiting implemented in controllers
+# - Input validation and sanitization
+#
+# Caching Strategy:
+# - Administrative pages use standard Drupal caching
+# - AJAX endpoints bypass cache for real-time functionality
+# - Reference page cached per user permissions and configuration
+# - CSS files cached with timestamp-based invalidation
+#
+# Performance Considerations:
+# - AJAX endpoints designed for minimal response times
+# - Reference page includes lazy loading for large utility sets
+# - Update operations use locking to prevent concurrent conflicts
+# - Queue system handles deferred processing for heavy operations

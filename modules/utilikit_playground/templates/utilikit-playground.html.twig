@@ -1,0 +1,440 @@
+{#
+/**
+ * @file
+ * UtiliKit Playground template - Interactive utility class testing interface.
+ *
+ * Provides a comprehensive playground environment for testing and learning
+ * UtiliKit utility classes. Features a two-panel layout with input controls
+ * on the left and live preview/output on the right.
+ *
+ * Features:
+ * - Preset examples for quick start
+ * - Basic and advanced input modes
+ * - Visual class builder interface
+ * - Responsive design testing
+ * - Color picker and palette
+ * - Live preview with viewport controls
+ * - Style inspector for debugging
+ * - Copy-to-clipboard functionality
+ * - Interactive tutorial overlay
+ *
+ * Variables:
+ * - elements: Render element array passed from controller
+ */
+#}
+
+<div class="utilikit-playground-wrapper">
+
+  {#
+    LEFT PANEL: INPUT CONTROLS
+    Contains all user input interfaces including presets, form controls,
+    visual builders, and helper tools for creating UtiliKit classes.
+  #}
+  <div class="utilikit-column utilikit-input-panel">
+
+    {#
+      PRESET EXAMPLES SECTION
+      Quick-start buttons that load predefined HTML and class combinations
+      for common UI patterns like cards, hero sections, forms, etc.
+    #}
+    <div class="preset-examples">
+      <h3>Quick Start Examples</h3>
+      <div class="preset-grid">
+        <button type="button" class="preset-btn" data-preset="card">
+          <strong>Card Component</strong>
+          <small>Modern card with shadow</small>
+        </button>
+        <button type="button" class="preset-btn" data-preset="hero">
+          <strong>Hero Section</strong>
+          <small>Centered hero banner</small>
+        </button>
+        <button type="button" class="preset-btn" data-preset="flex">
+          <strong>Flex Layout</strong>
+          <small>3-column responsive</small>
+        </button>
+        <button type="button" class="preset-btn" data-preset="grid">
+          <strong>Grid Layout</strong>
+          <small>Responsive grid</small>
+        </button>
+        <button type="button" class="preset-btn" data-preset="form">
+          <strong>Form Styling</strong>
+          <small>Styled form inputs</small>
+        </button>
+        <button type="button" class="preset-btn" data-preset="pricing">
+          <strong>Pricing Card</strong>
+          <small>Product pricing display</small>
+        </button>
+      </div>
+    </div>
+
+    {#
+      MAIN PREVIEW FORM
+      Primary form for entering UtiliKit classes or HTML, with mode switching
+      between basic class input and advanced HTML editing.
+    #}
+    <form id="utilikit-preview-form" class="utilikit-preview-form" novalidate>
+
+      {#
+        QUICK ACTION BUTTONS
+        Toggle buttons for additional tools like visual builder,
+        responsive helper, and tutorial overlay.
+      #}
+      <div class="quick-actions">
+        <button type="button" class="quick-action-btn" data-action="builder">🔧 Visual Builder</button>
+        <button type="button" class="quick-action-btn" data-action="responsive">📱 Responsive Helper</button>
+        <button type="button" class="quick-action-btn" data-action="tutorial">📚 Show Tutorial</button>
+      </div>
+
+      {#
+        MODE SELECTION
+        Switch between basic (class-only) and advanced (full HTML) input modes.
+        Controls visibility of different input sections.
+      #}
+      <div class="form-item">
+        <label class="form-item__label" for="utilikit-mode"><strong>Select Mode:</strong></label>
+        <p class="utilikit-description">
+          Choose <strong>Basic</strong> to enter only utility classes. Choose <strong>Advanced</strong> to enter a complete HTML structure with UtiliKit classes.
+        </p>
+        <select id="utilikit-mode" class="form-select form-element form-element--type-select">
+          <option value="basic">Basic (Class-based)</option>
+          <option value="advanced">Advanced (Full HTML)</option>
+        </select>
+      </div>
+
+      {#
+        BASIC INPUT MODE
+        Simple text input for entering space-separated UtiliKit utility classes.
+        Includes autocomplete functionality for class suggestions.
+      #}
+      <div id="utilikit-basic-input-group" class="form-item">
+        <label for="utilikit-class-input"><strong>Enter Utility Classes:</strong></label>
+        <p class="utilikit-description">
+          Start typing a utility class like <code>uk-pd</code>, <code>uk-mg</code>, or <code>uk-bg</code> to see autocomplete suggestions. Separate multiple classes with spaces.
+        </p>
+        <div class="input-wrapper">
+          <input type="text"
+                 id="utilikit-class-input"
+                 class="utilikit-text-input form-text form-element form-element--type-text"
+                 placeholder="e.g., up uk-pd--24 uk-mg--16 uk-bw--2 uk-bs--solid uk-bc--3b82f6 uk-br--8 uk-bg--f0f9ff uk-tc--1e40af uk-fs--18"
+                 autocomplete="off" />
+          {# Autocomplete dropdown container (hidden by default) #}
+          <div class="class-autocomplete" id="class-autocomplete" style="display: none;"></div>
+        </div>
+      </div>
+
+      {#
+        VISUAL CLASS BUILDER
+        Interactive interface for building UtiliKit classes by clicking chips
+        organized into categories. Hidden by default, toggled by quick action.
+      #}
+      <div class="class-builder" id="class-builder" style="display: none;">
+        <h3>Visual Class Builder</h3>
+
+        {# SPACING UTILITIES SECTION #}
+        <div class="builder-section">
+          <h4><span class="builder-icon">📦</span> Spacing</h4>
+          <div class="builder-options">
+            <span class="builder-chip" data-class="uk-pd--20">Padding 20</span>
+            <span class="builder-chip" data-class="uk-pd--40">Padding 40</span>
+            <span class="builder-chip" data-class="uk-mg--20">Margin 20</span>
+            <span class="builder-chip" data-class="uk-mg--auto">Margin Auto</span>
+            <span class="builder-chip" data-class="uk-gp--16">Gap 16</span>
+            <span class="builder-chip" data-class="uk-gp--24">Gap 24</span>
+          </div>
+        </div>
+
+        {# COLOR UTILITIES SECTION #}
+        <div class="builder-section">
+          <h4><span class="builder-icon">🎨</span> Colors</h4>
+          <div class="builder-options">
+            <span class="builder-chip" data-class="uk-bg--007bff">Blue BG</span>
+            <span class="builder-chip" data-class="uk-bg--28a745">Green BG</span>
+            <span class="builder-chip" data-class="uk-bg--dc3545">Red BG</span>
+            <span class="builder-chip" data-class="uk-bg--f8f9fa">Light BG</span>
+            <span class="builder-chip" data-class="uk-tc--ffffff">White Text</span>
+            <span class="builder-chip" data-class="uk-tc--000000">Black Text</span>
+            <span class="builder-chip" data-class="uk-bc--dee2e6">Gray Border</span>
+          </div>
+        </div>
+
+        {# LAYOUT UTILITIES SECTION #}
+        <div class="builder-section">
+          <h4><span class="builder-icon">📐</span> Layout</h4>
+          <div class="builder-options">
+            <span class="builder-chip" data-class="uk-dp--flex">Flex</span>
+            <span class="builder-chip" data-class="uk-dp--grid">Grid</span>
+            <span class="builder-chip" data-class="uk-dp--block">Block</span>
+            <span class="builder-chip" data-class="uk-jc--center">Justify Center</span>
+            <span class="builder-chip" data-class="uk-ai--center">Align Center</span>
+            <span class="builder-chip" data-class="uk-fd--column">Flex Column</span>
+            <span class="builder-chip" data-class="uk-fx--wrap">Flex Wrap</span>
+          </div>
+        </div>
+
+        {# EFFECTS UTILITIES SECTION #}
+        <div class="builder-section">
+          <h4><span class="builder-icon">✨</span> Effects</h4>
+          <div class="builder-options">
+            <span class="builder-chip" data-class="uk-br--8">Border Radius 8</span>
+            <span class="builder-chip" data-class="uk-br--16">Border Radius 16</span>
+            <span class="builder-chip" data-class="uk-bs--solid">Solid Border</span>
+            <span class="builder-chip" data-class="uk-bw--1">Border Width 1</span>
+            <span class="builder-chip" data-class="uk-op--90">90% Opacity</span>
+            <span class="builder-chip" data-class="uk-cu--pointer">Pointer Cursor</span>
+          </div>
+        </div>
+      </div>
+
+      {#
+        RESPONSIVE HELPER TOOL
+        Educational interface explaining responsive breakpoints and providing
+        tools for converting regular classes to responsive variants.
+      #}
+      <div class="responsive-helper" id="responsive-helper" style="display: none;">
+        <h3>Responsive Helper</h3>
+        <p class="utilikit-description">
+          Add breakpoint prefixes to make your classes responsive. Classes apply at the specified breakpoint and larger.
+        </p>
+
+        {# BREAKPOINT REFERENCE INFORMATION #}
+        <div class="breakpoint-info">
+          <div class="breakpoint-item">
+            <span class="breakpoint-badge">base</span>
+            <span class="breakpoint-size">0px+</span>
+            <span class="breakpoint-desc">All screen sizes</span>
+          </div>
+          <div class="breakpoint-item">
+            <span class="breakpoint-badge">sm</span>
+            <span class="breakpoint-size">576px+</span>
+            <span class="breakpoint-desc">Small devices and up</span>
+          </div>
+          <div class="breakpoint-item">
+            <span class="breakpoint-badge">md</span>
+            <span class="breakpoint-size">768px+</span>
+            <span class="breakpoint-desc">Medium devices and up</span>
+          </div>
+          <div class="breakpoint-item">
+            <span class="breakpoint-badge">lg</span>
+            <span class="breakpoint-size">992px+</span>
+            <span class="breakpoint-desc">Large devices and up</span>
+          </div>
+          <div class="breakpoint-item">
+            <span class="breakpoint-badge">xl</span>
+            <span class="breakpoint-size">1200px+</span>
+            <span class="breakpoint-desc">Extra large devices</span>
+          </div>
+          <div class="breakpoint-item">
+            <span class="breakpoint-badge">xxl</span>
+            <span class="breakpoint-size">1400px+</span>
+            <span class="breakpoint-desc">Extra extra large</span>
+          </div>
+        </div>
+
+        {# RESPONSIVE USAGE EXAMPLES #}
+        <div class="responsive-example">
+          <h4>Example Pattern:</h4>
+          <div class="example-code">
+            <code>uk-pd--20</code> → Padding on all screen sizes<br>
+            <code>uk-md-pd--40</code> → Padding on medium screens and up<br>
+            <code>uk-lg-dp--flex</code> → Flex display on large screens and up
+          </div>
+        </div>
+
+        {# RESPONSIVE CLASS CONVERTER TOOL #}
+        <div class="responsive-converter">
+          <h4>Convert Your Classes:</h4>
+          <input type="text"
+                 id="responsive-input"
+                 class="text-full form-textarea form-element form-element--type-textarea form-element--api-textarea" row="12"
+                 placeholder="Enter a class like uk-pd--20">
+          <div class="responsive-output" id="responsive-output"></div>
+        </div>
+      </div>
+
+      {#
+        ADVANCED INPUT MODE
+        Textarea for entering complete HTML structures with UtiliKit classes.
+        Hidden by default, shown when advanced mode is selected.
+      #}
+      <div id="utilikit-advanced-input-group" class="form-item" style="display: none;">
+        <label for="utilikit-html-input"><strong>Enter Full HTML Structure:</strong></label>
+        <p class="utilikit-description">
+          Write complete HTML with UtiliKit classes. The <code>utilikit</code> class will be added automatically.
+        </p>
+        <textarea id="utilikit-html-input"
+                 class="text-full form-textarea form-element form-element--type-textarea form-element--api-textarea" row="16"
+                  placeholder='<div class="utilikit uk-dp--grid uk-gc--1fr uk-md-gc--repeat-2-1fr uk-lg-gc--repeat-3-1fr uk-gp--16 uk-bg--fee2e2 uk-pd--16 uk-mg--t-16"><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 1</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 2</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 3</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 4</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 5</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 6</div></div>'></textarea>
+      </div>
+
+      {#
+        COLOR PICKER TOOL
+        HTML5 color input with text display for getting hex values
+        to use in UtiliKit color utility classes.
+      #}
+      <div class="form-item">
+        <label for="utilikit-color-picker"><strong>Pick a Color:</strong></label>
+        <p class="utilikit-description">
+          Use this to get a HEX color for classes like <code>uk-bg--</code>, <code>uk-tc--</code>, or <code>uk-bc--</code>.
+        </p>
+        <div class="color-wrapper">
+          <input type="color" id="utilikit-color-picker" value="#007bff" />
+          <input type="text" id="utilikit-color-value" value="#007bff" readonly title="Click to copy" />
+        </div>
+      </div>
+
+      {#
+        COLOR PALETTE SWATCHES
+        Pre-defined color swatches for quick selection and copying.
+        Includes common grays, brand colors, and semantic colors.
+      #}
+      <div class="color-palette">
+        <div class="color-palette-title">Quick Colors (click to copy hex)</div>
+        <div class="color-swatches">
+          <div class="color-swatch" data-color="#000000" style="background-color: #000000" title="#000000"></div>
+          <div class="color-swatch" data-color="#343a40" style="background-color: #343a40" title="#343a40"></div>
+          <div class="color-swatch" data-color="#6c757d" style="background-color: #6c757d" title="#6c757d"></div>
+          <div class="color-swatch" data-color="#adb5bd" style="background-color: #adb5bd" title="#adb5bd"></div>
+          <div class="color-swatch" data-color="#dee2e6" style="background-color: #dee2e6" title="#dee2e6"></div>
+          <div class="color-swatch" data-color="#f8f9fa" style="background-color: #f8f9fa" title="#f8f9fa"></div>
+          <div class="color-swatch" data-color="#ffffff" style="background-color: #ffffff" title="#ffffff"></div>
+          <div class="color-swatch" data-color="#dc3545" style="background-color: #dc3545" title="#dc3545"></div>
+          <div class="color-swatch" data-color="#fd7e14" style="background-color: #fd7e14" title="#fd7e14"></div>
+          <div class="color-swatch" data-color="#ffc107" style="background-color: #ffc107" title="#ffc107"></div>
+          <div class="color-swatch" data-color="#28a745" style="background-color: #28a745" title="#28a745"></div>
+          <div class="color-swatch" data-color="#17a2b8" style="background-color: #17a2b8" title="#17a2b8"></div>
+          <div class="color-swatch" data-color="#007bff" style="background-color: #007bff" title="#007bff"></div>
+          <div class="color-swatch" data-color="#6610f2" style="background-color: #6610f2" title="#6610f2"></div>
+          <div class="color-swatch" data-color="#e83e8c" style="background-color: #e83e8c" title="#e83e8c"></div>
+        </div>
+      </div>
+
+    </form>
+  </div>
+
+  {#
+    RIGHT PANEL: OUTPUT AND PREVIEW
+    Contains live preview, style inspector, and code output sections
+    for visualizing and copying the results.
+  #}
+  <div class="utilikit-column utilikit-output-panel">
+
+    {#
+      LIVE PREVIEW SECTION
+      Interactive preview container with viewport simulation controls
+      for testing responsive behavior at different screen sizes.
+    #}
+    <div class="preview-container">
+      <div class="preview-controls">
+        <h3>Live Preview</h3>
+        {# VIEWPORT SIMULATION CONTROLS #}
+        <div class="viewport-selector">
+          <button type="button" class="viewport-btn active" data-viewport="desktop">
+            <span class="viewport-icon">💻</span> Desktop
+          </button>
+          <button type="button" class="viewport-btn" data-viewport="tablet">
+            <span class="viewport-icon">📱</span> Tablet
+          </button>
+          <button type="button" class="viewport-btn" data-viewport="mobile">
+            <span class="viewport-icon">📱</span> Mobile
+          </button>
+         </div>
+        </div>
+        {# PREVIEW FRAME WITH SIZE INDICATOR #}
+        <div class="preview-frame-wrapper">
+          <div class="viewport-size-indicator">1200px</div>
+          <div id="utilikit-preview-box" class="preview-frame desktop utilikit-preview-output"></div>
+        </div>
+      </div>
+
+    {#
+      STYLE INSPECTOR
+      Real-time analysis of applied styles with render/reset controls.
+      Shows computed styles and class effects for debugging.
+    #}
+    <div class="style-inspector">
+      <div class="utilikit-buttons-wrapper">
+      <h3>Style Inspector <span class="inspector-badge">Live</span></h3>
+        {# PRIMARY ACTION BUTTONS #}
+        <div class="buttons-wrapper">
+          <button type="submit" form="utilikit-preview-form" class="utilikit-button utilikit-button-render button button--primary">
+            Render
+          </button>
+          <button type="reset" id="utilikit-reset-btn" class="utilikit-button utilikit-button-reset button">
+            Reset
+          </button>
+        </div>
+      </div>
+      {# DYNAMIC STYLE BREAKDOWN DISPLAY #}
+      <div id="style-breakdown">
+        <p class="utilikit-description">Render content to see applied styles</p>
+      </div>
+    </div>
+
+    {#
+      HTML CODE OUTPUT
+      Displays the raw HTML that should be copied to user's project.
+      Includes copy-to-clipboard functionality.
+    #}
+    <section class="form-item">
+      <label for="utilikit-output-code"><strong>Copy This HTML:</strong></label>
+      <p class="utilikit-description">
+        This is the HTML you should copy and paste into your project.
+      </p>
+      <pre id="utilikit-output-code" class="utilikit-code-block"></pre>
+      <button type="button" id="utilikit-copy-btn" class="utilikit-button utilikit-button-copy button button--primary">
+        📋 Copy HTML
+      </button>
+    </section>
+
+    {#
+      RENDERED HTML OUTPUT
+      Shows the final HTML after UtiliKit engine has processed and
+      applied inline styles, useful for debugging and understanding.
+    #}
+    <section class="form-item">
+      <label for="utilikit-rendered-html"><strong>What the Browser Sees:</strong></label>
+      <p class="utilikit-description">
+        This shows the HTML after UtiliKit has applied inline styles.
+      </p>
+      <pre id="utilikit-rendered-html" class="utilikit-code-block"></pre>
+    </section>
+
+    </div>
+
+  </div>
+
+</div>
+
+{#
+  HIDDEN CLIPBOARD FALLBACK
+  Hidden textarea element used as fallback for copy-to-clipboard
+  functionality in browsers without Clipboard API support.
+#}
+<textarea id="utilikit-hidden-copy" class="visually-hidden" style="position: absolute; left: -9999px;" tabindex="-1" aria-hidden="true"></textarea>
+
+{#
+  TUTORIAL OVERLAY
+  Welcome modal that appears on first visit to guide users through
+  the playground features. Can be reopened via quick action button.
+#}
+<div class="tutorial-overlay" id="tutorial-overlay">
+  <div class="tutorial-content">
+    <button type="button" class="tutorial-close" id="tutorial-close">×</button>
+    <h2>Welcome to UtiliKit Playground! 🎨</h2>
+    <p>This interactive playground helps you learn and experiment with UtiliKit utility classes.</p>
+
+    <h3>Quick Tips:</h3>
+    <ul>
+      <li><strong>Preset Examples:</strong> Click any preset to see real-world examples</li>
+      <li><strong>Visual Builder:</strong> Build classes visually without typing</li>
+      <li><strong>Auto-complete:</strong> Start typing "uk-" to see suggestions</li>
+      <li><strong>Color Palette:</strong> Click any color to use it in your classes</li>
+      <li><strong>Responsive Preview:</strong> Test your design at different screen sizes</li>
+      <li><strong>Style Inspector:</strong> See exactly what styles are being applied</li>
+    </ul>
+
+    <p>Try starting with a preset example or type <code>uk-pd--20</code> to begin!</p>
+
+    <button type="button" class="button button--primary" id="tutorial-start">Get Started</button>
+  </div>
+</div>

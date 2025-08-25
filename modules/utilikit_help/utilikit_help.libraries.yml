@@ -1,0 +1,11 @@
+help:
+  css:
+    theme:
+      css/utilikit-help.css: {}
+  js:
+    js/utilikit-help.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/drupalSettings
+    - utilikit/utilikit.engine

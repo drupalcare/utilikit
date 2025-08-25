@@ -1,0 +1,6 @@
+utilikit_test.admin:
+  title: 'Test Suite'
+  description: 'Automated tests for developers (validates all utilities)'
+  parent: utilikit.admin
+  route_name: utilikit_test.suite
+  weight: 3

@@ -1,0 +1,209 @@
+# UtiliKit Frontend Asset Library Definitions
+#
+# This file defines the complete frontend architecture for the UtiliKit module,
+# organizing JavaScript and CSS assets into logical libraries that support
+# different rendering modes, user interfaces, and development workflows.
+#
+# Library Architecture:
+# - Core Engine Libraries: Main functionality for inline and static modes
+# - User Interface Libraries: Admin interfaces and interactive components
+# - Development Libraries: Debugging, logging, and development tools
+#
+# Loading Strategy:
+# - Conditional loading based on rendering mode and user permissions
+# - Optimized dependency chains to minimize asset overhead
+# - Progressive enhancement with graceful degradation
+# - Security-first approach with input validation and sanitization
+
+# =============================================================================
+# CORE ENGINE LIBRARIES
+# =============================================================================
+
+# Main engine library for inline rendering mode
+# Provides complete client-side CSS generation, utility class processing,
+# DOM scanning, and real-time style injection for dynamic functionality
+utilikit.engine:
+  css:
+    theme:
+      css/utilikit.engine.css: {}  # Base styling for engine functionality
+  js:
+    js/utilikit.security.js: {}      # Security utilities and input sanitization
+    js/utilikit.environment.js: {}   # Environment detection and browser compatibility
+    js/utilikit.helpers.js: {}       # Common utility functions and DOM helpers
+    js/utilikit.rules.js: {}         # CSS rule definitions and class parsing logic
+    js/utilikit.rules.apply.js: {}   # CSS application and injection mechanisms
+    js/utilikit.classes.js: {}       # Utility class processing and validation
+    js/utilikit.behavior.js: {}      # Drupal behavior integration and lifecycle
+    js/utilikit.resize.js: {}        # Responsive breakpoint handling and resize events
+  dependencies:
+    - core/drupal          # Core Drupal JavaScript functionality
+    - core/drupal.message  # Message display system integration
+    - core/once            # Event binding and initialization
+    - core/drupalSettings  # Configuration and settings access
+  # Used for:
+  # - Inline rendering mode where CSS is generated client-side
+  # - Real-time utility class processing and style injection
+  # - DOM scanning for utility class discovery
+  # - Responsive breakpoint management and media query handling
+  # - Integration with Drupal's behavior system for initialization
+  #
+  # Performance characteristics:
+  # - Loads all necessary JavaScript for client-side CSS generation
+  # - Optimized for development and content editing workflows
+  # - Provides immediate visual feedback for utility class changes
+  # - Includes comprehensive error handling and validation
+
+# Lightweight library for static rendering mode
+# Minimal JavaScript functionality when CSS is pre-generated and served as static files
+utilikit.static:
+  js:
+    js/utilikit.environment.js: {}   # Browser compatibility and feature detection
+  dependencies:
+    - core/drupal          # Core Drupal JavaScript functionality
+    - core/once            # Event binding and initialization
+    - core/drupalSettings  # Configuration and settings access
+  # Used for:
+  # - Static rendering mode where CSS is pre-generated server-side
+  # - Minimal client-side functionality for configuration access
+  # - Environment detection for consistent behavior across browsers
+  # - Integration with update button and admin interfaces
+  #
+  # Performance characteristics:
+  # - Significantly reduced JavaScript payload compared to engine library
+  # - Optimized for production environments with pre-generated CSS
+  # - Fast initialization with minimal processing overhead
+  # - Maintains compatibility with admin interfaces and development tools
+
+# =============================================================================
+# USER INTERFACE LIBRARIES
+# =============================================================================
+
+# Message display enhancement library
+# Extends core message functionality for UtiliKit-specific notifications
+utilikit.engine.message:
+  dependencies:
+    - core/drupal.message  # Core message display system
+  # Used for:
+  # - Enhanced error reporting and status messages
+  # - CSS generation progress notifications
+  # - User feedback during AJAX operations
+  # - Integration with development and debugging workflows
+
+# Interactive reference page library
+# Provides comprehensive utility class browser with search, filtering, and examples
+utilikit.reference:
+  css:
+    theme:
+      css/utilikit.reference.css: {}  # Styling for reference page interface
+  js:
+    js/utilikit.reference.js: {}      # Interactive functionality and behaviors
+  dependencies:
+    - core/drupal          # Core Drupal JavaScript functionality
+    - core/once            # Event binding and initialization
+    - core/drupalSettings  # Configuration and settings access
+    - utilikit/utilikit.engine  # Integration with main engine for live examples
+  # Features:
+  # - Interactive utility class browser with real-time search and filtering
+  # - Copy-to-clipboard functionality for efficient development workflow
+  # - Live examples with responsive breakpoint demonstrations
+  # - Category-based organization covering all CSS property types
+  # - Integration with site's configuration and active breakpoints
+  #
+  # User experience:
+  # - Responsive design works across devices and screen sizes
+  # - Keyboard navigation and accessibility features
+  # - Progressive enhancement with fallbacks for limited JavaScript
+  # - Integration with site's admin theme for consistent appearance
+
+# =============================================================================
+# ADMINISTRATIVE INTERFACE LIBRARIES
+# =============================================================================
+
+# Manual CSS update button library
+# Provides floating interface for manual CSS regeneration in static mode
+utilikit.update.button:
+  css:
+    theme:
+      css/utilikit.update-button.css: {}  # Styling for update button interface
+  js:
+    js/utilikit.update-button.js: {}      # Button functionality and AJAX handling
+  dependencies:
+    - core/drupal          # Core Drupal JavaScript functionality
+    - core/once            # Event binding and initialization
+    - core/drupalSettings  # Configuration and settings access
+    - utilikit/utilikit.engine  # Integration with engine for status updates
+  # Features:
+  # - Floating button interface for quick access to CSS regeneration
+  # - Real-time status updates showing current utility class count
+  # - Progress indicators during CSS generation operations
+  # - AJAX-powered updates without page reloads
+  # - Integration with permission system for appropriate access control
+  #
+  # User workflow:
+  # - Appears automatically when user has appropriate permissions
+  # - Provides one-click access to CSS regeneration in static mode
+  # - Shows visual feedback during processing operations
+  # - Maintains state across page navigation and AJAX operations
+
+# =============================================================================
+# DEVELOPMENT AND DEBUGGING LIBRARIES
+# =============================================================================
+
+# Development debugging and logging library
+# Comprehensive debugging tools for development and troubleshooting workflows
+utilikit.debug:
+  js:
+    js/utilikit.logging.js: {}        # Enhanced logging and debug output
+    js/utilikit.debug-helper.js: {}   # Development utilities and diagnostics
+  dependencies:
+    - core/drupal          # Core Drupal JavaScript functionality
+    - core/once            # Event binding and initialization
+    - core/drupalSettings  # Configuration and settings access
+    - utilikit/utilikit.engine  # Integration with main engine for debugging
+  # Features:
+  # - Comprehensive logging system with configurable verbosity levels
+  # - Performance monitoring and timing analysis
+  # - CSS generation debugging with step-by-step processing details
+  # - DOM scanning diagnostics and utility class validation reporting
+  # - Integration with browser developer tools for enhanced debugging
+  #
+  # Development workflow:
+  # - Automatically loaded when development mode is enabled
+  # - Provides detailed console output for troubleshooting
+  # - Performance profiling for optimization during development
+  # - Error tracking and reporting for debugging complex scenarios
+
+# =============================================================================
+# LIBRARY LOADING STRATEGY AND PERFORMANCE NOTES
+# =============================================================================
+#
+# Conditional Loading:
+# - utilikit.engine: Loaded only in inline rendering mode
+# - utilikit.static: Loaded only in static rendering mode
+# - utilikit.reference: Loaded only on reference pages
+# - utilikit.update.button: Loaded only for users with update permissions
+# - utilikit.debug: Loaded only when development mode is enabled
+#
+# Dependency Management:
+# - All libraries depend on core Drupal functionality for consistency
+# - Progressive dependency chains minimize redundant code loading
+# - Optional dependencies marked appropriately for graceful degradation
+# - Security libraries loaded first to ensure input validation
+#
+# Performance Optimization:
+# - JavaScript files organized by functionality for efficient caching
+# - CSS files scoped to specific interfaces to minimize style conflicts
+# - Minimal asset loading in static mode for production performance
+# - Development libraries excluded from production builds
+#
+# Security Considerations:
+# - utilikit.security.js loaded first in engine library for input validation
+# - All user input sanitized before processing or DOM manipulation
+# - CSRF protection integrated into AJAX operations
+# - Content Security Policy compliance for inline styles and scripts
+#
+# Browser Compatibility:
+# - utilikit.environment.js provides feature detection and polyfills
+# - Progressive enhancement ensures functionality across browser versions
+# - Responsive design considerations for mobile and tablet interfaces
+# - Accessibility features integrated throughout user interface libraries

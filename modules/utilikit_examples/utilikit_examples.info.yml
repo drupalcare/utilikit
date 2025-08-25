@@ -1,0 +1,7 @@
+name: 'UtiliKit Examples'
+type: module
+description: 'Real-world component examples built with UtiliKit'
+package: UtiliKit
+core_version_requirement: ^10 || ^11
+dependencies:
+  - utilikit:utilikit

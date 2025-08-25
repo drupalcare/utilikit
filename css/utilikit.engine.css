@@ -1,0 +1,174 @@
+/**
+ * @file
+ * Contains Code for utilikit.
+ *
+ * Filename: utiliki.engine.css
+ * Website: https://www.flashwebcenter.com
+ * Developer: Alaa Haddad https://www.alaahaddad.com.
+ */
+
+
+/* =============================================================================
+   Mode-Specific Styling
+   ========================================================================== */
+
+/* Hide UtiliKit elements until processed - ONLY in inline mode */
+body.utilikit-inline-mode .utilikit:not([data-utilikit-props]) {
+  visibility: hidden;
+}
+
+/* Alternative rule for backwards compatibility */
+body:not(.utilikit-static-mode) .utilikit:not([data-utilikit-props]) {
+  visibility: hidden;
+}
+
+/* Show elements once they have been processed */
+.utilikit[data-utilikit-props] {
+  visibility: visible;
+}
+
+/* Static mode - elements are always visible (CSS file handles styling) */
+body.utilikit-static-mode .utilikit {
+  visibility: visible;
+}
+
+/* =============================================================================
+   Developer Mode Features
+   ========================================================================== */
+
+/* Visual debugging - admin preview mode */
+body.uk-admin .utilikit {
+  outline: 2px dashed rgba(0, 123, 255, 0.7) !important;
+  outline-offset: 2px;
+}
+
+/* Developer mode general styling */
+body.uk-dev .utilikit {
+  position: relative;
+}
+
+/* Add a small dev indicator in dev mode */
+body.uk-dev .utilikit::before {
+  content: '🛠️';
+  position: absolute;
+  top: -15px;
+  left: -15px;
+  font-size: 10px;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* =============================================================================
+   Transition Effects
+   ========================================================================== */
+
+/* Smooth transitions when enabled */
+body.uk-trans .utilikit {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Faster transitions for inline mode (real-time changes) */
+body.utilikit-inline-mode.uk-trans .utilikit {
+  transition: all 0.15s ease-out;
+}
+
+/* =============================================================================
+   Performance Optimizations
+   ========================================================================== */
+
+/* Prevent layout thrashing during style application */
+.utilikit {
+  box-sizing: border-box;
+  transition: visibility 0.1s ease-in-out;
+}
+
+/* Optimize for inline mode processing */
+body.utilikit-inline-mode .utilikit {
+  will-change: auto; /* Let browser optimize what changes */
+}
+
+/* Static mode doesn't need change optimization */
+body.utilikit-static-mode .utilikit {
+  will-change: auto;
+}
+
+/* =============================================================================
+   Accessibility & Debug Features
+   ========================================================================== */
+
+/* High contrast mode for accessibility testing */
+@media (prefers-contrast: high) {
+  body.uk-admin .utilikit {
+    outline-color: #000000;
+    outline-width: 3px;
+  }
+}
+
+/* Reduce motion when user prefers it */
+@media (prefers-reduced-motion: reduce) {
+  body.uk-trans .utilikit {
+    transition: none !important;
+  }
+}
+
+/* Debug information tooltip */
+body.uk-dev .utilikit[data-utilikit-props]:hover::after {
+  content: 'Props: ' attr(data-utilikit-props);
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+/* =============================================================================
+   Error States
+   ========================================================================== */
+
+/* Elements with processing errors */
+.utilikit.uk-error {
+  outline: 2px solid #dc3545 !important;
+  background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+/* =============================================================================
+   Loading States
+   ========================================================================== */
+
+/* Loading indicator for inline mode */
+body.utilikit-inline-mode .utilikit:not([data-utilikit-props]) {
+  position: relative;
+}
+
+body.utilikit-inline-mode .utilikit:not([data-utilikit-props])::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.1), transparent);
+  animation: utilikit-loading 1.5s infinite;
+  pointer-events: none;
+}
+
+@keyframes utilikit-loading {
+  0% {
+    transform: translateX(-100%);
+}
+  100% {
+    transform: translateX(100%);
+}
+}
+
+/* Remove loading animation once processed */
+.utilikit[data-utilikit-props]::before {
+  display: none;
+}

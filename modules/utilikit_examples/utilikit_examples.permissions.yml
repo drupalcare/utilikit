@@ -1,0 +1,4 @@
+access utilikit examples:
+  title: 'Access UtiliKit examples'
+  description: 'View UtiliKit usage examples and live demonstrations.'
+  restrict access: false

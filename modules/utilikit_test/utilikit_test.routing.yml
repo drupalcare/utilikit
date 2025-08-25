@@ -1,0 +1,9 @@
+utilikit_test.suite:
+  path: '/admin/config/development/utilikit/test-suite'
+  defaults:
+    _controller: '\Drupal\utilikit_test\Controller\TestSuiteController::render'
+    _title: 'Test Suite'
+  requirements:
+    _permission: 'run utilikit tests'
+  options:
+    _admin_route: TRUE

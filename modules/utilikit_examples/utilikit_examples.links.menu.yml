@@ -1,0 +1,5 @@
+utilikit_examples.page:
+  title: 'Examples'
+  route_name: utilikit_examples.page
+  parent: utilikit.admin
+  weight: 30

@@ -1,0 +1,414 @@
+<?php
+
+/**
+ * @file
+ * Main module file for UtiliKit - Dynamic Utility-First CSS for Drupal.
+ *
+ * This module provides utility-first CSS functionality for Drupal sites,
+ * offering dynamic CSS generation, multiple rendering modes (inline/static),
+ * content scanning for utility class discovery, and comprehensive caching.
+ *
+ * Key features include:
+ * - Dynamic utility class CSS generation and injection
+ * - Static and inline rendering modes for performance optimization
+ * - Automatic content scanning for utility class discovery
+ * - Entity-based auto-updates for real-time CSS synchronization
+ * - Comprehensive caching and performance optimizations
+ * - Admin interface for configuration and monitoring
+ * - Development tools and debugging capabilities
+ */
+
+declare(strict_types=1);
+
+use Drupal\Component\Utility\Crypt;
+use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\node\NodeInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\utilikit\Service\UtilikitConstants;
+
+/**
+ * Implements hook_help().
+ *
+ * Provides help information for the UtiliKit module by rendering the
+ * README.md file when accessed through the help system.
+ */
+function utilikit_help(string $route_name, RouteMatchInterface $route_match): ?string {
+  if ($route_name === 'help.page.utilikit') {
+    return _utilikit_helper_render_readme();
+  }
+  return NULL;
+}
+
+/**
+ * Helper function to render README.md for the help system.
+ *
+ * Attempts to render the module's README.md file using the Markdown filter
+ * if available, otherwise falls back to plain text display with HTML
+ * escaping for security.
+ *
+ * @return string
+ *   The rendered content of README.md, either as processed Markdown or
+ *   as escaped HTML in a <pre> tag.
+ */
+function _utilikit_helper_render_readme(): string {
+  $readme_path = __DIR__ . '/README.md';
+  $text = file_get_contents($readme_path);
+
+  if ($text === FALSE) {
+    return t('README.md file not found.');
+  }
+
+  if (!\Drupal::moduleHandler()->moduleExists('markdown')) {
+    return '<pre>' . htmlspecialchars($text) . '</pre>';
+  }
+
+  // Use the Markdown filter to render the README.
+  $filter_manager = \Drupal::service('plugin.manager.filter');
+  $settings = \Drupal::config('markdown.settings')->getRawData();
+  $filter = $filter_manager->createInstance('markdown', ['settings' => $settings]);
+  return $filter->process($text, 'en')->getProcessedText();
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Attaches UtiliKit libraries, settings, and CSS to pages based on the
+ * current configuration and scope settings. Handles both static and inline
+ * rendering modes, attaches appropriate JavaScript libraries, and sets up
+ * drupalSettings for client-side functionality.
+ *
+ * The function performs several key operations:
+ * - Validates scope and applies UtiliKit only where configured
+ * - Handles static CSS file generation and linking
+ * - Configures JavaScript settings for client-side utilities
+ * - Attaches development and debugging libraries when enabled
+ * - Sets up cache contexts and tags for proper invalidation
+ */
+function utilikit_page_attachments(array &$attachments): void {
+  if (!\Drupal::config('utilikit.settings')->get('rendering_mode')) {
+    return;
+  }
+
+  $config = \Drupal::service('utilikit.service')->getSettings();
+
+  $settings = [
+    'scope_global' => (bool) $config->get('scope_global'),
+    'disable_admin' => (bool) $config->get('disable_admin'),
+    'scope_content_types' => (bool) $config->get('scope_content_types'),
+    'enabled_content_types' => $config->get('enabled_content_types') ?? [],
+  ];
+
+  if (!utilikit_should_apply($settings)) {
+    return;
+  }
+
+  $activeBreakpoints = array_keys(array_filter($config->get('active_breakpoints') ?? UtilikitConstants::DEFAULT_BREAKPOINTS));
+  $rendering_mode = $config->get('rendering_mode') ?? 'inline';
+
+  if ($rendering_mode === 'static') {
+    $fileManager = \Drupal::service('utilikit.file_manager');
+    $fileManager->ensureStaticCssFile();
+
+    $css_url = $fileManager->getStaticCssUrl();
+    if (!$css_url) {
+      \Drupal::logger('utilikit')->warning('Static CSS file not found. Falling back to inline mode.');
+      $rendering_mode = 'inline';
+    }
+  }
+
+  $stateManager = \Drupal::service('utilikit.state_manager');
+
+  $attachments['#attached']['drupalSettings']['utilikit'] = [
+    'devMode' => (bool) $config->get('dev_mode'),
+    'showPageErrors' => (bool) $config->get('show_page_errors'),
+    'enableTransitions' => (bool) $config->get('enable_transitions'),
+    'debounce' => (int) ($config->get('debounce') ?? 50),
+    'logLevel' => $config->get('log_level') ?? 'warnings',
+    'adminPreview' => (bool) $config->get('admin_preview'),
+    'activeBreakpoints' => $activeBreakpoints,
+    'renderingMode' => $rendering_mode,
+    'csrfToken' => \Drupal::csrfToken()->get('utilikit-update-css'),
+    'cssTimestamp' => $stateManager->getCssTimestamp(),
+    'breakpoints' => UtilikitConstants::BREAKPOINT_VALUES,
+  ];
+
+  if ($rendering_mode === 'static') {
+    $css_url = \Drupal::service('utilikit.file_manager')->getStaticCssUrl();
+
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.static';
+
+    $attachments['#attached']['html_head'][] = [
+      [
+        '#type' => 'html_tag',
+        '#tag' => 'link',
+        '#attributes' => [
+          'href' => $css_url,
+          'rel' => 'stylesheet',
+          'id' => 'utilikit-static-css',
+          'media' => 'all',
+        ],
+        '#weight' => -100,
+      ],
+      'utilikit_static_css',
+    ];
+  }
+  else {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
+  }
+
+  if ($config->get('show_page_errors')) {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine.message';
+  }
+
+  if ($config->get('dev_mode')) {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
+  }
+
+  if (\Drupal::currentUser()->hasPermission('use utilikit update button') && $rendering_mode === 'static') {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.update.button';
+
+    $attachments['#attached']['drupalSettings']['utilikit']['updateButton'] = [
+      'enabled' => TRUE,
+      'autoUpdate' => [
+        'node' => (bool) $config->get('update_on_node_save'),
+        'block' => (bool) $config->get('update_on_block_save'),
+        'paragraph' => (bool) $config->get('update_on_paragraph_save'),
+      ],
+    ];
+  }
+
+  if ($rendering_mode === 'inline') {
+    $nonce = Crypt::randomBytesBase64(16);
+    $attachments['#attached']['drupalSettings']['utilikit']['cspNonce'] = $nonce;
+  }
+
+  $attachments['#cache']['tags'][] = UtilikitConstants::CACHE_TAG_CONFIG;
+  $attachments['#cache']['tags'][] = UtilikitConstants::CACHE_TAG_CSS;
+  $attachments['#cache']['contexts'][] = 'user.permissions';
+  $attachments['#cache']['contexts'][] = 'route';
+  $attachments['#cache']['tags'][] = 'utilikit:mode:' . $rendering_mode;
+}
+
+/**
+ * Implements hook_entity_presave().
+ *
+ * Automatically scans entities for utility classes and updates CSS when
+ * auto-update is enabled for the entity type. Handles both static and
+ * inline rendering modes with appropriate locking for static mode to
+ * prevent concurrent CSS file operations.
+ *
+ * For static mode, uses a lock-and-queue system to handle concurrent
+ * updates gracefully. If a lock cannot be acquired, the update is queued
+ * for later processing to avoid blocking entity saves.
+ */
+function utilikit_entity_presave($entity): void {
+  $config = \Drupal::config('utilikit.settings');
+  $entity_type = $entity->getEntityTypeId();
+
+  if (!isset(UtilikitConstants::AUTO_UPDATE_ENTITY_TYPES[$entity_type])) {
+    return;
+  }
+
+  $setting_key = UtilikitConstants::AUTO_UPDATE_ENTITY_TYPES[$entity_type];
+  $auto_update_enabled = (bool) $config->get($setting_key);
+
+  if (!$auto_update_enabled) {
+    return;
+  }
+
+  if (!$entity instanceof FieldableEntityInterface) {
+    return;
+  }
+
+  $serviceProvider = \Drupal::service('utilikit.service_provider');
+  $classes = $serviceProvider->getContentScanner()->scanEntity($entity);
+
+  if (empty($classes)) {
+    return;
+  }
+
+  $mode = $config->get('rendering_mode') ?? 'inline';
+
+  if ($mode === 'static') {
+    $lock = \Drupal::lock();
+    $locked = $lock->acquire(UtilikitConstants::LOCK_CSS_UPDATE, UtilikitConstants::CSS_UPDATE_LOCK_WAIT);
+
+    if (!$locked) {
+      $queue = \Drupal::queue(UtilikitConstants::QUEUE_CSS_PROCESSOR);
+      $queue->createItem([
+        'classes' => $classes,
+        'entity_type' => $entity->getEntityTypeId(),
+        'entity_id' => $entity->id(),
+        'timestamp' => time(),
+      ]);
+
+      \Drupal::messenger()->addWarning(t(
+        'UtiliKit CSS update is in progress. Your content was saved, but styles will be updated shortly.'
+      ));
+
+      return;
+    }
+
+    try {
+      utilikit_update_classes($classes);
+    } finally {
+      $lock->release(UtilikitConstants::LOCK_CSS_UPDATE);
+    }
+  }
+  else {
+    utilikit_update_classes($classes);
+  }
+}
+
+/**
+ * Determines whether UtiliKit should be applied to the current page.
+ *
+ * Evaluates scope configuration settings to determine if UtiliKit should
+ * be active on the current page. Handles global scope, admin route
+ * exclusions, content type restrictions, and special module routes.
+ *
+ * @param array $config
+ *   Configuration array containing:
+ *   - 'scope_global': Whether global scope is enabled
+ *   - 'disable_admin': Whether to disable on admin routes
+ *   - 'scope_content_types': Whether content type scoping is enabled
+ *   - 'enabled_content_types': Array of enabled content type machine names.
+ *
+ * @return bool
+ *   TRUE if UtiliKit should be applied to the current page, FALSE otherwise.
+ */
+function utilikit_should_apply(array $config): bool {
+  $route_name = \Drupal::routeMatch()->getRouteName();
+  $utilikit_submodule_routes = [
+    'utilikit_playground.page',
+    'utilikit_examples.page',
+    'utilikit_test.suite',
+  ];
+
+  if (in_array($route_name, $utilikit_submodule_routes, TRUE)) {
+    return FALSE;
+  }
+
+  if ($config['scope_global']) {
+    if ($config['disable_admin'] && \Drupal::service('router.admin_context')->isAdminRoute()) {
+      return FALSE;
+    }
+    return TRUE;
+  }
+
+  if ($config['scope_content_types']) {
+    $route_match = \Drupal::routeMatch();
+    $node = $route_match->getParameter('node');
+
+    if ($node instanceof NodeInterface) {
+      $enabled_types = $config['enabled_content_types'] ?? [];
+      return in_array($node->bundle(), $enabled_types, TRUE);
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Cleans up static CSS files and clears all related caches.
+ *
+ * Utility function that removes all UtiliKit static CSS files from the
+ * file system and clears all caches to ensure a clean state. Used during
+ * mode switches and troubleshooting operations.
+ */
+function utilikit_cleanup_static_files(): void {
+  \Drupal::service('utilikit.file_manager')->cleanupStaticFiles();
+  \Drupal::service('utilikit.cache_manager')->clearAllCaches();
+}
+
+/**
+ * Invalidates CSS-related caches without affecting other cache types.
+ *
+ * Targeted cache invalidation function that clears only CSS-related caches,
+ * leaving other caches intact for better performance during CSS updates.
+ */
+function utilikit_invalidate_caches(): void {
+  \Drupal::service('utilikit.cache_manager')->clearCssCaches();
+}
+
+/**
+ * Updates UtiliKit CSS with new utility classes.
+ *
+ * Central function for processing utility classes and updating the CSS
+ * generation. Includes logic to prevent recursive calls when invoked
+ * from entity presave operations.
+ *
+ * @param array $classes
+ *   Array of utility class names to process and add to the CSS.
+ * @param bool $force
+ *   If TRUE, bypasses the recursive call check. Defaults to FALSE.
+ */
+function utilikit_update_classes(array $classes, bool $force = FALSE): void {
+  if (!$force) {
+    $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
+    foreach ($backtrace as $call) {
+      if (isset($call['function']) && $call['function'] === 'utilikit_entity_presave') {
+        break;
+      }
+    }
+  }
+
+  $serviceProvider = \Drupal::service('utilikit.service_provider');
+  $serviceProvider->updateCssAndFile($classes);
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * Defines theme templates provided by the UtiliKit module.
+ */
+function utilikit_theme() {
+  return [
+    'utilikit_update_button' => [
+      'variables' => [],
+      'template' => 'utilikit-update-button',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_utilikit_cleanup_entity_types_alter().
+ *
+ * Allows other modules to alter the list of entity types that should be
+ * processed during cleanup operations. This is primarily used for
+ * excluding specific entity types from automatic scanning and processing.
+ *
+ *   Array of entity type machine names to be processed during cleanup.
+ *   Modules can add or remove entity types by modifying this array.
+ */
+function utilikit_utilikit_cleanup_entity_types_alter(&$entity_types) {
+}
+
+/**
+ * Determines whether an entity should be scanned for utility classes.
+ *
+ * Evaluates whether a given entity should be included in content scanning
+ * operations. Excludes test entities and example content by default, and
+ * allows other modules to alter the exclusion logic through a hook.
+ *
+ * @param \Drupal\Core\Entity\EntityInterface $entity
+ *   The entity to evaluate for scanning inclusion.
+ *
+ * @return bool
+ *   TRUE if the entity should be scanned, FALSE if it should be excluded.
+ */
+function utilikit_should_scan_entity(EntityInterface $entity) {
+  if (str_starts_with($entity->getEntityTypeId(), 'utilikit_test')) {
+    return FALSE;
+  }
+
+  if ($entity->getEntityTypeId() === 'node' && $entity->bundle() === 'utilikit_example') {
+    return FALSE;
+  }
+
+  $exclude = FALSE;
+  \Drupal::moduleHandler()->alter('utilikit_cleanup_exclude_entity', $exclude, $entity);
+
+  return !$exclude;
+}

@@ -1,0 +1,8 @@
+name: 'UtiliKit Help'
+type: module
+description: 'Comprehensive documentation and help system for UtiliKit module with interactive examples and user-friendly guides.'
+package: 'UtiliKit'
+configure: utilikit_help.documentation
+core_version_requirement: ^10 || ^11
+dependencies:
+  - utilikit:utilikit

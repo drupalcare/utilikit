@@ -1,0 +1,119 @@
+<?php
+
+/**
+ * @file
+ * UtiliKit Examples module - Interactive examples and demonstrations.
+ *
+ * Provides a comprehensive examples system for UtiliKit utility classes
+ * with live demonstrations, responsive previews, and interactive testing
+ * capabilities. Always forces inline rendering mode to ensure consistent
+ * example display regardless of global site settings.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ *
+ * Provides contextual help throughout the Drupal admin interface.
+ */
+function utilikit_examples_help(string $route_name, RouteMatchInterface $route_match): ?string {
+  if ($route_name === 'help.page.utilikit_examples') {
+    return _utilikit_helper_render_readme();
+  }
+  return NULL;
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * Defines theme templates for UtiliKit examples display.
+ *
+ *   An array of existing implementations that may be used for override
+ *   purposes. This is primarily useful for themes that may wish to
+ *   examine existing implementations to extract data (such as arguments)
+ *   so that it may properly register its own, higher priority
+ *   implementations.
+ *   Whether a theme, module, etc. is being processed.
+ *   The actual name of theme, module, etc. that is being being processed.
+ *   The directory path of the theme or module, so that it doesn't need to
+ *   be looked up.
+ *
+ *   An associative array of theme hook information. The key is the theme
+ *   hook name, and the value is an associative array containing:
+ *   - variables: An array of variables that the template uses.
+ *   - template: The name of the template file to use.
+ */
+function utilikit_examples_theme($existing, $type, $theme, $path): array {
+  return [
+    'utilikit_examples' => [
+      'variables' => [],
+      'template' => 'utilikit-examples',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Attaches UtiliKit libraries and settings specifically for examples pages.
+ * Forces inline rendering mode regardless of global settings to ensure
+ * examples display consistently across different site configurations.
+ *
+ * This hook ensures that:
+ * - Examples always use inline mode for dynamic demonstration
+ * - All necessary UtiliKit libraries are loaded
+ * - Proper breakpoint and debugging settings are configured
+ * - CSRF tokens are available for interactive features
+ *
+ * @see hook_page_attachments()
+ */
+function utilikit_examples_page_attachments(array &$attachments): void {
+  $route_name = \Drupal::routeMatch()->getRouteName();
+
+  // Only attach on examples pages.
+  if ($route_name !== 'utilikit_examples.page') {
+    return;
+  }
+
+  // Get main module settings.
+  $config = \Drupal::config('utilikit.settings');
+
+  // Force inline mode for examples to ensure consistent demonstration
+  // regardless of global site configuration.
+  $attachments['#attached']['drupalSettings']['utilikit'] = [
+    'devMode' => (bool) $config->get('dev_mode'),
+    'showPageErrors' => (bool) $config->get('show_page_errors'),
+    'enableTransitions' => (bool) $config->get('enable_transitions'),
+    'debounce' => (int) ($config->get('debounce') ?? 50),
+    'logLevel' => $config->get('log_level') ?? 'warnings',
+    'adminPreview' => (bool) $config->get('admin_preview'),
+    'activeBreakpoints' => ['sm', 'md', 'lg', 'xl', 'xxl'],
+    // ALWAYS inline for examples - ensures dynamic demonstration works.
+    'renderingMode' => 'inline',
+    'csrfToken' => \Drupal::csrfToken()->get('utilikit-update-css'),
+    'breakpoints' => [
+      'sm' => 576,
+      'md' => 768,
+      'lg' => 992,
+      'xl' => 1200,
+      'xxl' => 1400,
+    ],
+  ];
+
+  // Always attach inline engine for dynamic class processing.
+  $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
+  $attachments['#attached']['library'][] = 'utilikit/utilikit.examples';
+
+  // Conditionally attach error reporting if enabled.
+  if ($config->get('show_page_errors')) {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine.message';
+  }
+
+  // Conditionally attach debugging tools if in development mode.
+  if ($config->get('dev_mode')) {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
+  }
+}

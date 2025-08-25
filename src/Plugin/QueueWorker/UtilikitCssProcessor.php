@@ -1,0 +1,137 @@
+<?php
+
+namespace Drupal\utilikit\Plugin\QueueWorker;
+
+use Drupal\Core\Queue\QueueWorkerBase;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\utilikit\Service\UtiliKitServiceProvider;
+use Psr\Log\LoggerInterface;
+
+/**
+ * Processes queued CSS updates for UtiliKit utility classes.
+ *
+ * This queue worker handles asynchronous processing of CSS updates when new
+ * utility classes are discovered. It validates classes, checks for new
+ * additions, and updates the CSS file during cron runs to prevent blocking
+ * the main request flow.
+ *
+ * @QueueWorker(
+ *   id = "utilikit_css_processor",
+ *   title = @Translation("UtiliKit CSS Processor"),
+ *   cron = {"time" = 30}
+ * )
+ */
+class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPluginInterface {
+
+  /**
+   * The logger service.
+   *
+   * @var \Psr\Log\LoggerInterface
+   */
+  protected LoggerInterface $logger;
+
+  /**
+   * The UtiliKit service provider.
+   *
+   * @var \Drupal\utilikit\Service\UtiliKitServiceProvider
+   */
+  protected UtiliKitServiceProvider $serviceProvider;
+
+  /**
+   * Constructs a new UtilikitCssProcessor object.
+   *
+   * @param array $configuration
+   *   A configuration array containing information about the plugin instance.
+   * @param string $plugin_id
+   *   The plugin_id for the plugin instance.
+   * @param mixed $plugin_definition
+   *   The plugin implementation definition.
+   * @param \Psr\Log\LoggerInterface $logger
+   *   The logger service for recording processing events.
+   * @param \Drupal\utilikit\Service\UtiliKitServiceProvider $serviceProvider
+   *   The UtiliKit service provider for CSS processing operations.
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    LoggerInterface $logger,
+    UtiliKitServiceProvider $serviceProvider,
+  ) {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+    $this->logger = $logger;
+    $this->serviceProvider = $serviceProvider;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      $container->get('logger.channel.utilikit'),
+      $container->get('utilikit.service_provider')
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * Processes a single queue item containing utility classes for CSS update.
+   *
+   * This method validates the incoming utility classes, identifies new classes
+   * that aren't already in the known classes collection, and updates the CSS
+   * file if new classes are found. The processing is done asynchronously
+   * during cron runs to avoid blocking the main request flow.
+   *
+   * @param mixed $data
+   *   Queue item data expected to contain a 'classes' array with utility
+   *   class names to be processed.
+   *
+   * @throws \Exception
+   *   When CSS processing fails, the exception is re-thrown after logging
+   *   to ensure the queue item is marked as failed and can be retried.
+   */
+  public function processItem($data): void {
+    if (!isset($data['classes']) || !is_array($data['classes'])) {
+      $this->logger->error('Invalid queue item data');
+      return;
+    }
+
+    try {
+      $validClasses = $this->serviceProvider->getContentScanner()->validateUtilityClasses($data['classes']);
+
+      if (empty($validClasses)) {
+        $this->logger->warning('No valid utility classes found in queue item');
+        return;
+      }
+
+      $stateManager = $this->serviceProvider->getStateManager();
+      $knownClasses = $stateManager->getKnownClasses();
+      $newClasses = array_diff($validClasses, $knownClasses);
+
+      if (!empty($newClasses)) {
+        $result = $this->serviceProvider->updateCssAndFile($validClasses);
+
+        if ($result) {
+          $this->logger->info('Processed queued CSS update with @count new classes', [
+            '@count' => count($newClasses),
+          ]);
+        }
+        else {
+          $this->logger->error('Failed to update CSS file during queue processing');
+        }
+      }
+    }
+    catch (\Exception $e) {
+      $this->logger->error('Failed to process CSS update: @message', [
+        '@message' => $e->getMessage(),
+      ]);
+      throw $e;
+    }
+  }
+
+}

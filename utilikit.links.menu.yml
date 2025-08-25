@@ -1,0 +1,101 @@
+# UtiliKit Administrative Menu Links
+#
+# This file defines the administrative menu structure for the UtiliKit module
+# within Drupal's admin interface, providing intuitive navigation for
+# configuration, documentation, and management tasks.
+#
+# Menu Structure:
+# Configuration > Development > UtiliKit
+# ├── Settings (main configuration)
+# └── Reference (utility class documentation)
+#
+# Design Principles:
+# - Logical placement under Development configuration section
+# - Clear hierarchical organization for related functionality
+# - Descriptive titles and descriptions for user guidance
+# - Appropriate weight ordering for consistent menu placement
+
+# =============================================================================
+# PRIMARY ADMIN MENU ITEM
+# =============================================================================
+
+# Main UtiliKit administrative entry point
+# Located under Configuration > Development for logical grouping with
+# other development-related tools and modules
+utilikit.admin:
+  title: 'UtiliKit'
+  description: 'Utility-first CSS framework for Drupal'
+  parent: system.admin_config_development
+  route_name: utilikit.settings
+  weight: 98
+  # Menu placement rationale:
+  # - Positioned under Development section alongside Devel, logging, and performance tools
+  # - Weight 98 places it near the end of the Development menu for consistent ordering
+  # - Direct link to main settings form as the primary administrative interface
+  # - Clear title distinguishes it from other CSS/theming tools
+  #
+  # User experience considerations:
+  # - Single-click access to primary configuration from admin menu
+  # - Intuitive placement where developers expect to find development tools
+  # - Descriptive subtitle explains the module's purpose at a glance
+  # - Serves as parent for related submenu items
+
+# =============================================================================
+# SUBMENU ITEMS
+# =============================================================================
+
+# Utility class reference and documentation
+# Provides quick access to the comprehensive utility class browser
+# and documentation system directly from the admin menu
+utilikit.reference:
+  title: 'Reference'
+  description: 'Complete list of all utility classes and their usage'
+  route_name: utilikit.reference
+  parent: utilikit.admin
+  weight: 10
+  # Submenu placement rationale:
+  # - Organized under main UtiliKit menu item for logical grouping
+  # - Low weight (10) ensures it appears prominently in submenu
+  # - Direct access to documentation without navigating through settings
+  # - Clear title indicates this is reference/documentation content
+  #
+  # Workflow integration:
+  # - Enables quick class lookup during development and content creation
+  # - Accessible to users with 'access utilikit reference' permission
+  # - Complements the main settings interface for complete administrative access
+  # - Supports both learning and quick reference use cases
+  #
+  # Features accessible through this link:
+  # - Interactive utility class browser with search and filtering
+  # - Copy-to-clipboard functionality for efficient development workflow
+  # - Live examples and responsive breakpoint demonstrations
+  # - Organized categories covering all CSS property types
+  # - Integration with site's specific configuration and active breakpoints
+
+# =============================================================================
+# MENU INTEGRATION NOTES
+# =============================================================================
+#
+# Administrative Workflow:
+# 1. Users navigate to Configuration > Development > UtiliKit for settings
+# 2. Reference submenu provides quick access to documentation
+# 3. Both items respect permission system for appropriate access control
+# 4. Menu items automatically appear/disappear based on module status
+#
+# Permission Integration:
+# - Main admin menu requires 'administer utilikit' permission
+# - Reference submenu requires 'access utilikit reference' permission
+# - Menu items hidden for users without appropriate permissions
+# - Follows Drupal's standard access control patterns
+#
+# Navigation Experience:
+# - Breadcrumb trail: Home > Administration > Configuration > Development > UtiliKit
+# - Consistent with other development tools' placement and behavior
+# - Clear visual hierarchy in admin menu structure
+# - Responsive design works across different admin themes
+#
+# Future Extensibility:
+# - Menu structure supports additional submenu items if needed
+# - Weight system allows for logical ordering of new features
+# - Parent-child relationship enables grouped functionality
+# - Follows Drupal best practices for menu expansion

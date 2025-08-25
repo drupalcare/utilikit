@@ -1,0 +1,9 @@
+utilikit_playground.page:
+  path: '/admin/config/development/utilikit/playground'
+  defaults:
+    _controller: '\Drupal\utilikit_playground\Controller\PlaygroundController::preview'
+    _title: 'UtiliKit Playground'
+  requirements:
+    _permission: 'use utilikit playground'
+  options:
+    _admin_route: TRUE

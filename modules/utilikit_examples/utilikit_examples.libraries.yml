@@ -1,0 +1,8 @@
+utilikit.examples:
+  js:
+    js/utilikit-examples.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/drupalSettings
+    - utilikit/utilikit.engine

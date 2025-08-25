@@ -1,0 +1,4 @@
+run utilikit tests:
+  title: 'Run UtiliKit tests'
+  description: 'Access and run the UtiliKit test suite (developer tool).'
+  restrict access: true

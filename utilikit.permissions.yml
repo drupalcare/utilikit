@@ -1,0 +1,138 @@
+# UtiliKit Module Permission Definitions
+#
+# This file defines the permission structure for the UtiliKit module,
+# implementing a tiered access control system that balances security
+# with usability across different user roles and responsibilities.
+#
+# Permission Architecture:
+# - Administrative: Full configuration and management access
+# - Documentation: Read-only access to reference materials
+# - Operational: Limited access to manual update tools
+#
+# Security Model:
+# - Follows principle of least privilege
+# - Separates configuration from operational permissions
+# - Provides granular control for different workflows
+# - Integrates with Drupal's role-based access control
+
+# =============================================================================
+# DOCUMENTATION AND REFERENCE PERMISSIONS
+# =============================================================================
+
+# Access to UtiliKit utility class reference and documentation
+# Provides read-only access to the comprehensive utility class browser
+# and documentation system for developers and content creators
+access utilikit reference:
+  title: 'Access UtiliKit reference'
+  description: 'View the UtiliKit CSS class reference guide.'
+  restrict access: false
+  # Grants access to:
+  # - Complete utility class reference page
+  # - Interactive class browser with search and filtering
+  # - Copy-to-clipboard functionality for class names
+  # - Live examples and responsive previews
+  # - CSS property documentation and usage examples
+  #
+  # Usage scenarios:
+  # - Content creators learning available utility classes
+  # - Developers building themes and custom components
+  # - Training and onboarding new team members
+  # - Quick reference during content editing
+  #
+  # Security considerations:
+  # - No restricted access as this is read-only documentation
+  # - Safe to assign to content creators and developers
+  # - No system modification capabilities
+  # - Helps users work more effectively with utility classes
+
+# =============================================================================
+# OPERATIONAL PERMISSIONS
+# =============================================================================
+
+# Permission to use the manual CSS update button interface
+# Allows users to manually trigger CSS regeneration and view update status
+# in static rendering mode for immediate style updates
+use utilikit update button:
+  title: 'Use UtiliKit update button'
+  description: 'Show the UtiliKit update button for quick CSS updates on pages with utility classes.'
+  restrict access: false
+  # Grants access to:
+  # - Floating update button in static mode
+  # - Manual CSS regeneration trigger
+  # - Real-time update status and progress indicators
+  # - Current utility class count and file information
+  # - One-click CSS file regeneration
+  #
+  # Usage scenarios:
+  # - Content editors making immediate style changes
+  # - Developers testing utility class implementations
+  # - Site builders working with custom components
+  # - Quality assurance and content review workflows
+  #
+  # Technical details:
+  # - Only functional in static rendering mode
+  # - Triggers the same CSS generation as automatic updates
+  # - Uses AJAX for real-time updates without page reloads
+  # - Includes rate limiting to prevent abuse
+  #
+  # Security considerations:
+  # - No restricted access as operation is self-limiting
+  # - Cannot modify core settings or configuration
+  # - Limited to CSS regeneration from existing content
+  # - Safe for content creators and trusted users
+
+# =============================================================================
+# ADMINISTRATIVE PERMISSIONS
+# =============================================================================
+
+# Full administrative access to UtiliKit configuration and management
+# This is the highest level permission providing complete control over
+# all UtiliKit functionality including settings, mode switching, and system operations
+administer utilikit:
+  title: 'UtiliKit Administration'
+  description: 'Configure UtiliKit settings and manage CSS generation'
+  restrict access: true
+  # Grants access to:
+  # - UtiliKit settings form and all configuration options
+  # - Rendering mode switching (static/inline)
+  # - Cache management and cleanup operations
+  # - Development and debugging tools
+  # - Performance monitoring and statistics
+  # - System-wide CSS regeneration and reset operations
+  #
+  # Security considerations:
+  # - Marked as restricted access due to system-wide impact
+  # - Should typically be assigned only to administrators
+  # - Can affect site performance through cache operations
+  # - Provides access to development tools and debugging information
+
+# =============================================================================
+# PERMISSION ASSIGNMENT RECOMMENDATIONS
+# =============================================================================
+#
+# Recommended Role Assignments:
+#
+# Administrator Role:
+# - administer utilikit (full access to configuration)
+# - access utilikit reference (documentation access)
+# - use utilikit update button (manual update capability)
+#
+# Developer/Site Builder Role:
+# - access utilikit reference (documentation and reference)
+# - use utilikit update button (manual update capability)
+# - Consider: administer utilikit (if responsible for UtiliKit configuration)
+#
+# Content Creator/Editor Role:
+# - access utilikit reference (learn available classes)
+# - use utilikit update button (manual style updates)
+#
+# Anonymous/Authenticated User:
+# - Generally no UtiliKit permissions needed
+# - Consider: access utilikit reference (if providing public documentation)
+#
+# Security Best Practices:
+# - Review permission assignments regularly
+# - Use principle of least privilege
+# - Monitor usage of administrative functions
+# - Consider workflow requirements when assigning permissions
+# - Test permission combinations in development environments

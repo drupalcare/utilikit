@@ -1,0 +1,308 @@
+# UtiliKit Module - Default Configuration
+#
+# This file provides secure, production-ready defaults for the UtiliKit module,
+# establishing optimal settings for performance, security, and user experience.
+# All settings can be modified through the administrative interface or by
+# importing updated configuration.
+#
+# Configuration Philosophy:
+# - Security-first: Conservative defaults that prioritize site security
+# - Performance-optimized: Settings balanced for speed and functionality
+# - Development-friendly: Easy to enable debugging and development tools
+# - Production-ready: Safe defaults that work well in live environments
+#
+# Customization Approach:
+# - Start with these defaults for immediate functionality
+# - Enable development tools during theme/content development
+# - Adjust performance settings based on site traffic and server capacity
+# - Enable experimental features only after thorough testing
+#
+# For detailed explanations of each setting, visit:
+# Configuration > Development > UtiliKit > Settings
+
+# =============================================================================
+# CORE RENDERING SETTINGS
+# =============================================================================
+# These settings determine how UtiliKit generates and delivers CSS to browsers.
+# The choice between inline and static mode affects development workflow,
+# performance characteristics, and caching behavior.
+
+# Primary rendering mode - fundamental operational choice
+# 'inline': Dynamic CSS generation using JavaScript (ideal for development)
+#   - Real-time utility class processing and CSS injection
+#   - Immediate visual feedback for content changes
+#   - No server-side file generation required
+#   - Higher client-side processing overhead
+# 'static': Pre-generated CSS files served from disk (optimized for production)
+#   - Server-side CSS generation with file caching
+#   - Minimal JavaScript payload for optimal performance
+#   - Requires file system write permissions
+#   - Manual or automatic CSS regeneration workflow
+rendering_mode: inline
+
+# =============================================================================
+# PERFORMANCE & OPTIMIZATION
+# =============================================================================
+# Settings that directly impact frontend performance, user experience,
+# and CSS generation efficiency. Adjust based on site requirements and
+# user expectations for visual feedback and responsiveness.
+
+# Enable smooth CSS transitions for enhanced user experience
+# Adds transition properties to utility classes for polished visual effects
+# Performance impact: Minimal, enhances perceived performance
+enable_transitions: true
+
+# Resize event debounce delay for responsive recalculation
+# Prevents excessive processing during window resize operations
+# Lower values: More responsive but higher CPU usage
+# Higher values: Less responsive but better performance on slower devices
+debounce: 50
+
+# CSS output optimization including minification and compression
+# Reduces file size significantly in static mode (typically 30-50% reduction)
+# Recommended: Always enabled for production environments
+optimize_css: true
+
+# Active responsive breakpoints configuration
+# Controls which breakpoint variants are generated for utility classes
+# Disabling unused breakpoints reduces CSS size and improves performance
+# Each breakpoint adds approximately 20-30% to total CSS size
+active_breakpoints:
+  sm: sm      # Small screens ≥576px (landscape phones)
+  md: md      # Medium screens ≥768px (tablets)
+  lg: lg      # Large screens ≥992px (small desktops)
+  xl: xl      # Extra large screens ≥1200px (large desktops)
+  xxl: xxl    # Extra extra large screens ≥1400px (wide monitors)
+# Performance tip: Disable unused breakpoints to reduce CSS payload
+# Example for mobile-first sites: Remove 'xl' and 'xxl' if not needed
+
+# =============================================================================
+# SCOPE & VISIBILITY SETTINGS
+# =============================================================================
+# Configuration that determines where and when UtiliKit operates on your site.
+# These settings provide granular control over functionality scope and can
+# significantly impact performance and compatibility.
+
+# Global scope activation - affects all pages when enabled
+# When disabled, UtiliKit operates only in configured contexts
+# Recommended: Start with global scope, then refine as needed
+scope_global: true
+
+# Admin route exclusion for performance and compatibility
+# Prevents UtiliKit from loading on administrative pages
+# Recommended: Enable for production sites to reduce admin overhead
+# Note: May be useful to disable during theme development for admin pages
+disable_admin: false
+
+# Content type specific scope limitation
+# When enabled, UtiliKit only operates on specified content types
+# Useful for gradual rollouts or when UtiliKit is only needed for specific content
+# Requires 'enabled_content_types' configuration when activated
+scope_content_types: false
+
+# List of content types where UtiliKit should be active
+# Only used when 'scope_content_types' is enabled
+# Use content type machine names (not display names)
+# Example: ['page', 'article', 'landing_page', 'product']
+enabled_content_types: []
+
+# =============================================================================
+# AUTOMATIC UPDATE TRIGGERS (Static Mode Only)
+# =============================================================================
+# Entity-based triggers that automatically regenerate CSS when content changes.
+# These settings only function in static rendering mode and provide real-time
+# CSS updates as content is created and modified.
+#
+# Performance considerations:
+# - Each enabled trigger adds processing overhead to entity save operations
+# - High-traffic sites should carefully evaluate the impact on save performance
+# - Consider using manual updates for sites with frequent content changes
+
+# Node save trigger - regenerate CSS when nodes are saved
+# Scans node content for new utility classes and updates CSS file
+# Use cases: Blog posts, pages, product content with utility classes
+update_on_node_save: false
+
+# Custom block save trigger - regenerate CSS when blocks are saved
+# Scans block content for new utility classes and updates CSS file
+# Use cases: Custom blocks with utility classes, reusable components
+update_on_block_save: false
+
+# Paragraph save trigger - regenerate CSS when paragraphs are saved
+# Scans paragraph content for new utility classes and updates CSS file
+# Use cases: Paragraph-based page builders, modular content systems
+update_on_paragraph_save: false
+
+# =============================================================================
+# DEVELOPER TOOLS
+# =============================================================================
+# Development and debugging features that assist with implementation,
+# troubleshooting, and optimization. These tools should generally be
+# disabled in production environments for security and performance.
+
+# Developer mode activation - comprehensive debugging features
+# Enables enhanced logging, validation, and development tools
+# Security note: Disable in production to prevent information disclosure
+dev_mode: false
+
+# Visual debugging mode for utility class validation
+# Shows visual outlines and indicators for UtiliKit elements
+# Useful for: Theme development, debugging class application issues
+# Performance impact: Minimal, but may affect layout in rare cases
+admin_preview: false
+
+# Display validation errors as Drupal messages on pages
+# Shows CSS generation and validation errors to end users
+# Security warning: Only enable in development - errors may reveal system information
+show_page_errors: false
+
+# Console logging verbosity level for browser developer tools
+# 'off': No console output (production recommended)
+# 'warnings': Errors and warnings only (development default)
+# 'detailed': Comprehensive debug information (troubleshooting)
+log_level: warnings
+
+# =============================================================================
+# ADVANCED PERFORMANCE SETTINGS
+# =============================================================================
+# Fine-tuning options for high-traffic sites and performance optimization.
+# These settings control resource usage, rate limiting, and processing limits
+# to maintain optimal performance under various load conditions.
+
+# Content scanning batch size for bulk operations
+# Controls memory usage and processing time for large content sets
+# Lower values: More responsive progress, longer total time
+# Higher values: Faster completion, higher memory usage
+# Recommended range: 25-100 for most sites
+batch_size: 50
+
+# Maximum utility classes processed per AJAX request
+# Rate limiting to prevent abuse and server overload
+# Protects against: Malicious requests, accidental bulk operations
+# Recommended: 5000 for balanced performance and protection
+max_classes_per_request: 5000
+
+# AJAX request rate limiting per minute per IP address
+# Prevents abuse of real-time CSS update endpoints
+# Balances: Legitimate development workflow vs. abuse prevention
+# High-traffic development: Consider increasing to 120-180
+rate_limit_requests: 60
+
+# CSS cache time-to-live in seconds
+# Controls how long generated CSS is cached before regeneration
+# Lower values: More responsive to changes, higher server load
+# Higher values: Better performance, slower change propagation
+# Production recommended: 3600-7200 (1-2 hours)
+css_cache_ttl: 3600
+
+# =============================================================================
+# FILE MANAGEMENT
+# =============================================================================
+# Configuration for CSS file generation, storage, and delivery in static mode.
+# These settings determine where and how CSS files are created and served.
+
+# CSS output directory path within the files directory
+# Must be writable by the web server for static mode operation
+# Recommended: Keep default unless specific infrastructure requirements
+css_directory: 'public://css/utilikit'
+
+# CSS output filename for generated stylesheets
+# The actual served filename includes cache-busting parameters
+# Example final filename: 'generated.css?v=a1b2c3d4&t=1609459200'
+css_filename: 'generated.css'
+
+# =============================================================================
+# LEGACY/MIGRATION SUPPORT
+# =============================================================================
+# Compatibility settings for upgrading from older UtiliKit versions
+# and maintaining backwards compatibility during transition periods.
+
+# Legacy compatibility mode for older implementations
+# Enables backwards compatibility features and alternative processing modes
+# Only enable if migrating from UtiliKit v0.x or experiencing compatibility issues
+legacy_mode: false
+
+# Migration completion status indicator
+# Tracks successful migration to current architecture and APIs
+# Automatically set to true for new installations
+migration_complete: true
+
+# =============================================================================
+# EXPERIMENTAL FEATURES (Use with caution in production)
+# =============================================================================
+# Beta and experimental functionality that may be unstable, have performance
+# implications, or require additional testing before production deployment.
+# All experimental features are disabled by default for stability.
+
+experimental_features:
+  # Automatic grid template generation for complex layouts
+  # Status: EXPERIMENTAL - May impact performance with large grids
+  # Use cases: Dynamic grid layouts, dashboard interfaces
+  # Testing recommended: Validate performance with expected content volume
+  grid_auto_generation: false
+
+  # Support for advanced CSS selectors and pseudo-classes
+  # Status: EXPERIMENTAL - Complex selectors may affect generation performance
+  # Use cases: Enhanced styling capabilities, component state management
+  # Compatibility note: May require modern browser support
+  advanced_selectors: false
+
+  # CSS custom properties (variables) generation
+  # Status: EXPERIMENTAL - Browser compatibility and performance considerations
+  # Use cases: Dynamic theming, runtime style modifications
+  # Requirements: Modern browser support for CSS custom properties
+  css_variables: false
+
+  # Media query optimization and consolidation
+  # Status: EXPERIMENTAL - Complex optimization that may affect CSS output
+  # Use cases: Large sites with extensive responsive utility usage
+  # Testing required: Validate CSS output and responsive behavior
+  media_query_optimization: false
+
+# =============================================================================
+# SECURITY SETTINGS (Internal - Do not modify)
+# =============================================================================
+# These settings are managed internally by the module for security purposes.
+# Modifying these values may compromise security or functionality.
+#
+# Internal security controls include:
+# - CSRF token rotation for AJAX endpoints
+# - Input validation and sanitization
+# - Content scanning depth limits to prevent infinite recursion
+# - Rate limiting enforcement and IP-based restrictions
+#
+# security_token_rotation: 86400     # 24-hour token rotation
+# csrf_validation_strict: true       # Strict CSRF validation
+# content_scanning_depth_limit: 10   # Maximum DOM traversal depth
+
+# =============================================================================
+# CONFIGURATION MANAGEMENT NOTES
+# =============================================================================
+#
+# Development Workflow:
+# 1. Start with default settings for immediate functionality
+# 2. Enable 'dev_mode' and adjust 'log_level' for development
+# 3. Configure scope settings based on site architecture
+# 4. Enable auto-update triggers for dynamic content workflows
+# 5. Test experimental features in staging before production
+#
+# Production Deployment:
+# 1. Disable all developer tools ('dev_mode', 'admin_preview', 'show_page_errors')
+# 2. Set 'log_level' to 'off' or 'warnings'
+# 3. Enable 'optimize_css' for better performance
+# 4. Consider 'static' rendering mode for high-traffic sites
+# 5. Configure appropriate cache TTL based on content update frequency
+#
+# Performance Optimization:
+# 1. Disable unused responsive breakpoints to reduce CSS size
+# 2. Adjust batch sizes based on server capacity and content volume
+# 3. Monitor rate limiting effectiveness and adjust as needed
+# 4. Consider scope limitations for sites with mixed UtiliKit usage
+# 5. Enable CSS optimization and appropriate cache durations
+#
+# Security Best Practices:
+# 1. Never enable developer tools in production environments
+# 2. Monitor rate limiting logs for potential abuse patterns
+# 3. Keep experimental features disabled unless thoroughly tested
+# 4. Regularly review and update configuration based on usage patterns
+# 5. Validate file permissions for CSS directory in static mode

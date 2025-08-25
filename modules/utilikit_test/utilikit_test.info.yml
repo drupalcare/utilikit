@@ -1,0 +1,7 @@
+name: 'UtiliKit Test Suite'
+type: module
+description: 'Automated test suite for UtiliKit utility classes'
+package: UtiliKit
+core_version_requirement: ^10 || ^11
+dependencies:
+  - utilikit:utilikit

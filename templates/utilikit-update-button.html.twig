@@ -1,0 +1,149 @@
+{#
+/**
+ * @file
+ * UtiliKit Update Button Template.
+ *
+ * This template renders the interactive update button that allows users to
+ * manually trigger CSS regeneration when using UtiliKit in static mode.
+ * The button provides real-time feedback during the update process and
+ * includes accessibility features for screen readers.
+ *
+ * Template Structure:
+ * - Main container with unique ID for JavaScript targeting
+ * - SVG refresh icon with proper dimensions and fill color
+ * - Translatable text label for internationalization support
+ * - Semantic HTML structure for accessibility compliance
+ *
+ * Usage Context:
+ * - Rendered server-side with permission checks
+ * - Only displayed when user has 'administer utilikit' permission
+ * - Fetched via AJAX by utilikit.update-button.js behavior
+ * - Styled via utilikit.update-button.css for visual presentation
+ *
+ * JavaScript Integration:
+ * - Button ID used for event listener attachment
+ * - CSS classes used for state management (updating, success, error)
+ * - Text span updated during operation progress
+ * - Icon replaced with spinner or status indicators
+ *
+ * Accessibility Features:
+ * - Semantic button structure for screen readers
+ * - Translatable text for multilingual support
+ * - SVG icon with proper dimensions for scaling
+ * - Color contrast compliance for visibility
+ *
+ * @see utilikit.update-button.js for JavaScript functionality
+ * @see utilikit.update-button.css for styling definitions
+ * @see UtilikitAjaxController::renderButton() for server-side rendering
+ */
+#}
+
+{#
+/**
+ * Main Update Button Container
+ *
+ * The outer div serves as the primary container for the update button
+ * component. The ID is critical for JavaScript functionality and must
+ * remain consistent across the system.
+ *
+ * Attributes:
+ * - id: Unique identifier used by JavaScript for event binding
+ * - Styled via CSS to appear as a clickable button element
+ * - Positioned as a floating action button in the page layout
+ */
+#}
+<div id="utilikit-update-button">
+  {#
+  /**
+   * Update Button Icon Container
+   *
+   * Contains the SVG refresh icon that provides visual feedback about
+   * the button's function. The icon is replaced dynamically during
+   * different states of the update process.
+   *
+   * Icon States:
+   * - Default: Refresh arrow SVG (indicates update action)
+   * - Loading: Spinner animation (indicates processing)
+   * - Success: Checkmark (indicates successful completion)
+   * - Error: Original icon restored (ready for retry)
+   *
+   * SVG Properties:
+   * - xmlns: SVG namespace declaration for browser compatibility
+   * - height/width: 24px dimensions for consistent sizing
+   * - viewBox: Coordinate system for scalable vector graphics
+   * - fill: Light gray color (#D9D9D9) for subtle appearance
+   * - path: Vector path data defining the refresh arrow shape
+   */
+  #}
+  <span class="utilikit-update-arrow">
+    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#D9D9D9">
+      <path d="M480-120q-75 0-140.5-28.5t-114-77q-48.5-48.5-77-114T120-480q0-75 28.5-140.5t77-114q48.5-48.5 114-77T480-840q82 0 155.5 35T760-706v-94h80v240H600v-80h110q-41-56-101-88t-129-32q-117 0-198.5 81.5T200-480q0 117 81.5 198.5T480-200q105 0 183.5-68T756-440h82q-15 137-117.5 228.5T480-120Zm112-192L440-464v-216h80v184l128 128-56 56Z"/>
+    </svg>
+  </span>
+
+  {#
+  /**
+   * Update Button Text Label
+   *
+   * Provides the human-readable label for the update button with
+   * internationalization support. The text is updated dynamically
+   * during different phases of the update operation.
+   *
+   * Text States:
+   * - Default: "Update UtiliKit" (ready for user interaction)
+   * - Loading: "Updating..." (operation in progress)
+   * - Retry: "Waiting... (1/3)" (showing retry attempt progress)
+   * - Success: "Updated!" (operation completed successfully)
+   * - Reset: Returns to default text after success timeout
+   *
+   * Internationalization:
+   * - Uses Drupal's translation system ('Update UtiliKit'|t)
+   * - Supports all languages configured in the Drupal site
+   * - Text content accessible to screen readers
+   * - Maintains semantic meaning across translations
+   */
+  #}
+  <span class="utilikit-update-text">{{ 'Update UtiliKit'|t }}</span>
+</div>
+
+{#
+/**
+ * Template Usage and Integration Notes:
+ *
+ * Server-Side Rendering:
+ * - Template rendered by UtilikitAjaxController::renderButton()
+ * - Permission check performed before template rendering
+ * - Only users with 'administer utilikit' permission see button
+ * - Empty response returned for unauthorized users
+ *
+ * AJAX Integration:
+ * - Template fetched via AJAX from /utilikit/render-button endpoint
+ * - Response cached client-side to prevent duplicate requests
+ * - Button inserted into DOM only when UtiliKit elements present
+ * - Automatic cleanup prevents multiple button instances
+ *
+ * JavaScript State Management:
+ * - Button element located by ID for event listener attachment
+ * - CSS classes added/removed to indicate different states
+ * - Text content updated to show operation progress
+ * - Icon HTML replaced with status indicators during updates
+ *
+ * CSS Styling Integration:
+ * - Button styled as floating action button via CSS
+ * - Hover effects and transitions defined in stylesheet
+ * - State-specific styling (updating, success, error) via CSS classes
+ * - Responsive design ensures button works on all screen sizes
+ *
+ * Accessibility Considerations:
+ * - Semantic HTML structure supports screen readers
+ * - Text content provides clear action description
+ * - Visual feedback complemented by text status updates
+ * - Color contrast meets WCAG accessibility guidelines
+ *
+ * Security Considerations:
+ * - Server-side permission validation prevents unauthorized access
+ * - Template contains no user-generated content
+ * - Static SVG content safe from XSS attacks
+ * - Button functionality requires valid CSRF tokens
+ */
+#}

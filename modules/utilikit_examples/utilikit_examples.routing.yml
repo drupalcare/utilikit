@@ -1,0 +1,7 @@
+utilikit_examples.page:
+  path: '/utilikit/examples'
+  defaults:
+    _controller: '\Drupal\utilikit_examples\Controller\ExamplesController::render'
+    _title: 'UtiliKit Examples'
+  requirements:
+    _permission: 'access utilikit examples'

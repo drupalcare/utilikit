@@ -1,0 +1,110 @@
+# UtiliKit Module Definition
+#
+# This file defines the UtiliKit module for Drupal's module system,
+# providing essential metadata for installation, dependency management,
+# and integration with Drupal's administrative interfaces.
+#
+# UtiliKit is a comprehensive utility-first CSS framework that brings
+# modern CSS development workflows to Drupal, offering dynamic CSS
+# generation, multiple rendering modes, and extensive customization
+# options for developers and site builders.
+
+# =============================================================================
+# BASIC MODULE INFORMATION
+# =============================================================================
+
+# Module display name shown in administrative interfaces
+# Clear, recognizable name that distinguishes it from other CSS frameworks
+name: 'UtiliKit'
+
+# Module type classification for Drupal's system
+# Defines this as a standard module (not theme, profile, or engine)
+type: module
+
+# Brief description for module listing and administrative interfaces
+# Concise explanation of the module's core purpose and functionality
+description: 'A utility-first CSS framework for Drupal'
+
+# =============================================================================
+# PACKAGING AND ORGANIZATION
+# =============================================================================
+
+# Package grouping for administrative organization
+# Groups related UtiliKit modules together in the module listing
+# Supports potential sub-modules and extensions (utilikit_test, utilikit_examples, etc.)
+package: UtiliKit
+
+# =============================================================================
+# COMPATIBILITY AND REQUIREMENTS
+# =============================================================================
+
+# Drupal core version compatibility
+# Supports both Drupal 10 and 11 for broad compatibility
+# Uses modern dependency injection and service architecture
+# Leverages current Drupal APIs for optimal performance and security
+core_version_requirement: ^10 || ^11
+
+# =============================================================================
+# CONFIGURATION AND INTEGRATION
+# =============================================================================
+
+# Primary configuration route for module settings
+# Links to the main UtiliKit settings form for administrative access
+# Enables "Configure" link in module listing for easy access
+configure: utilikit.settings
+
+# =============================================================================
+# MODULE FEATURES AND CAPABILITIES
+# =============================================================================
+#
+# Core Features:
+# - Dynamic utility-first CSS generation with 100+ built-in utility patterns
+# - Dual rendering modes: inline (real-time) and static (pre-generated)
+# - Responsive breakpoint system with mobile-first approach
+# - Automatic content scanning for utility class discovery
+# - Comprehensive caching system for optimal performance
+# - Entity-based auto-updates for real-time CSS synchronization
+# - Administrative interface with detailed configuration options
+# - Development tools including debugging, logging, and performance monitoring
+#
+# Rendering Modes:
+# - Inline Mode: Client-side CSS generation for development and content editing
+# - Static Mode: Server-side pre-generation for production performance
+# - Automatic fallback and mode switching capabilities
+# - Lock-based concurrent update protection
+#
+# Developer Experience:
+# - Comprehensive utility class reference with interactive browser
+# - Copy-to-clipboard functionality for efficient development workflow
+# - Live examples with responsive breakpoint demonstrations
+# - Integration with Drupal's theme system and render pipeline
+# - Extensive hooks and APIs for custom extensions
+# - Test module support for validation and development
+#
+# Performance Optimization:
+# - Intelligent caching with cache tag invalidation
+# - Minimal JavaScript payload in static mode
+# - Rate limiting for AJAX operations
+# - Queue-based processing for heavy operations
+# - CSS minification and optimization
+#
+# Security Features:
+# - Input validation and sanitization throughout
+# - Permission-based access control for all functionality
+# - CSRF protection for AJAX endpoints
+# - Content Security Policy compliance
+# - Secure file handling with proper permissions
+#
+# Administrative Features:
+# - Intuitive settings form with organized sections
+# - Real-time status monitoring and statistics
+# - Bulk operations for content scanning and CSS regeneration
+# - Development mode with enhanced debugging and logging
+# - Manual update interfaces for fine-grained control
+#
+# Integration Points:
+# - Entity system integration for automatic content scanning
+# - Theme system integration for seamless CSS delivery
+# - Menu system integration for administrative navigation
+# - Permission system integration for access control
+# - Logging system integration for monitoring and debugging

@@ -1,0 +1,9 @@
+utilikit_help.documentation:
+  path: '/utilikit/help'
+  defaults:
+    _controller: '\Drupal\utilikit_help\Controller\UtilikitHelpController::helpPage'
+    _title: 'UtiliKit Help & Documentation'
+  requirements:
+    _permission: 'access utilikit documentation'
+  options:
+    _admin_route: FALSE

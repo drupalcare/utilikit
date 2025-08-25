@@ -1,0 +1,11 @@
+test.suite:
+  css:
+    theme:
+      css/utilikit.test-suite.css: {}
+  js:
+    js/utilikit.test-suite-comprehensive.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/once
+    - utilikit/utilikit.engine

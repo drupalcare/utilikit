@@ -1,0 +1,4 @@
+use utilikit playground:
+  title: 'Use UtiliKit playground'
+  description: 'Access the interactive UtiliKit playground tool (requires admin theme).'
+  restrict access: true

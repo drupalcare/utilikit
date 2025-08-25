@@ -1,0 +1,125 @@
+{
+  "name": "drupal/utilikit",
+  "type": "drupal-module",
+  "description": "A comprehensive utility-first CSS framework for Drupal providing dynamic CSS generation, responsive design utilities, and performance-optimized rendering modes for modern web development workflows.",
+  "version": "1.0.0",
+  "keywords": [
+    "Drupal",
+    "CSS",
+    "Utility Classes",
+    "Framework",
+    "Responsive Design",
+    "Performance",
+    "CSS-in-JS",
+    "Utility-First",
+    "Dynamic CSS",
+    "Frontend",
+    "Theme Development",
+    "Design System",
+    "Component Library",
+    "Web Development"
+  ],
+  "license": "GPL-2.0-or-later",
+  "homepage": "https://www.drupal.org/project/utilikit",
+  "repository": {
+    "type": "git",
+    "url": "https://git.drupalcode.org/project/utilikit.git"
+  },
+  "bugs": {
+    "url": "https://www.drupal.org/project/issues/utilikit",
+    "email": "info@alaahaddad.com"
+  },
+  "authors": [
+    {
+      "name": "Alaa Haddad",
+      "email": "info@alaahaddad.com",
+      "homepage": "https://www.alaahaddad.com",
+      "role": "Maintainer"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Alaa Haddad",
+      "email": "info@alaahaddad.com",
+      "homepage": "https://www.alaahaddad.com"
+    }
+  ],
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/utilikit",
+    "source": "https://git.drupalcode.org/project/utilikit",
+    "docs": "https://www.drupal.org/project/utilikit",
+    "forum": "https://www.drupal.org/project/issues/utilikit"
+  },
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://www.alaahaddad.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.1",
+    "drupal/core": "^10 || ^11"
+  },
+  "require-dev": {
+    "drupal/core-dev": "^10 || ^11",
+    "phpunit/phpunit": "^9.5 || ^10",
+    "drupal/drupal-extension": "^4.0 || ^5.0"
+  },
+  "suggest": {
+    "drupal/devel": "For enhanced debugging and development tools integration",
+    "drupal/stage_file_proxy": "For development environments with production file references"
+  },
+  "autoload": {
+    "psr-4": {
+      "Drupal\\utilikit\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Drupal\\Tests\\utilikit\\": "tests/src/"
+    }
+  },
+  "config": {
+    "sort-packages": true,
+    "allow-plugins": {
+      "composer/installers": true,
+      "drupal/core-composer-scaffold": true,
+      "drupal/core-project-message": true
+    }
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "extra": {
+    "drupal": {
+      "version": "10.x-1.x-dev",
+      "datestamp": "1704067200",
+      "security-coverage": {
+        "status": "covered",
+        "message": "Covered by Drupal's security advisory policy"
+      }
+    },
+    "installer-name": "utilikit",
+    "installer-paths": {
+      "modules/contrib/{$name}": [
+        "type:drupal-module"
+      ]
+    },
+    "branch-alias": {
+      "dev-1.x": "1.x-dev"
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "test-coverage": "phpunit --coverage-html coverage",
+    "lint": "phpcs --standard=Drupal,DrupalPractice",
+    "lint-fix": "phpcbf --standard=Drupal,DrupalPractice",
+    "analyze": "phpstan analyze"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "jest-environment-jsdom": "^30.0.5"
+  }
+}

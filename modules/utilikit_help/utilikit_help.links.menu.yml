@@ -1,0 +1,5 @@
+utilikit_help.documentation:
+  title: 'Documentation'
+  route_name: utilikit_help.documentation
+  parent: utilikit.admin
+  weight: 20

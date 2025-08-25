@@ -1,0 +1,14 @@
+playground:
+  css:
+    theme:
+      css/utilikit.admin-preview.css: {}
+      css/utilikit.playground-enhanced.css: {}
+  js:
+    js/utilikit.admin-preview.js: {}
+    js/utilikit.playground-enhanced.js: {}
+    js/utilikit.playground-autocomplete.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
+    - core/drupalSettings
+    - utilikit/utilikit.engine

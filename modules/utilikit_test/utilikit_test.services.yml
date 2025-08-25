@@ -1,0 +1,3 @@
+services:
+  utilikit_test.test_generator:
+    class: Drupal\utilikit_test\Service\TestGenerator

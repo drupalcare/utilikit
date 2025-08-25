@@ -1,0 +1,7 @@
+name: 'UtiliKit Playground'
+type: module
+description: 'Interactive playground to test UtiliKit utility classes'
+package: UtiliKit
+core_version_requirement: ^10 || ^11
+dependencies:
+  - utilikit:utilikit

@@ -1,0 +1,293 @@
+<?php
+
+/**
+ * @file
+ * Installation, update, and uninstall functions for the UtiliKit module.
+ *
+ * This file handles the complete lifecycle of the UtiliKit module including:
+ * - Initial installation with optimal default configurations
+ * - File system setup and directory creation
+ * - Permission assignment for administrative roles
+ * - Complete cleanup during uninstallation
+ * - Runtime requirements validation and monitoring
+ * - Performance optimization recommendations.
+ *
+ * The installation process establishes a production-ready configuration
+ * with security-focused defaults, while the uninstallation process ensures
+ * complete removal of all module data, files, and configuration.
+ */
+
+use Drupal\Core\File\FileSystemInterface;
+use Drupal\Core\Url;
+use Drupal\utilikit\Service\UtilikitConstants;
+
+/**
+ * Implements hook_install().
+ *
+ * Performs initial setup and configuration for the UtiliKit module including:
+ * - Creates necessary file system directories with proper permissions
+ * - Establishes comprehensive default configuration optimized for production
+ * - Sets up security-focused defaults for rendering modes and scope
+ * - Configures performance settings for optimal operation
+ * - Assigns essential permissions to administrator role
+ * - Provides user feedback and guidance for next steps.
+ *
+ * The default configuration prioritizes security and performance with
+ * inline rendering mode, global scope disabled on admin routes, and
+ * conservative settings for rate limiting and batch processing.
+ */
+function utilikit_install() {
+  // Create CSS directory using constants.
+  $directory = UtilikitConstants::CSS_DIRECTORY;
+  $file_system = \Drupal::service('file_system');
+
+  if (!$file_system->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)) {
+    \Drupal::messenger()->addWarning(t('Could not create UtiliKit CSS directory. Please check file permissions.'));
+  }
+
+  // Set comprehensive default configuration.
+  $config = \Drupal::configFactory()->getEditable('utilikit.settings');
+
+  // Core settings - prioritize security and stability.
+  // Safe default for initial setup.
+  $config->set('rendering_mode', 'inline');
+  // Enable globally for immediate functionality.
+  $config->set('scope_global', TRUE);
+  // Allow admin route usage for configuration.
+  $config->set('disable_admin', FALSE);
+  // Global scope by default.
+  $config->set('scope_content_types', FALSE);
+  // Empty until user configures.
+  $config->set('enabled_content_types', []);
+
+  // Performance settings - balanced for development and production.
+  // Enhanced UX with CSS transitions.
+  $config->set('enable_transitions', TRUE);
+  // Responsive debouncing for performance.
+  $config->set('debounce', 50);
+  // Enable CSS optimization by default.
+  $config->set('optimize_css', TRUE);
+  // Standard responsive breakpoints.
+  $config->set('active_breakpoints', UtilikitConstants::DEFAULT_BREAKPOINTS);
+
+  // Developer settings - conservative defaults for production safety.
+  // Production-safe default.
+  $config->set('dev_mode', FALSE);
+  // Disable preview until configured.
+  $config->set('admin_preview', FALSE);
+  // Hide errors from end users.
+  $config->set('show_page_errors', FALSE);
+  // Balanced logging for monitoring.
+  $config->set('log_level', 'warnings');
+
+  // Update triggers - disabled by default to prevent unexpected behavior.
+  // Manual control initially.
+  $config->set('update_on_node_save', FALSE);
+  // Manual control initially.
+  $config->set('update_on_block_save', FALSE);
+  // Manual control initially.
+  $config->set('update_on_paragraph_save', FALSE);
+
+  // Advanced settings - performance and security focused defaults.
+  // Optimal batch processing.
+  $config->set('batch_size', UtilikitConstants::BATCH_SIZE_DEFAULT);
+  // Rate limiting protection.
+  $config->set('max_classes_per_request', UtilikitConstants::MAX_CLASSES_PER_REQUEST);
+  // AJAX protection.
+  $config->set('rate_limit_requests', UtilikitConstants::RATE_LIMIT_REQUESTS_PER_MINUTE);
+  // 1-hour cache TTL for balance
+  $config->set('css_cache_ttl', 3600);
+
+  // File management - using centralized constants for consistency.
+  $config->set('css_directory', UtilikitConstants::CSS_DIRECTORY);
+  $config->set('css_filename', UtilikitConstants::CSS_FILENAME);
+
+  // Migration flags - indicate fresh installation.
+  $config->set('legacy_mode', FALSE);
+  $config->set('migration_complete', TRUE);
+
+  // Experimental features (all disabled by default for stability).
+  $config->set('experimental_features', [
+  // Requires additional testing.
+    'grid_auto_generation' => FALSE,
+  // May impact performance.
+    'advanced_selectors' => FALSE,
+  // Browser compatibility considerations.
+    'css_variables' => FALSE,
+  // Complex optimization feature.
+    'media_query_optimization' => FALSE,
+  ]);
+
+  $config->save();
+
+  \Drupal::messenger()->addStatus(t('UtiliKit has been installed with optimal defaults. Visit the <a href="@url">settings page</a> to configure it.', [
+    '@url' => Url::fromRoute('utilikit.settings')->toString(),
+  ]));
+
+  // Grant essential permissions to administrator role.
+  $admin_role = \Drupal::entityTypeManager()->getStorage('user_role')->load('administrator');
+  if ($admin_role) {
+    $admin_role->grantPermission('administer utilikit');
+    $admin_role->grantPermission('use utilikit playground');
+    $admin_role->grantPermission('run utilikit tests');
+    $admin_role->save();
+  }
+
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Performs complete cleanup and removal of all UtiliKit module data including:
+ * - Deletes all configuration settings and stored preferences
+ * - Removes all state data including generated CSS and known classes
+ * - Cleans up rate limiting data from the database
+ * - Invalidates all related cache tags for immediate effect
+ * - Removes all CSS files and directories from the file system
+ * - Attempts cleanup of empty parent directories
+ * - Provides comprehensive error handling and logging.
+ *
+ * The uninstall process follows a specific order to prevent race conditions
+ * and ensure complete cleanup even if individual steps fail. All operations
+ * are logged for troubleshooting and verification.
+ */
+function utilikit_uninstall() {
+  // Step 1: Delete configuration FIRST to prevent any file recreation.
+  \Drupal::configFactory()->getEditable('utilikit.settings')->delete();
+
+  // Step 2: Clear state variables using constants.
+  $state = \Drupal::state();
+  $state->deleteMultiple([
+    UtilikitConstants::STATE_GENERATED_CSS,
+    UtilikitConstants::STATE_KNOWN_CLASSES,
+    UtilikitConstants::STATE_LAST_CLEANUP,
+    UtilikitConstants::STATE_CSS_TIMESTAMP,
+    'utilikit.initialized',
+  ]);
+
+  // Step 3: Remove rate limit keys from database.
+  $connection = \Drupal::database();
+  try {
+    $connection->delete('key_value')
+      ->condition('name', 'utilikit_rate_limit:%', 'LIKE')
+      ->condition('collection', 'state')
+      ->execute();
+  }
+  catch (\Exception $e) {
+    // Database might not be available during uninstall.
+  }
+
+  // Step 4: Invalidate cache tags using constants.
+  \Drupal::service('cache_tags.invalidator')->invalidateTags([
+    UtilikitConstants::CACHE_TAG_CONFIG,
+    UtilikitConstants::CACHE_TAG_CSS,
+    UtilikitConstants::CACHE_TAG_INLINE_MODE,
+    UtilikitConstants::CACHE_TAG_STATIC_MODE,
+  ]);
+
+  // Step 5: Delete CSS files and directories using constants.
+  $file_system = \Drupal::service('file_system');
+
+  try {
+    $utilikit_directory = UtilikitConstants::CSS_DIRECTORY;
+    if (is_dir($file_system->realpath($utilikit_directory))) {
+      $file_system->deleteRecursive($utilikit_directory);
+    }
+
+    // Try to remove parent css directory if empty.
+    $parent_directory = 'public://css';
+    $parent_real = $file_system->realpath($parent_directory);
+    if (is_dir($parent_real)) {
+      $files = @scandir($parent_real);
+      if (is_array($files) && count($files) <= 2) {
+        @rmdir($parent_real);
+      }
+    }
+  }
+  catch (\Exception $e) {
+    \Drupal::logger('utilikit')->error('Failed to delete CSS files during uninstall: @error', [
+      '@error' => $e->getMessage(),
+    ]);
+  }
+
+  \Drupal::logger('utilikit')->notice('UtiliKit uninstalled and all files cleaned up.');
+}
+
+/**
+ * Implements hook_requirements().
+ *
+ * Validates system requirements and configuration for UtiliKit at runtime.
+ * Checks include file permissions, static-mode configuration, performance
+ * recommendations, and security-related configuration.
+ *
+ * @see hook_requirements()
+ */
+function utilikit_requirements($phase) {
+  $requirements = [];
+
+  if ($phase == 'runtime') {
+    $file_system = \Drupal::service('file_system');
+    $directory = UtilikitConstants::CSS_DIRECTORY;
+
+    // Check CSS directory existence and permissions.
+    $requirements['utilikit_directory'] = [
+      'title' => t('UtiliKit CSS directory'),
+      'value' => t('Exists and writable'),
+      'severity' => REQUIREMENT_OK,
+    ];
+
+    $real_path = $file_system->realpath($directory);
+    if (!$real_path || !is_dir($real_path)) {
+      $requirements['utilikit_directory']['value'] = t('Directory does not exist');
+      $requirements['utilikit_directory']['severity'] = REQUIREMENT_ERROR;
+      $requirements['utilikit_directory']['description'] = t('The UtiliKit CSS directory at %path does not exist. Please create it and ensure it is writable.', [
+        '%path' => $directory,
+      ]);
+    }
+    elseif (!is_writable($real_path)) {
+      $requirements['utilikit_directory']['value'] = t('Not writable');
+      $requirements['utilikit_directory']['severity'] = REQUIREMENT_ERROR;
+      $requirements['utilikit_directory']['description'] = t('The UtiliKit CSS directory at %path is not writable.', [
+        '%path' => $directory,
+      ]);
+    }
+
+    // Check if static mode is enabled and validate CSS file existence.
+    $config = \Drupal::config('utilikit.settings');
+    if ($config->get('rendering_mode') === 'static') {
+      $css_file = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
+      if (!file_exists($css_file)) {
+        $requirements['utilikit_static_css'] = [
+          'title' => t('UtiliKit static CSS'),
+          'value' => t('File missing'),
+          'severity' => REQUIREMENT_WARNING,
+          'description' => t('Static mode is enabled but the CSS file does not exist. Visit the <a href="@url">settings page</a> to generate it.', [
+            '@url' => Url::fromRoute('utilikit.settings')->toString(),
+          ]),
+        ];
+      }
+    }
+
+    // Validate overall configuration status.
+    $requirements['utilikit_config'] = [
+      'title' => t('UtiliKit configuration'),
+      'value' => t('Optimal'),
+      'severity' => REQUIREMENT_OK,
+    ];
+
+    // Monitor performance and provide optimization recommendations.
+    $knownClasses = \Drupal::state()->get(UtilikitConstants::STATE_KNOWN_CLASSES, []);
+    if (count($knownClasses) > UtilikitConstants::MAX_CLASSES_WARNING_THRESHOLD) {
+      $requirements['utilikit_performance'] = [
+        'title' => t('UtiliKit performance'),
+        'value' => t('Large number of classes detected'),
+        'severity' => REQUIREMENT_WARNING,
+        'description' => t('You have @count utility classes tracked. Consider cleaning up unused classes for optimal performance.', [
+          '@count' => count($knownClasses),
+        ]),
+      ];
+    }
+  }
+
+  return $requirements;
+}

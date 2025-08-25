@@ -1,0 +1,176 @@
+# UtiliKit Service Definitions
+#
+# This file defines the complete service architecture for the UtiliKit module,
+# including core services for CSS generation, content scanning, state management,
+# file operations, caching, and AJAX functionality.
+#
+# Service Architecture Overview:
+# - Core Services: Constants, rules, state management, content scanning
+# - CSS Pipeline: Generation, file management, caching
+# - Content Processing: Entity scanning, class validation
+# - User Interface: AJAX controllers, admin forms
+# - Testing: Test CSS generation and validation
+# - Infrastructure: Logging, caching, performance optimization
+
+services:
+
+  # =============================================================================
+  # CORE FOUNDATION SERVICES
+  # =============================================================================
+
+  # Constants and configuration service
+  # Provides centralized access to module constants, defaults, and static values
+  utilikit.constants:
+    class: Drupal\utilikit\Service\UtilikitConstants
+
+  # CSS rules service
+  # Defines and manages utility class patterns, CSS property mappings,
+  # responsive breakpoints, and validation rules for utility class generation
+  utilikit.rules:
+    class: Drupal\utilikit\Service\UtilikitRules
+
+  # State management service
+  # Handles persistent storage of known utility classes, generated CSS,
+  # timestamps, rate limiting data, and cleanup operations using Drupal's State API
+  utilikit.state_manager:
+    class: Drupal\utilikit\Service\UtilikitStateManager
+    arguments: ['@state']
+
+  # =============================================================================
+  # CONTENT PROCESSING SERVICES
+  # =============================================================================
+
+  # Content scanner service
+  # Scans entities and content for utility classes, validates class names,
+  # and provides batch processing for large content sets
+  utilikit.content_scanner:
+    class: Drupal\utilikit\Service\UtilikitContentScanner
+    arguments:
+      - '@entity_type.manager'  # For entity loading and type management
+      - '@logger.channel.utilikit'  # For logging scan operations and errors
+      - '@utilikit.rules'  # For utility class validation
+
+  # =============================================================================
+  # CSS GENERATION PIPELINE
+  # =============================================================================
+
+  # CSS generator service
+  # Core service that converts utility class names into CSS rules,
+  # handles responsive variants, manages CSS compilation and optimization
+  utilikit.css_generator:
+    class: Drupal\utilikit\Service\UtilikitCssGenerator
+    arguments:
+      - '@config.factory'  # For module configuration access
+      - '@cache.default'  # For CSS caching and performance
+      - '@utilikit.content_scanner'  # For class validation integration
+      - '@logger.channel.utilikit'  # For logging CSS generation operations
+
+  # File manager service
+  # Manages static CSS file operations including creation, updates, cleanup,
+  # URL generation, and file system permissions for static rendering mode
+  utilikit.file_manager:
+    class: Drupal\utilikit\Service\UtilikitFileManager
+    arguments:
+      - '@utilikit.state_manager'      # For CSS content and timestamp management
+      - '@file_system'                 # For file system operations
+      - '@file_url_generator'          # For generating accessible file URLs
+      - '@config.factory'              # For configuration access
+      - '@asset.css.optimizer'         # For CSS optimization
+      - '@logger.channel.utilikit'     # For file operation logging
+  # Cache manager service
+  # Comprehensive caching system that handles render cache, page cache,
+  # CSS optimization, theme registry, and cache tag invalidation
+  utilikit.cache_manager:
+    class: Drupal\utilikit\Service\UtiliKitCacheManager
+    arguments:
+      - '@cache.render'  # For render cache invalidation
+      - '@cache_tags.invalidator'  # For targeted cache tag invalidation
+      - '@state'  # For cache-related state management
+      - '@theme.registry'  # For theme system cache clearing
+      - '@asset.css.collection_optimizer'  # For CSS asset optimization
+      - '@asset.js.collection_optimizer'  # For JS asset optimization
+      - '@?cache.page'  # Optional: Page cache (if available)
+      - '@?cache.dynamic_page_cache'  # Optional: Dynamic page cache (if available)
+
+  # =============================================================================
+  # MAIN ORCHESTRATION SERVICES
+  # =============================================================================
+
+  # Main service provider for coordinated UtiliKit operations
+  # Facade that orchestrates CSS generation, file management, and caching
+  utilikit.service_provider:
+    class: Drupal\utilikit\Service\UtiliKitServiceProvider
+    arguments:
+      - '@utilikit.css_generator'        # For CSS generation operations
+      - '@utilikit.file_manager'         # For static file operations
+      - '@utilikit.content_scanner'      # For utility class discovery
+      - '@utilikit.state_manager'        # For persistent data management
+      - '@utilikit.cache_manager'        # For cache operations
+      - '@logger.channel.utilikit'       # For logging operations and errors
+      - '@?utilikit.test_css_generator'  # Optional: Test CSS generator (if available)
+
+  # General utility service
+  # Provides common utility functions and configuration access for
+  # other services and components throughout the module
+  utilikit.service:
+    class: Drupal\utilikit\Service\UtilikitService
+    arguments: ['@config.factory']
+
+  # =============================================================================
+  # USER INTERFACE CONTROLLERS
+  # =============================================================================
+
+  # AJAX controller service
+  # Handles AJAX requests for real-time CSS updates, provides lock management
+  # for concurrent operations, and manages queue processing for deferred tasks
+  utilikit.ajax_controller:
+    class: Drupal\utilikit\Controller\UtilikitAjaxController
+    arguments:
+      - '@utilikit.service_provider'  # For main service coordination
+      - '@lock'                       # For concurrent operation protection
+      - '@queue'                      # For deferred task processing
+      - '@renderer'                   # For AJAX response rendering
+      - '@logger.channel.utilikit'    # For operation logging (ADD THIS LINE)
+
+  # =============================================================================
+  # LOGGING AND MONITORING
+  # =============================================================================
+
+  # Dedicated logging channel
+  # Provides centralized logging for all UtiliKit operations including
+  # CSS generation, file operations, performance metrics, and error tracking
+  logger.channel.utilikit:
+    parent: logger.channel_base
+    arguments: ['utilikit']
+
+  # =============================================================================
+  # TESTING AND DEVELOPMENT SERVICES
+  # =============================================================================
+
+  # Test CSS generator service
+  # Development utility for generating comprehensive test CSS files containing
+  # all possible utility classes for testing, validation, and development
+  utilikit.test_css_generator:
+    class: Drupal\utilikit\Service\UtilikitTestCssGenerator
+    arguments:
+      - '@utilikit.css_generator'  # For CSS generation
+      - '@utilikit.file_manager'  # For file operations
+      - '@file_system'  # For direct file system access
+      - '@file_url_generator'  # For URL generation
+      - '@?utilikit_test.test_generator'  # Optional: Test class generator (if test module enabled)
+
+# =============================================================================
+# SERVICE DEPENDENCY NOTES
+# =============================================================================
+#
+# Optional Dependencies (prefixed with @?):
+# - cache.page: May not be available in all Drupal configurations
+# - cache.dynamic_page_cache: May not be available in all configurations
+# - utilikit_test.test_generator: Only available when utilikit_test module is enabled
+#
+# Service Relationships:
+# - utilikit.service_provider acts as the main facade coordinating all services
+# - Content scanning feeds into CSS generation which feeds into file management
+# - Cache manager provides cross-cutting caching support for all operations
+# - State manager provides persistent storage for all services
+# - Logger provides centralized monitoring and debugging capabilities

@@ -1,0 +1,156 @@
+<?php
+
+/**
+ * @file
+ * UtiliKit Test Module - Comprehensive Testing and Validation Framework.
+ *
+ * This module provides a complete testing framework for the UtiliKit
+ * utility-first CSS system. It implements comprehensive test case generation,
+ * validation, and reporting capabilities to ensure the accuracy and
+ * reliability of UtiliKit's CSS generation and application systems across all
+ * supported utility classes, value types, and responsive breakpoints.
+ *
+ * Key Functionality:
+ * - Theme integration for test suite interface rendering
+ * - Asset management and library attachment for test environments
+ * - Configuration override for optimal testing conditions
+ * - Integration with UtiliKit's core CSS application system
+ * - Development-focused debugging and validation tools
+ *
+ * The test module operates in a controlled environment that forces inline mode
+ * rendering regardless of global UtiliKit settings to ensure consistent and
+ * predictable test execution. This approach eliminates variables related to
+ * static CSS file generation and focuses validation on the core CSS application
+ * logic.
+ *
+ * Testing Environment:
+ * - Always uses inline mode for consistent test execution
+ * - Loads complete UtiliKit engine with all dependencies
+ * - Enables comprehensive debugging and error reporting
+ * - Provides isolated testing context separate from production settings
+ * - Integrates with Drupal's theme system for test interface rendering
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ *
+ * Provides contextual help throughout the Drupal admin interface.
+ */
+function utilikit_test_help(string $route_name, RouteMatchInterface $route_match): ?string {
+  if ($route_name === 'help.page.utilikit_test') {
+    return _utilikit_helper_render_readme();
+  }
+  return NULL;
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * Registers theme definitions for the UtiliKit test suite interface,
+ * providing the template and variable structure needed for comprehensive
+ * test result presentation and user interaction.
+ *
+ * The theme registration enables the TestSuiteController to render
+ * organized test data through the Drupal theme system, creating a
+ * structured interface for test execution, monitoring, and result analysis.
+ *
+ * @see TestSuiteController::render()
+ * @see utilikit-test-suite.html.twig
+ */
+function utilikit_test_theme($existing, $type, $theme, $path): array {
+  return [
+    'utilikit_test_suite' => [
+      'variables' => [
+        'test_groups' => [],
+        'statistics' => [],
+      ],
+      'template' => 'utilikit-test-suite',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * Manages asset attachment and configuration for UtiliKit test suite pages,
+ * ensuring optimal testing conditions by forcing inline mode operation and
+ * loading all necessary JavaScript libraries and CSS resources.
+ *
+ * This implementation creates a controlled testing environment that operates
+ * independently of global UtiliKit settings to ensure consistent and reliable
+ * test execution. The function:
+ *
+ * - Forces inline rendering mode for predictable test behavior
+ * - Loads complete UtiliKit engine with all dependencies
+ * - Configures debugging and error reporting for development
+ * - Provides isolated testing context with controlled settings
+ * - Ensures all necessary assets are available for test execution
+ *
+ * Configuration Override Strategy:
+ * The test environment deliberately overrides certain UtiliKit settings
+ * to create optimal conditions for validation. While respecting user
+ * preferences for debugging options, it ensures that rendering mode
+ * is always set to inline for consistent CSS application testing.
+ */
+function utilikit_test_page_attachments(array &$attachments): void {
+  $route_name = \Drupal::routeMatch()->getRouteName();
+
+  // Only attach assets on test suite pages to avoid unnecessary loading.
+  if ($route_name !== 'utilikit_test.suite') {
+    return;
+  }
+
+  // Retrieve main UtiliKit configuration for user preferences.
+  $config = \Drupal::config('utilikit.settings');
+
+  // Configure test environment with controlled settings for optimal validation.
+  $attachments['#attached']['drupalSettings']['utilikit'] = [
+    // Respect user debugging preferences for development workflow.
+    'devMode' => (bool) $config->get('dev_mode'),
+    'showPageErrors' => (bool) $config->get('show_page_errors'),
+    'enableTransitions' => (bool) $config->get('enable_transitions'),
+    'debounce' => (int) ($config->get('debounce') ?? 50),
+    'logLevel' => $config->get('log_level') ?? 'warnings',
+    'adminPreview' => (bool) $config->get('admin_preview'),
+
+    // Enable all breakpoints for comprehensive responsive testing.
+    'activeBreakpoints' => ['sm', 'md', 'lg', 'xl', 'xxl'],
+
+    // CRITICAL: Force inline mode for consistent test execution regardless
+    // of global settings.
+    'renderingMode' => 'inline',
+
+    // Provide CSRF token for update operations during testing.
+    'csrfToken' => \Drupal::csrfToken()->get('utilikit-update-css'),
+
+    // Define standard breakpoint configuration for responsive testing.
+    'breakpoints' => [
+      'sm' => 576,
+      'md' => 768,
+      'lg' => 992,
+      'xl' => 1200,
+      'xxl' => 1400,
+    ],
+  ];
+
+  // Load complete UtiliKit engine with all core dependencies
+  // This ensures all CSS application logic is available for test validation.
+  $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
+
+  // Load test suite specific JavaScript for test runner functionality.
+  $attachments['#attached']['library'][] = 'utilikit_test/test.suite';
+
+  // Conditionally load additional debugging and error reporting libraries
+  // based on user configuration preferences.
+  if ($config->get('show_page_errors')) {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine.message';
+  }
+
+  if ($config->get('dev_mode')) {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
+  }
+}
