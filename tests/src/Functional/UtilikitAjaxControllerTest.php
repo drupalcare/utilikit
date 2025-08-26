@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Functional;
 
-use Drupal\utilikit\Controller\UtilikitAjaxController;
 use Drupal\Core\Url;
-use Drupal\Tests\utilikit\UtilikitTestHelpers;
+use Drupal\Tests\utilikit\Traits\UtilikitTestHelpers;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -106,502 +105,337 @@ class UtilikitAjaxControllerTest extends UtilikitFunctionalTestBase {
 
   /**
    * Tests updateCss endpoint with valid AJAX request in static mode.
-   *
-   * @covers ::updateCss
    */
-  public function testUpdateCssStaticModeSuccess(): void {
+  public function testUpdateCssValidRequestStaticMode(): void {
     $this->drupalLogin($this->webUser);
 
-    $test_classes = $this->getTestUtilityClasses('basic');
-    $request_data = [
-      'mode' => 'static',
-      'classes' => $test_classes,
+    // Create test classes.
+    $testClasses = [
+      'uk-pd--20',
+      'uk-mg--10',
+      'uk-bg--ff0000',
     ];
 
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
+    // Get CSRF token.
+    $csrfToken = $this->getSession()->getPage()->find('css', 'meta[name="csrf-token"]');
 
-    $this->assertEquals(200, $response->getStatusCode());
+    // Make AJAX request.
+    $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
+      'classes' => $testClasses,
+    ], [
+      'X-CSRF-Token' => $csrfToken ? $csrfToken->getAttribute('content') : '',
+    ]);
 
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertNotNull($responseData);
-    $this->assertEquals('success', $responseData['status']);
-    $this->assertEquals('static', $responseData['mode']);
-    $this->assertArrayHasKey('count', $responseData);
-    $this->assertArrayHasKey('timestamp', $responseData);
-    $this->assertStringContainsString('CSS updated successfully', $responseData['message']);
+    $this->assertNotNull($response);
+    $data = json_decode($response, TRUE);
+
+    // Verify response structure.
+    $this->assertArrayHasKey('status', $data);
+    $this->assertArrayHasKey('message', $data);
+    $this->assertArrayHasKey('mode', $data);
+    $this->assertArrayHasKey('classes_processed', $data);
+
+    // Verify response data.
+    $this->assertEquals('success', $data['status']);
+    $this->assertEquals('static', $data['mode']);
+    $this->assertEquals(3, $data['classes_processed']);
+    $this->assertStringContainsString('processed', $data['message']);
+
+    // Verify CSS file URL is provided in static mode.
+    $this->assertArrayHasKey('css_url', $data);
+    $this->assertNotEmpty($data['css_url']);
   }
 
   /**
-   * Tests updateCss endpoint with inline mode.
-   *
-   * @covers ::updateCss
+   * Tests updateCss endpoint with valid AJAX request in inline mode.
    */
-  public function testUpdateCssInlineModeSuccess(): void {
-    // Configure for inline mode.
+  public function testUpdateCssValidRequestInlineMode(): void {
+    // Switch to inline mode.
     $this->config('utilikit.settings')
       ->set('rendering_mode', 'inline')
       ->save();
 
     $this->drupalLogin($this->webUser);
 
-    $request_data = [
-      'mode' => 'inline',
-      'classes' => $this->getTestUtilityClasses('basic'),
-    ];
+    $testClasses = ['uk-pd--30', 'uk-mg--20'];
 
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
+    // Get CSRF token.
+    $csrfToken = $this->getSession()->getPage()->find('css', 'meta[name="csrf-token"]');
 
-    $this->assertEquals(200, $response->getStatusCode());
+    $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
+      'classes' => $testClasses,
+    ], [
+      'X-CSRF-Token' => $csrfToken ? $csrfToken->getAttribute('content') : '',
+    ]);
 
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertEquals('success', $responseData['status']);
-    $this->assertEquals('inline', $responseData['mode']);
-    $this->assertStringContainsString('Inline mode active', $responseData['message']);
+    $data = json_decode($response, TRUE);
+
+    $this->assertEquals('success', $data['status']);
+    $this->assertEquals('inline', $data['mode']);
+    $this->assertEquals(2, $data['classes_processed']);
+
+    // In inline mode, CSS URL should not be provided.
+    $this->assertArrayNotHasKey('css_url', $data);
   }
 
   /**
-   * Tests updateCss endpoint without AJAX header (should fail).
-   *
-   * @covers ::updateCss
+   * Tests updateCss endpoint with empty classes array.
    */
-  public function testUpdateCssWithoutAjaxHeader(): void {
+  public function testUpdateCssEmptyClasses(): void {
     $this->drupalLogin($this->webUser);
 
-    $request_data = [
-      'mode' => 'static',
-      'classes' => $this->getTestUtilityClasses('basic'),
-    ];
+    $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
+      'classes' => [],
+    ]);
 
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      ['Content-Type' => 'application/json']
-    );
+    $data = json_decode($response, TRUE);
 
-    $this->assertEquals(403, $response->getStatusCode());
+    $this->assertEquals('error', $data['status']);
+    $this->assertStringContainsString('No classes provided', $data['message']);
   }
 
   /**
-   * Tests updateCss endpoint with invalid JSON data.
-   *
-   * @covers ::updateCss
+   * Tests updateCss endpoint with invalid classes.
    */
-  public function testUpdateCssWithInvalidJson(): void {
+  public function testUpdateCssInvalidClasses(): void {
     $this->drupalLogin($this->webUser);
 
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      'invalid json data',
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
+    $invalidClasses = [
+      'not-a-utility-class',
+      'uk-invalid',
+      'random-class',
+    ];
 
-    $this->assertEquals(400, $response->getStatusCode());
+    $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
+      'classes' => $invalidClasses,
+    ]);
 
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertEquals('error', $responseData['status']);
-    $this->assertStringContainsString('Invalid JSON data', $responseData['message']);
+    $data = json_decode($response, TRUE);
+
+    // Should still succeed but process 0 valid classes.
+    $this->assertEquals('success', $data['status']);
+    $this->assertEquals(0, $data['classes_processed']);
   }
 
   /**
-   * Tests updateCss endpoint with missing classes array.
-   *
-   * @covers ::updateCss
+   * Tests updateCss endpoint rate limiting.
    */
-  public function testUpdateCssWithMissingClasses(): void {
+  public function testUpdateCssRateLimit(): void {
     $this->drupalLogin($this->webUser);
 
-    $request_data = [
-      'mode' => 'static',
-      // Missing 'classes' array.
-    ];
+    $testClasses = ['uk-pd--20'];
+    $maxRequests = UtilikitConstants::RATE_LIMIT_REQUESTS_PER_MINUTE;
 
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
+    // Make requests up to the limit.
+    for ($i = 0; $i < $maxRequests; $i++) {
+      $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
+        'classes' => $testClasses,
+      ]);
 
-    $this->assertEquals(400, $response->getStatusCode());
+      $data = json_decode($response, TRUE);
+      $this->assertEquals('success', $data['status']);
+    }
 
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertEquals('error', $responseData['status']);
-    $this->assertStringContainsString('Missing or invalid classes array', $responseData['message']);
+    // Next request should be rate limited.
+    $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
+      'classes' => $testClasses,
+    ]);
+
+    $data = json_decode($response, TRUE);
+    $this->assertEquals('locked', $data['status']);
+    $this->assertArrayHasKey('retry_after', $data);
+    $this->assertStringContainsString('Rate limit', $data['message']);
   }
 
   /**
    * Tests updateCss endpoint with too many classes.
-   *
-   * @covers ::updateCss
    */
-  public function testUpdateCssWithTooManyClasses(): void {
+  public function testUpdateCssTooManyClasses(): void {
     $this->drupalLogin($this->webUser);
 
-    // Create an array with more classes than the limit.
-    $tooManyClasses = $this->getTestUtilityClasses('performance');
-
-    $request_data = [
-      'mode' => 'static',
-      'classes' => $tooManyClasses,
-    ];
-
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
-
-    $this->assertEquals(400, $response->getStatusCode());
-
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertEquals('error', $responseData['status']);
-    $this->assertStringContainsString('Too many classes provided', $responseData['message']);
-  }
-
-  /**
-   * Tests rate limiting functionality.
-   *
-   * @covers ::updateCss
-   * @covers ::checkRateLimit
-   */
-  public function testRateLimiting(): void {
-    $this->drupalLogin($this->webUser);
-
-    $request_data = [
-      'mode' => 'static',
-      'classes' => $this->getTestUtilityClasses('basic'),
-    ];
-
-    $headers = [
-      'Content-Type' => 'application/json',
-      'X-Requested-With' => 'XMLHttpRequest',
-    ];
-
-    // Make requests up to the rate limit.
-    $limit = UtilikitConstants::RATE_LIMIT_REQUESTS_PER_MINUTE;
-    for ($i = 0; $i < $limit; $i++) {
-      $response = $this->drupalPost(
-        $this->updateCssUrl->toString(),
-        json_encode($request_data),
-        $headers
-      );
-      $this->assertLessThanOrEqual(200, $response->getStatusCode());
+    // Create array exceeding max classes limit.
+    $tooManyClasses = [];
+    for ($i = 0; $i <= UtilikitConstants::MAX_CLASSES_PER_REQUEST; $i++) {
+      $tooManyClasses[] = 'uk-pd--' . $i;
     }
 
-    // Next request should be rate limited.
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      $headers
-    );
-
-    $this->assertEquals(429, $response->getStatusCode());
-
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertEquals('error', $responseData['status']);
-    $this->assertStringContainsString('Rate limit exceeded', $responseData['message']);
-  }
-
-  /**
-   * Tests renderButton endpoint with valid AJAX request.
-   *
-   * @covers ::renderButton
-   */
-  public function testRenderButtonSuccess(): void {
-    // Create user with update button permission.
-    $user = $this->drupalCreateUser([
-      'access content',
-      'use utilikit update button',
+    $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
+      'classes' => $tooManyClasses,
     ]);
-    $this->drupalLogin($user);
 
-    $response = $this->drupalPost(
-      $this->renderButtonUrl->toString(),
-      '{}',
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
-
-    $this->assertEquals(200, $response->getStatusCode());
-
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertNotNull($responseData);
-    $this->assertEquals('success', $responseData['status']);
-    $this->assertArrayHasKey('html', $responseData);
-    $this->assertArrayHasKey('timestamp', $responseData);
+    $data = json_decode($response, TRUE);
+    $this->assertEquals('error', $data['status']);
+    $this->assertStringContainsString('Too many classes', $data['message']);
   }
 
   /**
-   * Tests renderButton endpoint without proper permissions.
-   *
-   * @covers ::renderButton
+   * Tests updateCss endpoint without CSRF token.
    */
-  public function testRenderButtonWithoutPermission(): void {
+  public function testUpdateCssNoCsrfToken(): void {
+    $this->drupalLogin($this->webUser);
+
+    // Make request without CSRF token header.
+    $client = $this->getHttpClient();
+    $response = $client->post($this->updateCssUrl->toString(), [
+      'json' => ['classes' => ['uk-pd--20']],
+      'http_errors' => FALSE,
+    ]);
+
+    $this->assertEquals(403, $response->getStatusCode());
+  }
+
+  /**
+   * Tests updateCss endpoint with unauthorized user.
+   */
+  public function testUpdateCssUnauthorized(): void {
     $this->drupalLogin($this->unauthorizedUser);
 
-    $response = $this->drupalPost(
-      $this->renderButtonUrl->toString(),
-      '{}',
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
-
-    $this->assertEquals(403, $response->getStatusCode());
-  }
-
-  /**
-   * Tests renderButton endpoint without AJAX header.
-   *
-   * @covers ::renderButton
-   */
-  public function testRenderButtonWithoutAjaxHeader(): void {
-    $user = $this->drupalCreateUser([
-      'access content',
-      'use utilikit update button',
+    $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
+      'classes' => ['uk-pd--20'],
     ]);
-    $this->drupalLogin($user);
 
-    $response = $this->drupalPost(
-      $this->renderButtonUrl->toString(),
-      '{}',
-      ['Content-Type' => 'application/json']
-    );
+    // Should get 403 Forbidden.
+    $this->assertSession()->statusCodeEquals(403);
+  }
+
+  /**
+   * Tests updateCss endpoint as anonymous user.
+   */
+  public function testUpdateCssAnonymous(): void {
+    $this->drupalLogout();
+
+    $client = $this->getHttpClient();
+    $response = $client->post($this->updateCssUrl->toString(), [
+      'json' => ['classes' => ['uk-pd--20']],
+      'http_errors' => FALSE,
+    ]);
 
     $this->assertEquals(403, $response->getStatusCode());
   }
 
   /**
-   * Tests dependency injection in controller.
-   *
-   * @covers ::create
-   * @covers ::__construct
+   * Tests renderButton endpoint success.
    */
-  public function testControllerDependencyInjection(): void {
-    $container = $this->container;
-
-    $controller = UtilikitAjaxController::create($container);
-
-    $this->assertInstanceOf(
-      UtilikitAjaxController::class,
-      $controller
-    );
-  }
-
-  /**
-   * Tests updateCss with responsive utility classes.
-   *
-   * @covers ::updateCss
-   */
-  public function testUpdateCssWithResponsiveClasses(): void {
+  public function testRenderButtonSuccess(): void {
     $this->drupalLogin($this->webUser);
 
-    $request_data = [
-      'mode' => 'static',
-      'classes' => $this->getTestUtilityClasses('responsive'),
-    ];
+    $response = $this->drupalGet($this->renderButtonUrl->toString(), [
+      'query' => ['ajax_form' => 1],
+    ]);
 
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
+    $data = json_decode($response, TRUE);
 
-    $this->assertEquals(200, $response->getStatusCode());
-
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertEquals('success', $responseData['status']);
-    $this->assertEquals('static', $responseData['mode']);
-    $this->assertGreaterThan(0, $responseData['count']);
+    $this->assertArrayHasKey('status', $data);
+    $this->assertArrayHasKey('html', $data);
+    $this->assertEquals('success', $data['status']);
+    $this->assertStringContainsString('utilikit-update-button', $data['html']);
+    $this->assertStringContainsString('button', $data['html']);
   }
 
   /**
-   * Tests updateCss with complex utility classes.
-   *
-   * @covers ::updateCss
+   * Tests renderButton endpoint caching.
    */
-  public function testUpdateCssWithComplexClasses(): void {
+  public function testRenderButtonCaching(): void {
     $this->drupalLogin($this->webUser);
 
-    $request_data = [
-      'mode' => 'static',
-      'classes' => $this->getTestUtilityClasses('complex'),
-    ];
+    // First request.
+    $response1 = $this->drupalGet($this->renderButtonUrl->toString(), [
+      'query' => ['ajax_form' => 1],
+    ]);
+    $data1 = json_decode($response1, TRUE);
 
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
+    // Second request should be cached.
+    $response2 = $this->drupalGet($this->renderButtonUrl->toString(), [
+      'query' => ['ajax_form' => 1],
+    ]);
+    $data2 = json_decode($response2, TRUE);
 
-    $this->assertEquals(200, $response->getStatusCode());
+    // HTML should be identical.
+    $this->assertEquals($data1['html'], $data2['html']);
 
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertEquals('success', $responseData['status']);
-    $this->assertArrayHasKey('css', $responseData);
+    // Check cache headers.
+    $this->assertSession()->responseHeaderContains('X-Drupal-Cache', 'HIT');
   }
 
   /**
-   * Tests updateCss with invalid classes (should handle gracefully).
-   *
-   * @covers ::updateCss
+   * Tests AJAX response handling for malformed requests.
    */
-  public function testUpdateCssWithInvalidClasses(): void {
+  public function testMalformedRequest(): void {
     $this->drupalLogin($this->webUser);
 
-    $request_data = [
-      'mode' => 'static',
-      'classes' => $this->getTestUtilityClasses('invalid'),
-    ];
-
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      [
+    // Send malformed JSON.
+    $client = $this->getHttpClient();
+    $response = $client->post($this->updateCssUrl->toString(), [
+      'body' => 'not-json-data',
+      'headers' => [
         'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
+        'X-CSRF-Token' => $this->getCsrfToken(),
+      ],
+      'http_errors' => FALSE,
+    ]);
 
-    // Should still return 200 but might process 0 classes.
-    $this->assertEquals(200, $response->getStatusCode());
-
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertEquals('success', $responseData['status']);
+    $this->assertEquals(400, $response->getStatusCode());
   }
 
   /**
-   * Tests queue processing when lock is unavailable.
-   *
-   * @covers ::updateCss
+   * Tests concurrent request handling.
    */
-  public function testQueueProcessingWhenLockUnavailable(): void {
+  public function testConcurrentRequests(): void {
     $this->drupalLogin($this->webUser);
 
-    // Acquire lock to simulate busy system.
-    $lock = $this->container->get('lock');
-    $lock->acquire(UtilikitConstants::LOCK_CSS_UPDATE, 30);
-
-    $request_data = [
-      'mode' => 'static',
-      'classes' => $this->getTestUtilityClasses('basic'),
-    ];
-
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
-
-    $this->assertEquals(200, $response->getStatusCode());
-
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertEquals('success', $responseData['status']);
-    $this->assertTrue($responseData['queued']);
-    $this->assertStringContainsString('queued for processing', $responseData['message']);
-
-    // Release lock for cleanup.
-    $lock->release(UtilikitConstants::LOCK_CSS_UPDATE);
-  }
-
-  /**
-   * Tests error handling with service provider failures.
-   *
-   * @covers ::updateCss
-   */
-  public function testUpdateCssWithServiceProviderError(): void {
-    $this->drupalLogin($this->webUser);
-
-    // This test would require mocking the service provider to return an error
-    // For now, we'll test with a request that might cause processing issues.
-    $request_data = [
-      'mode' => 'static',
-      'classes' => ['uk-invalid--property-value-that-causes-error'],
-    ];
-
-    $response = $this->drupalPost(
-      $this->updateCssUrl->toString(),
-      json_encode($request_data),
-      [
-        'Content-Type' => 'application/json',
-        'X-Requested-With' => 'XMLHttpRequest',
-      ]
-    );
-
-    // The response should still be valid JSON.
-    $responseData = json_decode($response->getContent(), TRUE);
-    $this->assertNotNull($responseData);
-    $this->assertArrayHasKey('status', $responseData);
-  }
-
-  /**
-   * Helper method to perform AJAX POST requests.
-   *
-   * @param string $url
-   *   The URL to post to.
-   * @param string $data
-   *   The data to send.
-   * @param array $headers
-   *   Additional headers.
-   *
-   * @return \Symfony\Component\HttpFoundation\Response
-   *   The response object.
-   */
-  protected function drupalPost(string $url, string $data, array $headers = []): Response {
+    // Simulate multiple concurrent requests.
+    $promises = [];
     $client = $this->getHttpClient();
 
-    $options = [
-      'body' => $data,
-      'headers' => array_merge([
-        'Content-Type' => 'application/json',
-      ], $headers),
-      'cookies' => $this->getSessionCookies(),
-      'allow_redirects' => FALSE,
-    ];
-
-    try {
-      $response = $client->request('POST', $url, $options);
-    }
-    catch (\Exception $e) {
-      // Handle HTTP errors as responses for testing.
-      $response = $e->getResponse();
+    for ($i = 0; $i < 5; $i++) {
+      $promises[] = $client->postAsync($this->updateCssUrl->toString(), [
+        'json' => ['classes' => ['uk-pd--' . $i]],
+        'headers' => ['X-CSRF-Token' => $this->getCsrfToken()],
+      ]);
     }
 
-    return $response;
+    // Wait for all requests to complete.
+    $responses = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
+
+    // Verify all succeeded.
+    foreach ($responses as $response) {
+      $this->assertEquals('fulfilled', $response['state']);
+      $data = json_decode($response['value']->getBody()->getContents(), TRUE);
+      $this->assertEquals('success', $data['status']);
+    }
+  }
+
+  /**
+   * Tests error logging on CSS generation failure.
+   */
+  public function testCssGenerationFailure(): void {
+    $this->drupalLogin($this->webUser);
+
+    // Mock a service to throw exception.
+    $this->container->set('utilikit.service_provider', new class() {
+      public function processNewClasses($classes) {
+        throw new \Exception('Test exception');
+      }
+    });
+
+    $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
+      'classes' => ['uk-pd--20'],
+    ]);
+
+    $data = json_decode($response, TRUE);
+    $this->assertEquals('error', $data['status']);
+    $this->assertStringContainsString('Failed to process', $data['message']);
+  }
+
+  /**
+   * Helper to get CSRF token.
+   *
+   * @return string
+   *   The CSRF token.
+   */
+  protected function getCsrfToken(): string {
+    $token = \Drupal::csrfToken()->get('utilikit-update-css');
+    return $token;
   }
 
 }

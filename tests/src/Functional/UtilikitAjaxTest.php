@@ -189,13 +189,16 @@ class UtilikitAjaxTest extends UtilikitFunctionalTestBase {
       'X-Requested-With' => 'XMLHttpRequest',
     ];
 
-    // Test with invalid JSON.
-    $client = $this->getSession()->getDriver()->getClient();
-    $client->request('POST', $this->buildUrl('/utilikit/update-css'), [], [], $headers, 'invalid json');
-    $response = $client->getResponse();
+    // Test with invalid JSON - using Guzzle client directly
+    $client = \Drupal::httpClient();
+    $response = $client->request('POST', $this->buildUrl('/utilikit/update-css'), [
+      'headers' => array_merge($headers, ['Content-Type' => 'application/json']),
+      'body' => 'invalid json',
+      'http_errors' => FALSE,
+    ]);
 
     $this->assertEquals(400, $response->getStatusCode());
-    $data = json_decode($response->getContent(), TRUE);
+    $data = json_decode($response->getBody()->getContents(), TRUE);
     $this->assertEquals('error', $data['status']);
     $this->assertStringContainsString('Invalid JSON data', $data['message']);
 

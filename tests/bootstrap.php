@@ -8,9 +8,11 @@
  * It sets up the testing environment and autoloading.
  */
 
+declare(strict_types=1);
+
 // Determine DRUPAL_ROOT if it's not already defined.
 if (!defined('DRUPAL_ROOT')) {
-  // Get current directory (fix: was using **DIR** instead of __DIR__)
+  // Get current directory.
   $dir = __DIR__;
 
   // Try to find the Drupal root by looking for core/lib/Drupal.php.
@@ -72,8 +74,8 @@ if (!isset($_SERVER['REQUEST_TIME_FLOAT'])) {
   $_SERVER['REQUEST_TIME_FLOAT'] = microtime(TRUE);
 }
 
-// Set up a consistent testing environment
-// Note: In test bootstrap, we set $_SERVER directly before Drupal bootstrap
+// Set up a consistent testing environment.
+// Note: In test bootstrap, we set $_SERVER directly before Drupal bootstrap.
 // This is necessary as Drupal's API functions are not yet available.
 $default_server_vars = [
   'REMOTE_ADDR' => '127.0.0.1',
@@ -82,6 +84,9 @@ $default_server_vars = [
   'HTTP_HOST' => 'localhost',
   'SERVER_NAME' => 'localhost',
   'REQUEST_URI' => '/',
+  'SCRIPT_NAME' => '/index.php',
+  'PHP_SELF' => '/index.php',
+  'SERVER_SOFTWARE' => 'PHPUnit',
 ];
 
 foreach ($default_server_vars as $key => $default_value) {
@@ -114,13 +119,13 @@ if (!defined('DRUPAL_TEST_IN_CHILD_SITE')) {
 }
 
 // Load any additional test utilities or helpers specific to UtiliKit.
-$utilikit_test_helpers = __DIR__ . '/TestHelpers.php';
+$utilikit_test_helpers = __DIR__ . '/UtilikitTestHelpers.php';
 if (file_exists($utilikit_test_helpers)) {
   require_once $utilikit_test_helpers;
 }
 
 // Load custom test traits if they exist.
-$traits_directory = __DIR__ . '/traits';
+$traits_directory = __DIR__ . '/Traits';
 if (is_dir($traits_directory)) {
   $trait_files = glob($traits_directory . '/*.php');
   foreach ($trait_files as $trait_file) {
@@ -148,7 +153,7 @@ if (getenv('UTILIKIT_TEST_VERBOSE')) {
   // Database configuration.
   $simpletest_db = getenv('SIMPLETEST_DB');
   if ($simpletest_db) {
-    // Parse and display database info (without credentials)
+    // Parse and display database info (without credentials).
     $db_parts = parse_url($simpletest_db);
     echo "Test Database Host: " . ($db_parts['host'] ?? 'Unknown') . "\n";
     echo "Test Database Name: " . (ltrim($db_parts['path'] ?? '', '/') ?: 'Unknown') . "\n";
@@ -165,6 +170,7 @@ if (getenv('UTILIKIT_TEST_VERBOSE')) {
 $required_classes = [
   'Drupal\Tests\UnitTestCase',
   'Drupal\KernelTests\KernelTestBase',
+  'Drupal\Tests\BrowserTestBase',
 ];
 
 $missing_dependencies = [];
@@ -184,9 +190,12 @@ if (!empty($missing_dependencies) && getenv('UTILIKIT_TEST_VERBOSE')) {
 
 // Set error reporting for tests.
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', '1');
 
 // Prevent timeout issues during long-running tests.
 if (function_exists('set_time_limit')) {
   set_time_limit(0);
 }
+
+// Set maximum memory for tests.
+ini_set('memory_limit', '256M');

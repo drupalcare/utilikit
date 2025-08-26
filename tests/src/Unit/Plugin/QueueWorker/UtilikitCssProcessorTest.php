@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\utilikit\Unit\Plugin\QueueWorker;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Plugin\QueueWorker\UtilikitCssProcessor;
-use Drupal\utilikit\Service\UtiliKitServiceProvider;
+use Drupal\utilikit\Service\UtilikitServiceProvider;
+use Drupal\utilikit\Service\UtiliKitCacheManager;
+use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -20,21 +24,28 @@ class UtilikitCssProcessorTest extends UnitTestCase {
    *
    * @var \Drupal\utilikit\Plugin\QueueWorker\UtilikitCssProcessor
    */
-  protected $queueWorker;
+  protected UtilikitCssProcessor $queueWorker;
 
   /**
    * Mock service provider.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitServiceProvider|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitServiceProvider&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected $serviceProvider;
+  protected UtilikitServiceProvider&MockObject $serviceProvider;
+
+  /**
+   * Mock cache manager.
+   *
+   * @var \Drupal\utilikit\Service\UtiliKitCacheManager&\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected UtiliKitCacheManager&MockObject $cacheManager;
 
   /**
    * Mock logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected $logger;
+  protected LoggerInterface&MockObject $logger;
 
   /**
    * {@inheritdoc}
@@ -42,14 +53,24 @@ class UtilikitCssProcessorTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->serviceProvider = $this->createMock(UtiliKitServiceProvider::class);
+    $this->serviceProvider = $this->createMock(UtilikitServiceProvider::class);
+    $this->cacheManager = $this->createMock(UtiliKitCacheManager::class);
     $this->logger = $this->createMock(LoggerInterface::class);
 
+    $configuration = [];
+    $plugin_id = 'utilikit_css_processor';
+    $plugin_definition = [
+      'id' => $plugin_id,
+      'title' => 'UtiliKit CSS Processor',
+      'cron' => ['time' => 60],
+    ];
+
     $this->queueWorker = new UtilikitCssProcessor(
-      [],
-      'utilikit_css_processor',
-      [],
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
       $this->serviceProvider,
+      $this->cacheManager,
       $this->logger
     );
   }
@@ -59,396 +80,345 @@ class UtilikitCssProcessorTest extends UnitTestCase {
    *
    * @covers ::processItem
    */
-  public function testProcessItemValidData() {
+  public function testProcessItemValid(): void {
     $data = [
-      'classes' => ['uk-pd--20', 'uk-mg--10', 'uk-bg--ff0000'],
-      'entity_type' => 'node',
-      'entity_id' => 123,
-      'timestamp' => 1234567890,
+      'action' => 'add',
+      'classes' => ['uk-pd--20', 'uk-mg--10'],
+      'user_id' => 1,
+      'timestamp' => time(),
     ];
 
-    // Expect service provider to process new classes.
     $this->serviceProvider->expects($this->once())
       ->method('processNewClasses')
-      ->with($data['classes'])
+      ->with(['uk-pd--20', 'uk-mg--10'])
       ->willReturn([
-        'new_classes' => ['uk-bg--ff0000'],
-        'classes_processed' => 1,
+        'added' => ['uk-pd--20', 'uk-mg--10'],
+        'duplicates' => [],
+        'errors' => [],
       ]);
 
-    // Expect success logging.
-    $this->logger->expects($this->once())
-      ->method('info')
-      ->with(
-        $this->stringContains('Successfully processed'),
-        $this->arrayHasKey('classes_count')
-      );
+    $this->cacheManager->expects($this->once())
+      ->method('invalidateCssCaches');
 
     $this->queueWorker->processItem($data);
   }
 
   /**
-   * Tests processItem with empty classes array.
+   * Tests processItem with remove action.
    *
    * @covers ::processItem
    */
-  public function testProcessItemEmptyClasses() {
+  public function testProcessItemRemove(): void {
     $data = [
-      'classes' => [],
-      'entity_type' => 'node',
-      'entity_id' => 123,
-      'timestamp' => 1234567890,
+      'action' => 'remove',
+      'classes' => ['uk-pd--20', 'uk-mg--10'],
+      'user_id' => 1,
+      'timestamp' => time(),
     ];
 
-    // Should not call service provider for empty classes.
-    $this->serviceProvider->expects($this->never())
-      ->method('processNewClasses');
+    $this->serviceProvider->expects($this->once())
+      ->method('removeClasses')
+      ->with(['uk-pd--20', 'uk-mg--10'])
+      ->willReturn([
+        'removed' => ['uk-pd--20', 'uk-mg--10'],
+        'notFound' => [],
+      ]);
 
-    // Expect warning logging.
+    $this->cacheManager->expects($this->once())
+      ->method('invalidateCssCaches');
+
+    $this->queueWorker->processItem($data);
+  }
+
+  /**
+   * Tests processItem with optimize action.
+   *
+   * @covers ::processItem
+   */
+  public function testProcessItemOptimize(): void {
+    $data = [
+      'action' => 'optimize',
+      'user_id' => 1,
+      'timestamp' => time(),
+    ];
+
+    $this->serviceProvider->expects($this->once())
+      ->method('optimizeCss')
+      ->willReturn(TRUE);
+
+    $this->cacheManager->expects($this->once())
+      ->method('invalidateCssCaches');
+
+    $this->queueWorker->processItem($data);
+  }
+
+  /**
+   * Tests processItem with rebuild action.
+   *
+   * @covers ::processItem
+   */
+  public function testProcessItemRebuild(): void {
+    $data = [
+      'action' => 'rebuild',
+      'user_id' => 1,
+      'timestamp' => time(),
+    ];
+
+    $this->cacheManager->expects($this->once())
+      ->method('invalidateAll');
+
+    $this->logger->expects($this->once())
+      ->method('info')
+      ->with('CSS rebuild completed for user @user', ['@user' => 1]);
+
+    $this->queueWorker->processItem($data);
+  }
+
+  /**
+   * Tests processItem with invalid action.
+   *
+   * @covers ::processItem
+   */
+  public function testProcessItemInvalidAction(): void {
+    $data = [
+      'action' => 'invalid',
+      'user_id' => 1,
+      'timestamp' => time(),
+    ];
+
+    $this->logger->expects($this->once())
+      ->method('error')
+      ->with($this->stringContains('Unknown action: invalid'));
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Unknown action: invalid');
+
+    $this->queueWorker->processItem($data);
+  }
+
+  /**
+   * Tests processItem with missing action.
+   *
+   * @covers ::processItem
+   */
+  public function testProcessItemMissingAction(): void {
+    $data = [
+      'classes' => ['uk-pd--20'],
+      'user_id' => 1,
+    ];
+
+    $this->logger->expects($this->once())
+      ->method('error')
+      ->with($this->stringContains('Missing action in queue item'));
+
+    $this->expectException(\InvalidArgumentException::class);
+    $this->expectExceptionMessage('Missing action');
+
+    $this->queueWorker->processItem($data);
+  }
+
+  /**
+   * Tests processItem with batch processing.
+   *
+   * @covers ::processItem
+   */
+  public function testProcessItemBatch(): void {
+    $data = [
+      'action' => 'batch_add',
+      'batches' => [
+        ['uk-pd--20', 'uk-pd--30'],
+        ['uk-mg--10', 'uk-mg--20'],
+      ],
+      'user_id' => 1,
+      'timestamp' => time(),
+    ];
+
+    $this->serviceProvider->expects($this->exactly(2))
+      ->method('processNewClasses')
+      ->willReturnOnConsecutiveCalls(
+        [
+          'added' => ['uk-pd--20', 'uk-pd--30'],
+          'duplicates' => [],
+          'errors' => [],
+        ],
+        [
+          'added' => ['uk-mg--10', 'uk-mg--20'],
+          'duplicates' => [],
+          'errors' => [],
+        ]
+      );
+
+    $this->cacheManager->expects($this->once())
+      ->method('invalidateCssCaches');
+
+    $this->queueWorker->processItem($data);
+  }
+
+  /**
+   * Tests processItem with error handling.
+   *
+   * @covers ::processItem
+   */
+  public function testProcessItemErrorHandling(): void {
+    $data = [
+      'action' => 'add',
+      'classes' => ['uk-pd--20'],
+      'user_id' => 1,
+      'timestamp' => time(),
+    ];
+
+    $this->serviceProvider->expects($this->once())
+      ->method('processNewClasses')
+      ->willThrowException(new \Exception('Service error'));
+
+    $this->logger->expects($this->once())
+      ->method('error')
+      ->with(
+        $this->stringContains('Error processing queue item'),
+        $this->arrayHasKey('exception')
+      );
+
+    $this->expectException(\Exception::class);
+    $this->expectExceptionMessage('Service error');
+
+    $this->queueWorker->processItem($data);
+  }
+
+  /**
+   * Tests processItem with partial failure.
+   *
+   * @covers ::processItem
+   */
+  public function testProcessItemPartialFailure(): void {
+    $data = [
+      'action' => 'add',
+      'classes' => ['uk-pd--20', 'uk-invalid--class', 'uk-mg--10'],
+      'user_id' => 1,
+      'timestamp' => time(),
+    ];
+
+    $this->serviceProvider->expects($this->once())
+      ->method('processNewClasses')
+      ->willReturn([
+        'added' => ['uk-pd--20', 'uk-mg--10'],
+        'duplicates' => [],
+        'errors' => ['uk-invalid--class: Invalid format'],
+      ]);
+
     $this->logger->expects($this->once())
       ->method('warning')
-      ->with('Queue item contains no classes to process');
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem with malformed data structure.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemMalformedData() {
-    $data = [
-      'invalid_key' => 'invalid_value',
-      // Missing 'classes' key.
-    ];
-
-    // Should not call service provider for malformed data.
-    $this->serviceProvider->expects($this->never())
-      ->method('processNewClasses');
-
-    // Expect error logging.
-    $this->logger->expects($this->once())
-      ->method('error')
-      ->with('Queue item data is malformed or missing classes array');
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem with non-array classes.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemNonArrayClasses() {
-    $data = [
-    // String instead of array.
-      'classes' => 'uk-pd--20,uk-mg--10',
-      'entity_type' => 'node',
-      'entity_id' => 123,
-    ];
-
-    // Should not call service provider for non-array classes.
-    $this->serviceProvider->expects($this->never())
-      ->method('processNewClasses');
-
-    // Expect error logging.
-    $this->logger->expects($this->once())
-      ->method('error')
-      ->with('Queue item data is malformed or missing classes array');
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem when service provider throws exception.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemServiceProviderException() {
-    $data = [
-      'classes' => ['uk-pd--20', 'uk-mg--10'],
-      'entity_type' => 'node',
-      'entity_id' => 123,
-      'timestamp' => 1234567890,
-    ];
-
-    $exception = new \Exception('Test exception');
-
-    // Service provider throws exception.
-    $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
-      ->with($data['classes'])
-      ->willThrowException($exception);
-
-    // Expect error logging.
-    $this->logger->expects($this->once())
-      ->method('error')
       ->with(
-        $this->stringContains('Failed to process CSS classes'),
-        $this->arrayHasKey('error')
+        'Partial failure processing classes: @errors',
+        ['@errors' => 'uk-invalid--class: Invalid format']
       );
 
-    // Exception should be re-thrown to mark queue item as failed.
-    $this->expectException(\Exception::class);
-    $this->expectExceptionMessage('Test exception');
+    $this->cacheManager->expects($this->once())
+      ->method('invalidateCssCaches');
 
     $this->queueWorker->processItem($data);
   }
 
   /**
-   * Tests processItem filters out invalid utility classes.
+   * Tests processItem with metadata.
    *
    * @covers ::processItem
    */
-  public function testProcessItemFiltersInvalidClasses() {
+  public function testProcessItemWithMetadata(): void {
     $data = [
-      'classes' => [
-    // Valid.
-        'uk-pd--20',
-    // Invalid (not uk- prefixed)
-        'invalid-class',
-    // Valid.
-        'uk-mg--auto',
-    // Invalid.
-        'another-invalid',
+      'action' => 'add',
+      'classes' => ['uk-pd--20'],
+      'user_id' => 1,
+      'timestamp' => time(),
+      'metadata' => [
+        'source' => 'admin_ui',
+        'entity_type' => 'node',
+        'entity_id' => 123,
       ],
-      'entity_type' => 'node',
-      'entity_id' => 123,
     ];
-
-    // Should only process valid UtiliKit classes.
-    $expectedValidClasses = ['uk-pd--20', 'uk-mg--auto'];
 
     $this->serviceProvider->expects($this->once())
       ->method('processNewClasses')
-      ->with($expectedValidClasses)
+      ->with(['uk-pd--20'])
       ->willReturn([
-        'new_classes' => $expectedValidClasses,
-        'classes_processed' => 2,
+        'added' => ['uk-pd--20'],
+        'duplicates' => [],
+        'errors' => [],
       ]);
 
     $this->logger->expects($this->once())
       ->method('info')
       ->with(
-        $this->stringContains('Successfully processed'),
-        $this->callback(function ($context) {
-          return $context['classes_count'] === 2;
-        })
+        'Processed classes from @source for @entity_type:@entity_id',
+        [
+          '@source' => 'admin_ui',
+          '@entity_type' => 'node',
+          '@entity_id' => 123,
+        ]
       );
+
+    $this->cacheManager->expects($this->once())
+      ->method('invalidateCssCaches');
 
     $this->queueWorker->processItem($data);
   }
 
   /**
-   * Tests processItem with large number of classes.
+   * Tests processItem with priority handling.
    *
    * @covers ::processItem
    */
-  public function testProcessItemLargeClassSet() {
-    // Generate large number of test classes.
-    $largeClassSet = [];
-    for ($i = 1; $i <= 1000; $i++) {
-      $largeClassSet[] = "uk-pd--{$i}";
-    }
-
+  public function testProcessItemPriority(): void {
     $data = [
-      'classes' => $largeClassSet,
-      'entity_type' => 'node',
-      'entity_id' => 123,
-      'timestamp' => 1234567890,
+      'action' => 'add',
+      'classes' => ['uk-pd--20'],
+      'user_id' => 1,
+      'timestamp' => time(),
+      'priority' => 'high',
     ];
-
-    // Should process large class sets.
-    $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
-      ->with($largeClassSet)
-      ->willReturn([
-        'new_classes' => $largeClassSet,
-        'classes_processed' => 1000,
-      ]);
-
-    // Expect success logging with large count.
-    $this->logger->expects($this->once())
-      ->method('info')
-      ->with(
-        $this->stringContains('Successfully processed'),
-        $this->callback(function ($context) {
-          return $context['classes_count'] === 1000;
-        })
-      );
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem with mixed valid and invalid classes in large set.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemLargeClassSetWithInvalid() {
-    // Generate mix of valid and invalid classes.
-    $mixedClasses = [];
-    for ($i = 1; $i <= 500; $i++) {
-      // Valid.
-      $mixedClasses[] = "uk-pd--{$i}";
-      // Invalid.
-      $mixedClasses[] = "invalid-class-{$i}";
-    }
-
-    $data = [
-      'classes' => $mixedClasses,
-      'entity_type' => 'node',
-      'entity_id' => 123,
-      'timestamp' => 1234567890,
-    ];
-
-    // Should only process the 500 valid classes.
-    $expectedValidClasses = array_filter($mixedClasses, function ($class) {
-      return strpos($class, 'uk-') === 0;
-    });
 
     $this->serviceProvider->expects($this->once())
       ->method('processNewClasses')
-      ->with($expectedValidClasses)
       ->willReturn([
-        'new_classes' => $expectedValidClasses,
-        'classes_processed' => 500,
+        'added' => ['uk-pd--20'],
+        'duplicates' => [],
+        'errors' => [],
       ]);
 
     $this->logger->expects($this->once())
       ->method('info')
-      ->with(
-        $this->stringContains('Successfully processed'),
-        $this->callback(function ($context) {
-          return $context['classes_count'] === 500;
-        })
-      );
+      ->with($this->stringContains('Processing high priority'));
+
+    $this->cacheManager->expects($this->once())
+      ->method('invalidateCssCaches');
 
     $this->queueWorker->processItem($data);
   }
 
   /**
-   * Tests processItem performance with very large class sets.
+   * Tests processItem with dry run mode.
    *
    * @covers ::processItem
    */
-  public function testProcessItemPerformanceLargeSet() {
-    // Generate very large class set to test performance.
-    $veryLargeClassSet = [];
-    for ($i = 1; $i <= 5000; $i++) {
-      $veryLargeClassSet[] = "uk-pd--{$i}";
-    }
-
+  public function testProcessItemDryRun(): void {
     $data = [
-      'classes' => $veryLargeClassSet,
-      'entity_type' => 'node',
-      'entity_id' => 123,
-      'timestamp' => 1234567890,
+      'action' => 'add',
+      'classes' => ['uk-pd--20'],
+      'user_id' => 1,
+      'timestamp' => time(),
+      'dry_run' => TRUE,
     ];
 
-    $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
-      ->with($veryLargeClassSet)
-      ->willReturn([
-        'new_classes' => $veryLargeClassSet,
-        'classes_processed' => 5000,
-      ]);
+    // Service provider should not be called in dry run mode.
+    $this->serviceProvider->expects($this->never())
+      ->method('processNewClasses');
 
-    $this->logger->expects($this->once())
-      ->method('info');
-
-    // Measure execution time.
-    $startTime = microtime(TRUE);
-    $this->queueWorker->processItem($data);
-    $executionTime = microtime(TRUE) - $startTime;
-
-    // Should complete within reasonable time (adjust threshold as needed)
-    $this->assertLessThan(1.0, $executionTime, 'Processing should complete within 1 second');
-  }
-
-  /**
-   * Tests processItem with duplicate classes in large set.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemLargeSetWithDuplicates() {
-    // Generate class set with many duplicates.
-    $classesWithDuplicates = [];
-    for ($i = 1; $i <= 100; $i++) {
-      // Each class appears 10 times.
-      for ($j = 1; $j <= 10; $j++) {
-        $classesWithDuplicates[] = "uk-pd--{$i}";
-      }
-    }
-
-    $data = [
-      'classes' => $classesWithDuplicates,
-      'entity_type' => 'node',
-      'entity_id' => 123,
-      'timestamp' => 1234567890,
-    ];
-
-    // Should deduplicate before processing.
-    $expectedUniqueClasses = [];
-    for ($i = 1; $i <= 100; $i++) {
-      $expectedUniqueClasses[] = "uk-pd--{$i}";
-    }
-
-    $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
-      ->with($expectedUniqueClasses)
-      ->willReturn([
-        'new_classes' => $expectedUniqueClasses,
-        'classes_processed' => 100,
-      ]);
+    // Cache should not be invalidated in dry run mode.
+    $this->cacheManager->expects($this->never())
+      ->method('invalidateCssCaches');
 
     $this->logger->expects($this->once())
       ->method('info')
-      ->with(
-        $this->stringContains('Successfully processed'),
-        $this->callback(function ($context) {
-          return $context['classes_count'] === 100;
-        })
-      );
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem logs processing statistics.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemLogsStatistics() {
-    $data = [
-      'classes' => ['uk-pd--20', 'uk-mg--10'],
-      'entity_type' => 'node',
-      'entity_id' => 123,
-      'timestamp' => 1234567890,
-    ];
-
-    $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
-      ->willReturn([
-        'new_classes' => ['uk-pd--20'],
-        'classes_processed' => 1,
-      ]);
-
-    // Check that logging includes proper context.
-    $this->logger->expects($this->once())
-      ->method('info')
-      ->with(
-        $this->stringContains('Successfully processed'),
-        $this->callback(function ($context) {
-          return isset($context['classes_count']) &&
-                 isset($context['entity_type']) &&
-                 isset($context['entity_id']) &&
-                 $context['classes_count'] === 1 &&
-                 $context['entity_type'] === 'node' &&
-                 $context['entity_id'] === 123;
-        })
-      );
+      ->with($this->stringContains('Dry run mode'));
 
     $this->queueWorker->processItem($data);
   }

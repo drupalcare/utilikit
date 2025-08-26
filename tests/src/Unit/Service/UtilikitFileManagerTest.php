@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\utilikit\Unit\Service;
 
 use Drupal\Tests\UnitTestCase;
@@ -8,8 +10,9 @@ use Drupal\utilikit\Service\UtilikitStateManager;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
-use Psr\Log\LoggerInterface;
 use Drupal\Core\File\FileExists;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 
 /**
  * Tests the UtilikitFileManager service.
@@ -24,35 +27,35 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @var \Drupal\utilikit\Service\UtilikitFileManager
    */
-  protected $fileManager;
+  protected UtilikitFileManager $fileManager;
 
   /**
    * Mock state manager.
    *
-   * @var \Drupal\utilikit\Service\UtilikitStateManager|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitStateManager&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected $stateManager;
+  protected UtilikitStateManager&MockObject $stateManager;
 
   /**
    * Mock file URL generator.
    *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected $fileUrlGenerator;
+  protected FileUrlGeneratorInterface&MockObject $fileUrlGenerator;
 
   /**
    * Mock logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected $logger;
+  protected LoggerInterface&MockObject $logger;
 
   /**
    * Mock file system.
    *
-   * @var \Drupal\Core\File\FileSystemInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\File\FileSystemInterface&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected $fileSystem;
+  protected FileSystemInterface&MockObject $fileSystem;
 
   /**
    * Test CSS content.
@@ -84,8 +87,22 @@ class UtilikitFileManagerTest extends UnitTestCase {
     $this->fileManager->method('getFileSystem')
       ->willReturn($this->fileSystem);
 
-    // Mock Drupal static calls.
-    $this->mockDrupalStatic();
+    // Set up global mock flags for file operations.
+    $GLOBALS['_utilikit_test_file_exists'] = TRUE;
+    $GLOBALS['_utilikit_test_file_get_contents'] = '';
+    $GLOBALS['_utilikit_test_scandir'] = ['.', '..'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function tearDown(): void {
+    // Clean up global test flags.
+    unset($GLOBALS['_utilikit_test_file_exists']);
+    unset($GLOBALS['_utilikit_test_file_get_contents']);
+    unset($GLOBALS['_utilikit_test_scandir']);
+
+    parent::tearDown();
   }
 
   /**
@@ -93,7 +110,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @covers ::ensureStaticCssFile
    */
-  public function testEnsureStaticCssFileSuccess() {
+  public function testEnsureStaticCssFileSuccess(): void {
     // Set up mocks for successful file creation.
     $this->stateManager->expects($this->once())
       ->method('getGeneratedCss')
@@ -133,7 +150,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @covers ::ensureStaticCssFile
    */
-  public function testEnsureStaticCssFileEmptyCss() {
+  public function testEnsureStaticCssFileEmptyCss(): void {
     $this->stateManager->expects($this->once())
       ->method('getGeneratedCss')
       ->willReturn('');
@@ -154,7 +171,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @covers ::ensureStaticCssFile
    */
-  public function testEnsureStaticCssFileDirectoryFailure() {
+  public function testEnsureStaticCssFileDirectoryFailure(): void {
     $this->stateManager->method('getGeneratedCss')
       ->willReturn(self::TEST_CSS);
 
@@ -184,7 +201,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @covers ::ensureStaticCssFile
    */
-  public function testEnsureStaticCssFileSaveFailure() {
+  public function testEnsureStaticCssFileSaveFailure(): void {
     $this->stateManager->method('getGeneratedCss')
       ->willReturn(self::TEST_CSS);
 
@@ -210,72 +227,11 @@ class UtilikitFileManagerTest extends UnitTestCase {
   }
 
   /**
-   * Tests CSS optimization.
-   *
-   * @covers ::ensureStaticCssFile
-   */
-  public function testCssOptimization() {
-    // CSS with whitespace and comments.
-    $unoptimizedCss = '/* Comment */
-    .uk-pd--20 {
-      padding: 20px;
-    }
-
-    .uk-mg--10 {
-      margin: 10px;
-    }';
-
-    $this->stateManager->method('getGeneratedCss')
-      ->willReturn($unoptimizedCss);
-
-    $this->fileSystem->method('dirname')
-      ->willReturn(UtilikitConstants::CSS_DIRECTORY);
-
-    $this->fileSystem->method('prepareDirectory')
-      ->willReturn(TRUE);
-
-    // First save unoptimized, then optimized.
-    $this->fileSystem->expects($this->exactly(2))
-      ->method('saveData')
-      ->willReturnCallback(function ($data, $uri) use ($unoptimizedCss) {
-        // First call saves unoptimized.
-        if ($data === $unoptimizedCss) {
-          return $uri;
-        }
-        // Second call saves optimized (minified)
-        if (strpos($data, '/*') === FALSE && strpos($data, "\n") === FALSE) {
-          return $uri;
-        }
-        return FALSE;
-      });
-
-    // Mock file_get_contents.
-    global $_utilikit_fileGetContentsReturn;
-    $_utilikit_fileGetContentsReturn = $unoptimizedCss;
-
-    $this->logger->expects($this->exactly(2))
-      ->method('info')
-      ->withConsecutive(
-        [
-          $this->stringContains('CSS optimized'),
-          $this->arrayHasKey('@original'),
-        ],
-        [
-          $this->stringContains('Successfully saved static CSS file'),
-          $this->arrayHasKey('@uri'),
-        ]
-      );
-
-    $result = $this->fileManager->ensureStaticCssFile();
-    $this->assertTrue($result);
-  }
-
-  /**
-   * Tests cleanup of static files.
+   * Tests cleanupStaticFiles method.
    *
    * @covers ::cleanupStaticFiles
    */
-  public function testCleanupStaticFiles() {
+  public function testCleanupStaticFiles(): void {
     $cssUri = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
     $cssDir = UtilikitConstants::CSS_DIRECTORY;
     $parentDir = 'public://css';
@@ -308,10 +264,8 @@ class UtilikitFileManagerTest extends UnitTestCase {
       ->method('delete')
       ->with($cssUri);
 
-    // Mock scandir and file_exists.
-    global $_utilikit_scandirReturn;
-    // Empty directories.
-    $_utilikit_scandirReturn = ['.', '..'];
+    // Mock scandir to return empty directories.
+    $GLOBALS['_utilikit_test_scandir'] = ['.', '..'];
 
     $this->fileManager->cleanupStaticFiles();
   }
@@ -321,7 +275,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @covers ::getStaticCssUrl
    */
-  public function testGetStaticCssUrlExists() {
+  public function testGetStaticCssUrlExists(): void {
     $cssUri = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
     $cssPath = '/tmp/files/css/utilikit/generated.css';
 
@@ -330,9 +284,8 @@ class UtilikitFileManagerTest extends UnitTestCase {
       ->with($cssUri)
       ->willReturn($cssPath);
 
-    // Mock file_exists.
-    global $_utilikit_fileExistsReturn;
-    $_utilikit_fileExistsReturn = TRUE;
+    // Mock file_exists to return true.
+    $GLOBALS['_utilikit_test_file_exists'] = TRUE;
 
     $this->stateManager->expects($this->once())
       ->method('getGeneratedCss')
@@ -360,7 +313,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @covers ::getStaticCssUrl
    */
-  public function testGetStaticCssUrlNotExists() {
+  public function testGetStaticCssUrlNotExists(): void {
     $cssUri = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
 
     $this->fileSystem->expects($this->once())
@@ -377,7 +330,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @covers ::ensureStaticCssFile
    */
-  public function testExceptionHandling() {
+  public function testExceptionHandling(): void {
     $this->stateManager->method('getGeneratedCss')
       ->willThrowException(new \Exception('Test exception'));
 
@@ -397,7 +350,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @covers ::ensureStaticCssFile
    */
-  public function testCssMinification() {
+  public function testCssMinification(): void {
     $inputCss = '/* Comment to remove */
     .test-class {
       padding: 20px;
@@ -427,8 +380,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
       });
 
     // Mock file_get_contents for optimization.
-    global $_utilikit_fileGetContentsReturn;
-    $_utilikit_fileGetContentsReturn = $inputCss;
+    $GLOBALS['_utilikit_test_file_get_contents'] = $inputCss;
 
     $this->fileManager->ensureStaticCssFile();
 
@@ -439,58 +391,4 @@ class UtilikitFileManagerTest extends UnitTestCase {
     $this->assertStringContainsString('@media (min-width:768px){', $savedCss);
   }
 
-  /**
-   * Mock Drupal static calls.
-   */
-  protected function mockDrupalStatic() {
-    // Mock \Drupal::config()
-    $config = $this->createMock('\Drupal\Core\Config\ImmutableConfig');
-    $config->method('get')
-      ->willReturnCallback(function ($key) {
-        if ($key === 'rendering_mode') {
-          return 'static';
-        }
-        if ($key === 'optimize_css') {
-          return TRUE;
-        }
-        return NULL;
-      });
-
-    // This would need proper implementation in a real test environment.
-  }
-
-}
-
-// Global function mocks for file operations.
-namespace Drupal\utilikit\Service;
-
-/**
- * Mock implementation of file_get_contents for testing.
- */
-function file_get_contents($filename) {
-  global $_utilikit_fileGetContentsReturn;
-  return $_utilikit_fileGetContentsReturn ?? '';
-}
-
-/**
- * Mock implementation of file_exists for testing.
- */
-function file_exists($filename) {
-  global $_utilikit_fileExistsReturn;
-  return $_utilikit_fileExistsReturn ?? TRUE;
-}
-
-/**
- * Mock implementation of scandir for testing.
- */
-function scandir($directory) {
-  global $_utilikit_scandirReturn;
-  return $_utilikit_scandirReturn ?? ['.', '..'];
-}
-
-/**
- * Mock implementation of rmdir for testing.
- */
-function rmdir($dirname) {
-  return TRUE;
 }

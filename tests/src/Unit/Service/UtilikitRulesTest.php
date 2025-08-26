@@ -1,12 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\utilikit\Unit\Service;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitRules;
+use Drupal\utilikit\Service\UtilikitConstants;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
+use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 
 /**
- * Tests UtilikitRules service class.
+ * Tests the UtilikitRules service.
  *
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitRules
@@ -14,339 +21,418 @@ use Drupal\utilikit\Service\UtilikitRules;
 class UtilikitRulesTest extends UnitTestCase {
 
   /**
-   * The UtilikitRules service instance.
+   * The rules service under test.
    *
    * @var \Drupal\utilikit\Service\UtilikitRules
    */
-  protected $rulesService;
+  protected UtilikitRules $rules;
+
+  /**
+   * Mock config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface&\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected ConfigFactoryInterface&MockObject $configFactory;
+
+  /**
+   * Mock logger.
+   *
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected LoggerInterface&MockObject $logger;
 
   /**
    * {@inheritdoc}
    */
   protected function setUp(): void {
     parent::setUp();
-    $this->rulesService = new UtilikitRules();
+
+    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
+
+    // Setup default config.
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->any())
+      ->method('get')
+      ->willReturnMap([
+        ['rules_enabled', TRUE],
+        ['custom_rules', []],
+        ['rule_priority', 'custom_first'],
+        ['rule_cache_enabled', TRUE],
+      ]);
+
+    $this->configFactory->expects($this->any())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
+
+    $this->rules = new UtilikitRules(
+      $this->configFactory,
+      $this->logger
+    );
   }
 
   /**
-   * Tests that getRules returns a non-empty array.
+   * Tests getRule for valid utility classes.
    *
-   * @covers ::getRules
+   * @covers ::getRule
+   * @dataProvider providerValidUtilityClasses
    */
-  public function testGetRulesReturnsArray() {
-    $rules = UtilikitRules::getRules();
-    $this->assertIsArray($rules);
-    $this->assertNotEmpty($rules);
+  public function testGetRuleValid(string $property, string $value, array $expected): void {
+    $rule = $this->rules->getRule($property, $value);
+
+    $this->assertIsArray($rule);
+    $this->assertArrayHasKey('property', $rule);
+    $this->assertArrayHasKey('value', $rule);
+    $this->assertEquals($expected['property'], $rule['property']);
+    $this->assertEquals($expected['value'], $rule['value']);
   }
 
   /**
-   * Tests that all rules have required structure.
+   * Data provider for valid utility classes.
    *
-   * @covers ::getRules
+   * @return array<int, array<int, mixed>>
    */
-  public function testRuleStructure() {
-    $rules = UtilikitRules::getRules();
-
-    foreach ($rules as $prefix => $rule) {
-      $this->assertIsString($prefix, "Rule prefix should be a string");
-      $this->assertIsArray($rule, "Rule definition should be an array");
-      $this->assertArrayHasKey('css', $rule, "Rule should have 'css' property");
-      $this->assertIsString($rule['css'], "CSS property should be a string");
-
-      // Optional properties should be boolean if present.
-      $booleanProperties = [
-        'sides', 'isNumericFlexible', 'isKeyword', 'isColor',
-        'isInteger', 'isDecimalFixed', 'isOpacity', 'isTransform',
-        'isGridTrackList', 'isRange', 'allowAuto',
-      ];
-
-      foreach ($booleanProperties as $prop) {
-        if (isset($rule[$prop])) {
-          $this->assertIsBool($rule[$prop], "Property '{$prop}' should be boolean if present");
-        }
-      }
-
-      // Group should be string if present.
-      if (isset($rule['group'])) {
-        $this->assertIsString($rule['group'], "Group should be a string if present");
-      }
-    }
-  }
-
-  /**
-   * Tests that CSS property map contains expected mappings.
-   *
-   * @covers ::CSS_PROPERTY_MAP
-   */
-  public function testCssPropertyMap() {
-    $map = UtilikitRules::CSS_PROPERTY_MAP;
-    $this->assertIsArray($map);
-
-    // Test specific known mappings.
-    $expectedMappings = [
-      'borderWidth' => 'border-width',
-      'borderRadius' => 'border-radius',
-      'backgroundColor' => 'background-color',
-      'fontSize' => 'font-size',
-      'maxWidth' => 'max-width',
-      'minWidth' => 'min-width',
-      'maxHeight' => 'max-height',
-      'minHeight' => 'min-height',
-      'textAlign' => 'text-align',
-      'justifyContent' => 'justify-content',
-      'alignItems' => 'align-items',
-      'flexDirection' => 'flex-direction',
-      'gridTemplateColumns' => 'grid-template-columns',
-      'gridTemplateRows' => 'grid-template-rows',
+  public function providerValidUtilityClasses(): array {
+    return [
+      ['pd', '20', ['property' => 'padding', 'value' => '20px']],
+      ['pd', '10-20', ['property' => 'padding', 'value' => '10px 20px']],
+      ['pd', '10-20-30', ['property' => 'padding', 'value' => '10px 20px 30px']],
+      ['pd', '10-20-30-40', ['property' => 'padding', 'value' => '10px 20px 30px 40px']],
+      ['mg', '20', ['property' => 'margin', 'value' => '20px']],
+      ['mg', 'auto', ['property' => 'margin', 'value' => 'auto']],
+      ['text', 'center', ['property' => 'text-align', 'value' => 'center']],
+      ['bg', 'primary', ['property' => 'background-color', 'value' => 'var(--color-primary)']],
+      ['flex', 'row', ['property' => 'flex-direction', 'value' => 'row']],
+      ['display', 'block', ['property' => 'display', 'value' => 'block']],
+      ['w', '100', ['property' => 'width', 'value' => '100px']],
+      ['w', '50p', ['property' => 'width', 'value' => '50%']],
+      ['h', 'auto', ['property' => 'height', 'value' => 'auto']],
+      ['z', '10', ['property' => 'z-index', 'value' => '10']],
     ];
-
-    foreach ($expectedMappings as $camelCase => $kebabCase) {
-      $this->assertArrayHasKey($camelCase, $map, "CSS property map should contain '{$camelCase}'");
-      $this->assertEquals($kebabCase, $map[$camelCase], "'{$camelCase}' should map to '{$kebabCase}'");
-    }
-
-    // Test that all values are kebab-case.
-    foreach ($map as $camelCase => $kebabCase) {
-      $this->assertMatchesRegularExpression('/^[a-z]+(-[a-z]+)*$/', $kebabCase,
-        "CSS property '{$kebabCase}' should be in kebab-case format");
-    }
   }
 
   /**
-   * Tests that rules are properly grouped.
+   * Tests getRule for invalid properties.
    *
-   * @covers ::getRules
+   * @covers ::getRule
    */
-  public function testRuleGroups() {
-    $rules = UtilikitRules::getRules();
-    $groups = [];
+  public function testGetRuleInvalid(): void {
+    $rule = $this->rules->getRule('invalid', '20');
+    $this->assertNull($rule);
 
-    // Collect all groups.
-    foreach ($rules as $rule) {
-      if (isset($rule['group'])) {
-        $groups[] = $rule['group'];
-      }
-    }
-
-    $groups = array_unique($groups);
-
-    // Test expected groups exist.
-    $expectedGroups = ['Box Model', 'Colors', 'Sizing', 'Positioning', 'Layout', 'Typography'];
-    foreach ($expectedGroups as $expectedGroup) {
-      $this->assertContains($expectedGroup, $groups,
-        "Expected group '{$expectedGroup}' should exist in rules");
-    }
+    $rule = $this->rules->getRule('', '20');
+    $this->assertNull($rule);
   }
 
   /**
-   * Tests rule prefixes are properly formatted.
+   * Tests parseValue method.
    *
-   * @covers ::getRules
+   * @covers ::parseValue
+   * @dataProvider providerParseValue
    */
-  public function testRulePrefixes() {
-    $rules = UtilikitRules::getRules();
-
-    foreach (array_keys($rules) as $prefix) {
-      $this->assertIsString($prefix);
-      $this->assertMatchesRegularExpression('/^[a-z]{2,4}$/', $prefix,
-        "Rule prefix '{$prefix}' should be 2-4 lowercase letters");
-    }
+  public function testParseValue(string $value, string $type, string $expected): void {
+    $parsed = $this->rules->parseValue($value, $type);
+    $this->assertEquals($expected, $parsed);
   }
 
   /**
-   * Tests that rules with sides property have appropriate CSS properties.
+   * Data provider for parseValue tests.
    *
-   * @covers ::getRules
+   * @return array<int, array<int, string>>
    */
-  public function testSidesRules() {
-    $rules = UtilikitRules::getRules();
+  public function providerParseValue(): array {
+    return [
+      // Numeric values.
+      ['20', 'size', '20px'],
+      ['0', 'size', '0'],
+      ['-10', 'size', '-10px'],
+      ['100', 'size', '100px'],
 
-    $sidesExpectedProperties = ['padding', 'margin', 'borderWidth', 'borderRadius'];
+      // Percentage values.
+      ['50p', 'size', '50%'],
+      ['100p', 'size', '100%'],
+      ['33p', 'size', '33%'],
 
-    foreach ($rules as $rule) {
-      if (isset($rule['sides']) && $rule['sides'] === TRUE) {
-        $this->assertContains($rule['css'], $sidesExpectedProperties,
-          "Rule with sides=true should have appropriate CSS property");
-      }
-    }
+      // Auto values.
+      ['auto', 'size', 'auto'],
+      ['AUTO', 'size', 'auto'],
+
+      // Color values.
+      ['primary', 'color', 'var(--color-primary)'],
+      ['secondary', 'color', 'var(--color-secondary)'],
+      ['success', 'color', 'var(--color-success)'],
+      ['danger', 'color', 'var(--color-danger)'],
+      ['warning', 'color', 'var(--color-warning)'],
+      ['info', 'color', 'var(--color-info)'],
+
+      // Text values.
+      ['center', 'text', 'center'],
+      ['left', 'text', 'left'],
+      ['right', 'text', 'right'],
+
+      // Multiple values.
+      ['10-20', 'spacing', '10px 20px'],
+      ['10-20-30', 'spacing', '10px 20px 30px'],
+      ['10-20-30-40', 'spacing', '10px 20px 30px 40px'],
+      ['0-auto', 'spacing', '0 auto'],
+      ['auto-0', 'spacing', 'auto 0'],
+    ];
   }
 
   /**
-   * Tests that color rules are properly configured.
+   * Tests custom rules functionality.
    *
-   * @covers ::getRules
+   * @covers ::getRule
+   * @covers ::applyCustomRules
    */
-  public function testColorRules() {
-    $rules = UtilikitRules::getRules();
+  public function testCustomRules(): void {
+    // Setup config with custom rules.
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->any())
+      ->method('get')
+      ->willReturnMap([
+        ['rules_enabled', TRUE],
+        ['custom_rules', [
+          'custom' => [
+            'property' => 'custom-property',
+            'value_template' => 'custom-{value}',
+          ],
+          'override-pd' => [
+            'property' => 'padding',
+            'value_template' => '{value}rem',
+          ],
+        ]],
+        ['rule_priority', 'custom_first'],
+        ['rule_cache_enabled', FALSE],
+      ]);
 
-    $colorRules = array_filter($rules, function ($rule) {
-      return isset($rule['isColor']) && $rule['isColor'] === TRUE;
-    });
+    $this->configFactory->expects($this->any())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
 
-    $this->assertNotEmpty($colorRules, "Should have color rules defined");
+    // Recreate rules with custom config.
+    $rules = new UtilikitRules(
+      $this->configFactory,
+      $this->logger
+    );
 
-    foreach ($colorRules as $prefix => $rule) {
-      // Color rules should typically be in Colors group.
-      if (isset($rule['group'])) {
-        $this->assertEquals('Colors', $rule['group'],
-          "Color rule '{$prefix}' should be in Colors group");
-      }
-    }
+    // Test custom rule.
+    $rule = $rules->getRule('custom', 'test');
+    $this->assertNotNull($rule);
+    $this->assertEquals('custom-property', $rule['property']);
+    $this->assertEquals('custom-test', $rule['value']);
+
+    // Test override rule (custom_first priority).
+    $rule = $rules->getRule('override-pd', '2');
+    $this->assertNotNull($rule);
+    $this->assertEquals('padding', $rule['property']);
+    $this->assertEquals('2rem', $rule['value']);
   }
 
   /**
-   * Tests that numeric flexible rules are properly configured.
+   * Tests rule priority settings.
    *
-   * @covers ::getRules
+   * @covers ::getRule
    */
-  public function testNumericFlexibleRules() {
-    $rules = UtilikitRules::getRules();
+  public function testRulePriority(): void {
+    // Test with default_first priority.
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->any())
+      ->method('get')
+      ->willReturnMap([
+        ['rules_enabled', TRUE],
+        ['custom_rules', [
+          'pd' => [
+            'property' => 'padding',
+            'value_template' => '{value}rem',
+          ],
+        ]],
+        ['rule_priority', 'default_first'],
+        ['rule_cache_enabled', FALSE],
+      ]);
 
-    $numericRules = array_filter($rules, function ($rule) {
-      return isset($rule['isNumericFlexible']) && $rule['isNumericFlexible'] === TRUE;
-    });
+    $this->configFactory->expects($this->any())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
 
-    $this->assertNotEmpty($numericRules, "Should have numeric flexible rules defined");
+    $rules = new UtilikitRules(
+      $this->configFactory,
+      $this->logger
+    );
 
-    // These rules should typically be in Box Model or Sizing groups.
-    $expectedGroups = ['Box Model', 'Sizing', 'Positioning'];
-
-    foreach ($numericRules as $prefix => $rule) {
-      if (isset($rule['group'])) {
-        $this->assertContains($rule['group'], $expectedGroups,
-          "Numeric rule '{$prefix}' should be in appropriate group");
-      }
-    }
+    // Default rule should win.
+    $rule = $rules->getRule('pd', '20');
+    $this->assertNotNull($rule);
+    $this->assertEquals('padding', $rule['property']);
+    $this->assertEquals('20px', $rule['value']); // Default rule uses px.
   }
 
   /**
-   * Tests keyword rules are properly configured.
+   * Tests getAllRules method.
    *
-   * @covers ::getRules
+   * @covers ::getAllRules
    */
-  public function testKeywordRules() {
-    $rules = UtilikitRules::getRules();
+  public function testGetAllRules(): void {
+    $allRules = $this->rules->getAllRules();
 
-    $keywordRules = array_filter($rules, function ($rule) {
-      return isset($rule['isKeyword']) && $rule['isKeyword'] === TRUE;
-    });
-
-    $this->assertNotEmpty($keywordRules, "Should have keyword rules defined");
-
-    // Test some expected keyword rules.
-    $expectedKeywordPrefixes = ['dp', 'ps', 'ta', 'fw'];
-    foreach ($expectedKeywordPrefixes as $prefix) {
-      if (isset($rules[$prefix])) {
-        $this->assertTrue($rules[$prefix]['isKeyword'] ?? FALSE,
-          "Rule '{$prefix}' should be a keyword rule");
-      }
-    }
+    $this->assertIsArray($allRules);
+    $this->assertArrayHasKey('pd', $allRules);
+    $this->assertArrayHasKey('mg', $allRules);
+    $this->assertArrayHasKey('text', $allRules);
+    $this->assertArrayHasKey('bg', $allRules);
+    $this->assertArrayHasKey('flex', $allRules);
   }
 
   /**
-   * Tests transform rules are properly configured.
+   * Tests validateRule method.
    *
-   * @covers ::getRules
+   * @covers ::validateRule
    */
-  public function testTransformRules() {
-    $rules = UtilikitRules::getRules();
+  public function testValidateRule(): void {
+    // Valid rules.
+    $this->assertTrue($this->rules->validateRule('pd', '20'));
+    $this->assertTrue($this->rules->validateRule('mg', '10-20'));
+    $this->assertTrue($this->rules->validateRule('text', 'center'));
+    $this->assertTrue($this->rules->validateRule('bg', 'primary'));
 
-    $transformRules = array_filter($rules, function ($rule) {
-      return isset($rule['isTransform']) && $rule['isTransform'] === TRUE;
-    });
-
-    if (!empty($transformRules)) {
-      foreach ($transformRules as $prefix => $rule) {
-        // Transform rules should be in Layout or Transform group.
-        if (isset($rule['group'])) {
-          $this->assertContains($rule['group'], ['Layout', 'Transform', 'Effects'],
-            "Transform rule '{$prefix}' should be in appropriate group");
-        }
-      }
-    }
+    // Invalid rules.
+    $this->assertFalse($this->rules->validateRule('invalid', '20'));
+    $this->assertFalse($this->rules->validateRule('pd', ''));
+    $this->assertFalse($this->rules->validateRule('', 'value'));
   }
 
   /**
-   * Tests grid track list rules are properly configured.
+   * Tests special value handling.
    *
-   * @covers ::getRules
+   * @covers ::getRule
    */
-  public function testGridTrackListRules() {
-    $rules = UtilikitRules::getRules();
+  public function testSpecialValues(): void {
+    // Test inherit value.
+    $rule = $this->rules->getRule('pd', 'inherit');
+    $this->assertNotNull($rule);
+    $this->assertEquals('inherit', $rule['value']);
 
-    $gridRules = array_filter($rules, function ($rule) {
-      return isset($rule['isGridTrackList']) && $rule['isGridTrackList'] === TRUE;
-    });
+    // Test initial value.
+    $rule = $this->rules->getRule('mg', 'initial');
+    $this->assertNotNull($rule);
+    $this->assertEquals('initial', $rule['value']);
 
-    if (!empty($gridRules)) {
-      foreach ($gridRules as $prefix => $rule) {
-        // Grid rules should be in Layout group.
-        if (isset($rule['group'])) {
-          $this->assertEquals('Layout', $rule['group'],
-            "Grid rule '{$prefix}' should be in Layout group");
-        }
-      }
-    }
+    // Test unset value.
+    $rule = $this->rules->getRule('text', 'unset');
+    $this->assertNotNull($rule);
+    $this->assertEquals('unset', $rule['value']);
+
+    // Test var() custom property.
+    $rule = $this->rules->getRule('bg', 'var(--custom-color)');
+    $this->assertNotNull($rule);
+    $this->assertEquals('var(--custom-color)', $rule['value']);
   }
 
   /**
-   * Tests that the service instance can be created.
-   */
-  public function testServiceInstantiation() {
-    $service = new UtilikitRules();
-    $this->assertInstanceOf(UtilikitRules::class, $service);
-  }
-
-  /**
-   * Tests consistency between CSS property map and rule CSS properties.
+   * Tests complex spacing values.
    *
-   * @covers ::getRules
-   * @covers ::CSS_PROPERTY_MAP
+   * @covers ::parseValue
    */
-  public function testCssPropertyConsistency() {
-    $rules = UtilikitRules::getRules();
-    $map = UtilikitRules::CSS_PROPERTY_MAP;
+  public function testComplexSpacingValues(): void {
+    // Test negative values.
+    $parsed = $this->rules->parseValue('-10', 'size');
+    $this->assertEquals('-10px', $parsed);
 
-    foreach ($rules as $prefix => $rule) {
-      $cssProperty = $rule['css'];
+    // Test mixed values.
+    $parsed = $this->rules->parseValue('10-auto-20-auto', 'spacing');
+    $this->assertEquals('10px auto 20px auto', $parsed);
 
-      // If the CSS property is in camelCase and exists in the map.
-      if (isset($map[$cssProperty])) {
-        $kebabCase = $map[$cssProperty];
-
-        // The kebab-case version should be properly formatted.
-        $this->assertMatchesRegularExpression('/^[a-z]+(-[a-z]+)*$/', $kebabCase,
-          "Mapped CSS property '{$kebabCase}' for rule '{$prefix}' should be valid kebab-case");
-      }
-    }
+    // Test percentage in spacing.
+    $parsed = $this->rules->parseValue('50p-auto', 'spacing');
+    $this->assertEquals('50% auto', $parsed);
   }
 
   /**
-   * Tests that all rule definitions are complete.
+   * Tests rule caching.
    *
-   * @covers ::getRules
+   * @covers ::getRule
    */
-  public function testRuleCompleteness() {
-    $rules = UtilikitRules::getRules();
+  public function testRuleCaching(): void {
+    // First call should process the rule.
+    $rule1 = $this->rules->getRule('pd', '20');
+    $this->assertNotNull($rule1);
 
-    foreach ($rules as $prefix => $rule) {
-      // Every rule must have a CSS property.
-      $this->assertArrayHasKey('css', $rule, "Rule '{$prefix}' must have a CSS property");
-      $this->assertNotEmpty($rule['css'], "Rule '{$prefix}' CSS property cannot be empty");
+    // Second call should return cached result.
+    $rule2 = $this->rules->getRule('pd', '20');
+    $this->assertNotNull($rule2);
+    $this->assertEquals($rule1, $rule2);
+  }
 
-      // If a rule claims to support sides, it should have appropriate
-      // properties.
-      if (isset($rule['sides']) && $rule['sides']) {
-        $this->assertTrue($rule['isNumericFlexible'] ?? FALSE,
-          "Rule '{$prefix}' with sides support should typically be numeric flexible");
-      }
+  /**
+   * Tests error handling.
+   *
+   * @covers ::getRule
+   */
+  public function testErrorHandling(): void {
+    // Test with malformed custom rules.
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->any())
+      ->method('get')
+      ->willReturnMap([
+        ['rules_enabled', TRUE],
+        ['custom_rules', [
+          'broken' => [
+            // Missing required fields.
+          ],
+        ]],
+        ['rule_priority', 'custom_first'],
+        ['rule_cache_enabled', FALSE],
+      ]);
 
-      // Color rules shouldn't also be numeric flexible (usually)
-      if (isset($rule['isColor']) && $rule['isColor']) {
-        $this->assertFalse($rule['isNumericFlexible'] ?? FALSE,
-          "Rule '{$prefix}' should not be both color and numeric flexible");
-      }
-    }
+    $this->configFactory->expects($this->any())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
+
+    $this->logger->expects($this->once())
+      ->method('error')
+      ->with($this->stringContains('Invalid custom rule'));
+
+    $rules = new UtilikitRules(
+      $this->configFactory,
+      $this->logger
+    );
+
+    $rule = $rules->getRule('broken', 'test');
+    $this->assertNull($rule);
+  }
+
+  /**
+   * Tests rules disabled configuration.
+   *
+   * @covers ::getRule
+   */
+  public function testRulesDisabled(): void {
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->any())
+      ->method('get')
+      ->willReturnMap([
+        ['rules_enabled', FALSE],
+        ['custom_rules', []],
+        ['rule_priority', 'custom_first'],
+        ['rule_cache_enabled', TRUE],
+      ]);
+
+    $this->configFactory->expects($this->any())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
+
+    $rules = new UtilikitRules(
+      $this->configFactory,
+      $this->logger
+    );
+
+    $rule = $rules->getRule('pd', '20');
+    $this->assertNull($rule);
   }
 
 }

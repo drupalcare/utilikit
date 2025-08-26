@@ -6,6 +6,8 @@ namespace Drupal\Tests\utilikit\Unit\Service;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitCssGenerator;
+use Drupal\utilikit\Service\UtilikitCssParser;
+use Drupal\utilikit\Service\UtilikitStateManager;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -27,53 +29,32 @@ class UtilikitCssGeneratorTest extends UnitTestCase {
   protected UtilikitCssGenerator $cssGenerator;
 
   /**
-   * Mock config factory.
+   * Mock CSS parser.
    *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitCssParser&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected ConfigFactoryInterface|MockObject $configFactory;
+  protected UtilikitCssParser&MockObject $cssParser;
 
   /**
-   * Mock configuration.
+   * Mock state manager.
    *
-   * @var \Drupal\Core\Config\ImmutableConfig|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitStateManager&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected ImmutableConfig|MockObject $config;
+  protected UtilikitStateManager&MockObject $stateManager;
+
+  /**
+   * Mock config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface&\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected ConfigFactoryInterface&MockObject $configFactory;
 
   /**
    * Mock logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected LoggerInterface|MockObject $logger;
-
-  /**
-   * Test utility classes for generation.
-   *
-   * @var array
-   */
-  protected array $testClasses = [
-    'uk-pd--20',
-    'uk-mg--t-10',
-    'uk-bg--ff0000',
-    'uk-tc--333333',
-    'uk-dp--flex',
-    'uk-md-pd--30',
-    'uk-lg-mg--40',
-  ];
-
-  /**
-   * Expected breakpoint definitions.
-   *
-   * @var array
-   */
-  protected array $testBreakpoints = [
-    'sm' => 576,
-    'md' => 768,
-    'lg' => 992,
-    'xl' => 1200,
-    'xxl' => 1400,
-  ];
+  protected LoggerInterface&MockObject $logger;
 
   /**
    * {@inheritdoc}
@@ -81,255 +62,421 @@ class UtilikitCssGeneratorTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Create config and config factory mocks.
-    $this->config = $this->createMock(ImmutableConfig::class);
+    $this->cssParser = $this->createMock(UtilikitCssParser::class);
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
     $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
     $this->logger = $this->createMock(LoggerInterface::class);
 
-    // Set up config factory to return our config mock.
+    // Setup default config.
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->any())
+      ->method('get')
+      ->willReturnMap([
+        ['css_optimization', TRUE],
+        ['css_minify', TRUE],
+        ['css_comments', FALSE],
+        ['media_queries', []],
+        ['css_prefix', ''],
+      ]);
+
     $this->configFactory->expects($this->any())
       ->method('get')
       ->with('utilikit.settings')
-      ->willReturn($this->config);
+      ->willReturn($config);
 
-    // Set up config mock with default values.
-    $this->config->method('get')->willReturnCallback(function ($key) {
-      $defaults = [
-        'active_breakpoints' => $this->testBreakpoints,
-        'optimize_css' => FALSE,
-        'css_cache_ttl' => 3600,
-      ];
-      return $defaults[$key] ?? NULL;
-    });
-
-    // Create the CSS generator with ConfigFactoryInterface.
     $this->cssGenerator = new UtilikitCssGenerator(
+      $this->cssParser,
+      $this->stateManager,
       $this->configFactory,
       $this->logger
     );
   }
 
   /**
-   * Tests basic CSS generation from utility classes.
+   * Tests generateCss with simple classes.
    *
    * @covers ::generateCss
    */
-  public function testGenerateCss() {
-    $css = $this->cssGenerator->generateCss($this->testClasses);
+  public function testGenerateCssSimple(): void {
+    $classes = [
+      '.uk-pd--20' => 'padding: 20px;',
+      '.uk-mg--10' => 'margin: 10px;',
+    ];
 
-    // Verify CSS is generated.
-    $this->assertNotEmpty($css);
+    $this->stateManager->expects($this->once())
+      ->method('getStoredClasses')
+      ->willReturn($classes);
 
-    // Check for specific class rules.
+    $css = $this->cssGenerator->generateCss();
+
     $this->assertStringContainsString('.uk-pd--20', $css);
-    $this->assertStringContainsString('padding: 20px', $css);
-
-    $this->assertStringContainsString('.uk-mg--t-10', $css);
-    $this->assertStringContainsString('margin-top: 10px', $css);
-
-    $this->assertStringContainsString('.uk-bg--ff0000', $css);
-    $this->assertStringContainsString('background-color: #ff0000', $css);
-
-    $this->assertStringContainsString('.uk-dp--flex', $css);
-    $this->assertStringContainsString('display: flex', $css);
-  }
-
-  /**
-   * Tests responsive CSS generation.
-   *
-   * @covers ::generateCss
-   */
-  public function testGenerateResponsiveCss() {
-    $responsiveClasses = [
-      'uk-pd--20',
-      'uk-md-pd--30',
-      'uk-lg-pd--40',
-    ];
-
-    $css = $this->cssGenerator->generateCss($responsiveClasses);
-
-    // Verify base class.
-    $this->assertStringContainsString('.uk-pd--20', $css);
-    $this->assertStringContainsString('padding: 20px', $css);
-
-    // Verify responsive classes with media queries.
-    $this->assertStringContainsString('@media (min-width: 768px)', $css);
-    $this->assertStringContainsString('.uk-md-pd--30', $css);
-    $this->assertStringContainsString('padding: 30px', $css);
-
-    $this->assertStringContainsString('@media (min-width: 992px)', $css);
-    $this->assertStringContainsString('.uk-lg-pd--40', $css);
-    $this->assertStringContainsString('padding: 40px', $css);
-  }
-
-  /**
-   * Tests color value parsing and generation.
-   *
-   * @covers ::generateCss
-   * @dataProvider providerColorValues
-   */
-  public function testColorValueGeneration($class, $expectedCss) {
-    $css = $this->cssGenerator->generateCss([$class]);
-    $this->assertStringContainsString($expectedCss, $css);
-  }
-
-  /**
-   * Data provider for color value tests.
-   *
-   * @return array
-   *   Test cases for color value generation.
-   */
-  public static function providerColorValues(): array {
-    return [
-      'hex 6-digit' => ['uk-bg--ff0000', 'background-color: #ff0000'],
-      'hex 3-digit' => ['uk-bg--f00', 'background-color: #ff0000'],
-      'hex with alpha' => ['uk-bg--ff0000-50', 'background-color: rgba(255, 0, 0, 0.5)'],
-      'text color' => ['uk-tc--007bff', 'color: #007bff'],
-    ];
-  }
-
-  /**
-   * Tests side value parsing and generation.
-   *
-   * @covers ::generateCss
-   * @dataProvider providerSideValues
-   */
-  public function testSideValueGeneration($class, $expectedCss) {
-    $css = $this->cssGenerator->generateCss([$class]);
-    $this->assertStringContainsString($expectedCss, $css);
-  }
-
-  /**
-   * Data provider for side value tests.
-   *
-   * @return array
-   *   Test cases for side value generation.
-   */
-  public static function providerSideValues(): array {
-    return [
-      'top side' => ['uk-pd--t-20', 'padding-top: 20px'],
-      'bottom side' => ['uk-mg--b-15', 'margin-bottom: 15px'],
-      'horizontal sides' => ['uk-pd--x-10', 'padding-left: 10px; padding-right: 10px'],
-      'vertical sides' => ['uk-mg--y-25', 'margin-top: 25px; margin-bottom: 25px'],
-      'four values' => ['uk-pd--10-20-30-40', 'padding: 10px 20px 30px 40px'],
-    ];
-  }
-
-  /**
-   * Tests CSS optimization features.
-   *
-   * @covers ::generateCss
-   */
-  public function testCssOptimization() {
-    // Enable optimization in config.
-    $this->config->method('get')->willReturnCallback(function ($key) {
-      $defaults = [
-        'active_breakpoints' => $this->testBreakpoints,
-        'optimize_css' => TRUE,
-        'css_cache_ttl' => 3600,
-      ];
-      return $defaults[$key] ?? NULL;
-    });
-
-    $css = $this->cssGenerator->generateCss($this->testClasses);
-
-    // Optimized CSS should be minified (no extra whitespace)
-    $this->assertNotEmpty($css);
-    // This is a basic test - actual optimization logic would be tested more
-    // thoroughly.
-  }
-
-  /**
-   * Tests invalid class filtering.
-   *
-   * @covers ::generateCss
-   */
-  public function testInvalidClassFiltering() {
-    $mixedClasses = [
-    // Valid.
-      'uk-pd--20',
-    // Invalid.
-      'invalid-class',
-    // Valid.
-      'uk-mg--10',
-    // Invalid.
-      'not-utilikit',
-    ];
-
-    $css = $this->cssGenerator->generateCss($mixedClasses);
-
-    // Should only contain valid classes.
-    $this->assertStringContainsString('.uk-pd--20', $css);
+    $this->assertStringContainsString('padding: 20px;', $css);
     $this->assertStringContainsString('.uk-mg--10', $css);
-
-    // Should not contain invalid classes.
-    $this->assertStringNotContainsString('invalid-class', $css);
-    $this->assertStringNotContainsString('not-utilikit', $css);
+    $this->assertStringContainsString('margin: 10px;', $css);
   }
 
   /**
-   * Tests empty class array handling.
+   * Tests generateCss with minification enabled.
    *
    * @covers ::generateCss
+   * @covers ::minifyCss
    */
-  public function testEmptyClassArray() {
-    $css = $this->cssGenerator->generateCss([]);
-
-    // Should return empty CSS or minimal CSS structure.
-    $this->assertIsString($css);
-  }
-
-  /**
-   * Tests duplicate class deduplication.
-   *
-   * @covers ::generateCss
-   */
-  public function testDuplicateClassDeduplication() {
-    $duplicateClasses = [
-      'uk-pd--20',
-    // Duplicate.
-      'uk-pd--20',
-      'uk-mg--10',
-    // Duplicate.
-      'uk-mg--10',
+  public function testGenerateCssMinified(): void {
+    $classes = [
+      '.uk-pd--20' => 'padding: 20px;',
+      '.uk-mg--10' => 'margin: 10px;',
     ];
 
-    $css = $this->cssGenerator->generateCss($duplicateClasses);
+    $this->stateManager->expects($this->once())
+      ->method('getStoredClasses')
+      ->willReturn($classes);
 
-    // Should only generate each class once.
-    $occurrences = substr_count($css, '.uk-pd--20');
-    $this->assertEquals(1, $occurrences, 'Duplicate classes should be deduplicated');
+    $css = $this->cssGenerator->generateCss();
+
+    // Minified CSS should not contain extra spaces or newlines.
+    $this->assertStringNotContainsString('  ', $css);
+    $this->assertStringContainsString('.uk-pd--20{padding:20px}', $css);
+    $this->assertStringContainsString('.uk-mg--10{margin:10px}', $css);
   }
 
   /**
-   * Tests CSS ordering and organization.
+   * Tests generateCss with comments enabled.
    *
    * @covers ::generateCss
    */
-  public function testCssOrdering() {
-    $css = $this->cssGenerator->generateCss($this->testClasses);
+  public function testGenerateCssWithComments(): void {
+    // Setup config with comments enabled.
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->any())
+      ->method('get')
+      ->willReturnMap([
+        ['css_optimization', TRUE],
+        ['css_minify', FALSE],
+        ['css_comments', TRUE],
+        ['media_queries', []],
+        ['css_prefix', ''],
+      ]);
 
-    // Basic classes should come before responsive variants.
-    $basePadding = strpos($css, '.uk-pd--20');
-    $responsivePadding = strpos($css, '.uk-md-pd--30');
+    $this->configFactory->expects($this->any())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
 
-    if ($basePadding !== FALSE && $responsivePadding !== FALSE) {
-      $this->assertLessThan($responsivePadding, $basePadding, 'Base classes should come before responsive variants');
-    }
+    $classes = [
+      '.uk-pd--20' => 'padding: 20px;',
+    ];
+
+    $this->stateManager->expects($this->once())
+      ->method('getStoredClasses')
+      ->willReturn($classes);
+
+    $css = $this->cssGenerator->generateCss();
+
+    $this->assertStringContainsString('/* Generated by UtiliKit', $css);
+    $this->assertStringContainsString('/* Class: uk-pd--20 */', $css);
   }
 
   /**
-   * Tests error handling with invalid input.
+   * Tests generateCss with media queries.
+   *
+   * @covers ::generateCss
+   * @covers ::applyMediaQueries
+   */
+  public function testGenerateCssWithMediaQueries(): void {
+    // Setup config with media queries.
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->any())
+      ->method('get')
+      ->willReturnMap([
+        ['css_optimization', TRUE],
+        ['css_minify', FALSE],
+        ['css_comments', FALSE],
+        ['media_queries', [
+          'sm' => '(min-width: 640px)',
+          'md' => '(min-width: 768px)',
+          'lg' => '(min-width: 1024px)',
+        ]],
+        ['css_prefix', ''],
+      ]);
+
+    $this->configFactory->expects($this->any())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
+
+    $classes = [
+      '.uk-pd--20' => 'padding: 20px;',
+      '.uk-pd-sm--20' => 'padding: 20px;',
+      '.uk-pd-md--20' => 'padding: 20px;',
+      '.uk-pd-lg--20' => 'padding: 20px;',
+    ];
+
+    $this->stateManager->expects($this->once())
+      ->method('getStoredClasses')
+      ->willReturn($classes);
+
+    $css = $this->cssGenerator->generateCss();
+
+    $this->assertStringContainsString('.uk-pd--20', $css);
+    $this->assertStringContainsString('@media (min-width: 640px)', $css);
+    $this->assertStringContainsString('@media (min-width: 768px)', $css);
+    $this->assertStringContainsString('@media (min-width: 1024px)', $css);
+  }
+
+  /**
+   * Tests generateCss with CSS prefix.
    *
    * @covers ::generateCss
    */
-  public function testErrorHandling() {
-    // Test with null input.
-    $css = $this->cssGenerator->generateCss(NULL);
+  public function testGenerateCssWithPrefix(): void {
+    // Setup config with CSS prefix.
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->any())
+      ->method('get')
+      ->willReturnMap([
+        ['css_optimization', TRUE],
+        ['css_minify', FALSE],
+        ['css_comments', FALSE],
+        ['media_queries', []],
+        ['css_prefix', '.utilikit-wrapper'],
+      ]);
+
+    $this->configFactory->expects($this->any())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
+
+    $classes = [
+      '.uk-pd--20' => 'padding: 20px;',
+      '.uk-mg--10' => 'margin: 10px;',
+    ];
+
+    $this->stateManager->expects($this->once())
+      ->method('getStoredClasses')
+      ->willReturn($classes);
+
+    $css = $this->cssGenerator->generateCss();
+
+    $this->assertStringContainsString('.utilikit-wrapper .uk-pd--20', $css);
+    $this->assertStringContainsString('.utilikit-wrapper .uk-mg--10', $css);
+  }
+
+  /**
+   * Tests generateForClasses method.
+   *
+   * @covers ::generateForClasses
+   */
+  public function testGenerateForClasses(): void {
+    $classes = ['uk-pd--20', 'uk-mg--10', 'uk-text--center'];
+
+    $this->cssParser->expects($this->exactly(3))
+      ->method('parseClass')
+      ->willReturnOnConsecutiveCalls(
+        'padding: 20px;',
+        'margin: 10px;',
+        'text-align: center;'
+      );
+
+    $css = $this->cssGenerator->generateForClasses($classes);
+
+    $this->assertStringContainsString('.uk-pd--20', $css);
+    $this->assertStringContainsString('padding: 20px;', $css);
+    $this->assertStringContainsString('.uk-mg--10', $css);
+    $this->assertStringContainsString('margin: 10px;', $css);
+    $this->assertStringContainsString('.uk-text--center', $css);
+    $this->assertStringContainsString('text-align: center;', $css);
+  }
+
+  /**
+   * Tests generateForClasses with invalid classes.
+   *
+   * @covers ::generateForClasses
+   */
+  public function testGenerateForClassesWithInvalid(): void {
+    $classes = ['uk-pd--20', 'invalid-class'];
+
+    $this->cssParser->expects($this->exactly(2))
+      ->method('parseClass')
+      ->willReturnOnConsecutiveCalls(
+        'padding: 20px;',
+        NULL
+      );
+
+    $this->logger->expects($this->once())
+      ->method('warning')
+      ->with($this->stringContains('Failed to parse class'));
+
+    $css = $this->cssGenerator->generateForClasses($classes);
+
+    $this->assertStringContainsString('.uk-pd--20', $css);
+    $this->assertStringNotContainsString('invalid-class', $css);
+  }
+
+  /**
+   * Tests optimizeCss method.
+   *
+   * @covers ::optimizeCss
+   */
+  public function testOptimizeCss(): void {
+    $input = "
+      .uk-pd--20 {
+        padding: 20px;
+      }
+
+      .uk-mg--10 {
+        margin: 10px;
+      }
+
+      /* Comment */
+      .uk-text--center {
+        text-align: center;
+      }
+    ";
+
+    $optimized = $this->cssGenerator->optimizeCss($input);
+
+    // Should remove extra whitespace and comments.
+    $this->assertStringNotContainsString('/* Comment */', $optimized);
+    $this->assertStringNotContainsString("\n\n", $optimized);
+    $this->assertStringContainsString('.uk-pd--20', $optimized);
+    $this->assertStringContainsString('.uk-mg--10', $optimized);
+    $this->assertStringContainsString('.uk-text--center', $optimized);
+  }
+
+  /**
+   * Tests groupRelatedClasses method.
+   *
+   * @covers ::groupRelatedClasses
+   */
+  public function testGroupRelatedClasses(): void {
+    $classes = [
+      '.uk-pd--20' => 'padding: 20px;',
+      '.uk-pd--10' => 'padding: 10px;',
+      '.uk-mg--20' => 'margin: 20px;',
+      '.uk-mg--10' => 'margin: 10px;',
+      '.uk-text--center' => 'text-align: center;',
+      '.uk-text--left' => 'text-align: left;',
+    ];
+
+    $grouped = $this->cssGenerator->groupRelatedClasses($classes);
+
+    $this->assertArrayHasKey('pd', $grouped);
+    $this->assertArrayHasKey('mg', $grouped);
+    $this->assertArrayHasKey('text', $grouped);
+    $this->assertCount(2, $grouped['pd']);
+    $this->assertCount(2, $grouped['mg']);
+    $this->assertCount(2, $grouped['text']);
+  }
+
+  /**
+   * Tests generateWithOptions method.
+   *
+   * @covers ::generateWithOptions
+   */
+  public function testGenerateWithOptions(): void {
+    $classes = [
+      '.uk-pd--20' => 'padding: 20px;',
+      '.uk-mg--10' => 'margin: 10px;',
+    ];
+
+    $this->stateManager->expects($this->once())
+      ->method('getStoredClasses')
+      ->willReturn($classes);
+
+    $options = [
+      'minify' => FALSE,
+      'comments' => TRUE,
+      'optimize' => FALSE,
+      'prefix' => '.custom-wrapper',
+    ];
+
+    $css = $this->cssGenerator->generateWithOptions($options);
+
+    $this->assertStringContainsString('/* Generated by UtiliKit', $css);
+    $this->assertStringContainsString('.custom-wrapper .uk-pd--20', $css);
+    $this->assertStringContainsString('padding: 20px;', $css);
+    $this->assertStringNotContainsString('{padding:20px}', $css); // Not minified.
+  }
+
+  /**
+   * Tests empty class handling.
+   *
+   * @covers ::generateCss
+   */
+  public function testGenerateCssEmpty(): void {
+    $this->stateManager->expects($this->once())
+      ->method('getStoredClasses')
+      ->willReturn([]);
+
+    $css = $this->cssGenerator->generateCss();
+
     $this->assertIsString($css);
+    $this->assertEmpty(trim($css));
+  }
 
-    // Test with non-array input (if applicable)
-    // This depends on how your service handles type checking.
+  /**
+   * Tests error handling in generation.
+   *
+   * @covers ::generateCss
+   */
+  public function testGenerateCssErrorHandling(): void {
+    $this->stateManager->expects($this->once())
+      ->method('getStoredClasses')
+      ->willThrowException(new \Exception('Database error'));
+
+    $this->logger->expects($this->once())
+      ->method('error')
+      ->with($this->stringContains('Error generating CSS'));
+
+    $css = $this->cssGenerator->generateCss();
+
+    $this->assertIsString($css);
+    $this->assertEmpty($css);
+  }
+
+  /**
+   * Tests CSS validation.
+   *
+   * @covers ::validateCss
+   */
+  public function testValidateCss(): void {
+    // Valid CSS.
+    $validCss = '.uk-pd--20 { padding: 20px; } .uk-mg--10 { margin: 10px; }';
+    $this->assertTrue($this->cssGenerator->validateCss($validCss));
+
+    // Invalid CSS.
+    $invalidCss = '.uk-pd--20 { padding: 20px';
+    $this->assertFalse($this->cssGenerator->validateCss($invalidCss));
+
+    // Empty CSS.
+    $this->assertTrue($this->cssGenerator->validateCss(''));
+  }
+
+  /**
+   * Tests CSS statistics generation.
+   *
+   * @covers ::getStatistics
+   */
+  public function testGetStatistics(): void {
+    $classes = [
+      '.uk-pd--20' => 'padding: 20px;',
+      '.uk-pd--10' => 'padding: 10px;',
+      '.uk-mg--20' => 'margin: 20px;',
+      '.uk-text--center' => 'text-align: center;',
+    ];
+
+    $this->stateManager->expects($this->once())
+      ->method('getStoredClasses')
+      ->willReturn($classes);
+
+    $stats = $this->cssGenerator->getStatistics();
+
+    $this->assertArrayHasKey('total_classes', $stats);
+    $this->assertArrayHasKey('css_size', $stats);
+    $this->assertArrayHasKey('minified_size', $stats);
+    $this->assertArrayHasKey('compression_ratio', $stats);
+    $this->assertArrayHasKey('property_breakdown', $stats);
+    $this->assertEquals(4, $stats['total_classes']);
   }
 
 }

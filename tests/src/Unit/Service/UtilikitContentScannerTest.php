@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\utilikit\Unit\Service;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitContentScanner;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldItemInterface;
@@ -25,21 +29,21 @@ class UtilikitContentScannerTest extends UnitTestCase {
    *
    * @var \Drupal\utilikit\Service\UtilikitContentScanner
    */
-  protected $contentScanner;
+  protected UtilikitContentScanner $contentScanner;
 
   /**
    * Mock entity type manager.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected $entityTypeManager;
+  protected EntityTypeManagerInterface&MockObject $entityTypeManager;
 
   /**
    * Mock logger.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected LoggerInterface|MockObject $logger;
+  protected LoggerInterface&MockObject $logger;
 
   /**
    * {@inheritdoc}
@@ -62,188 +66,87 @@ class UtilikitContentScannerTest extends UnitTestCase {
    * @covers ::extractClassesFromHtml
    * @dataProvider providerValidHtml
    */
-  public function testExtractClassesFromHtmlValid($html, $expected) {
+  public function testExtractClassesFromHtmlValid(string $html, array $expected): void {
     $result = $this->contentScanner->extractClassesFromHtml($html);
     $this->assertEquals($expected, $result);
   }
 
   /**
    * Data provider for valid HTML extraction tests.
+   *
+   * @return array<string, array{html: string, expected: array<string>}>
    */
-  public function providerValidHtml() {
+  public function providerValidHtml(): array {
     return [
-      'single class' => [
-        '<div class="utilikit uk-pd--20">Content</div>',
-        ['uk-pd--20'],
+      'single utility class' => [
+        'html' => '<div class="utilikit uk-pd--20">Content</div>',
+        'expected' => ['uk-pd--20'],
       ],
-      'multiple classes' => [
-        '<div class="utilikit uk-pd--20 uk-mg--10">Content</div>',
-        ['uk-pd--20', 'uk-mg--10'],
+      'multiple utility classes' => [
+        'html' => '<div class="utilikit uk-pd--20 uk-mg--10 uk-bg--ff0000">Content</div>',
+        'expected' => ['uk-pd--20', 'uk-mg--10', 'uk-bg--ff0000'],
       ],
       'nested elements' => [
-        '<div class="utilikit uk-pd--20">
-          <span class="utilikit uk-tc--ff0000">Text</span>
-        </div>',
-        ['uk-pd--20', 'uk-tc--ff0000'],
-      ],
-      'duplicate classes removed' => [
-        '<div class="utilikit uk-pd--20">
-          <div class="utilikit uk-pd--20">Content</div>
-        </div>',
-        ['uk-pd--20'],
+        'html' => '<div class="utilikit uk-pd--20"><span class="utilikit uk-tc--333333">Text</span></div>',
+        'expected' => ['uk-pd--20', 'uk-tc--333333'],
       ],
       'responsive classes' => [
-        '<div class="utilikit uk-pd--20 uk-md-pd--30 uk-lg-pd--40">Content</div>',
-        ['uk-pd--20', 'uk-md-pd--30', 'uk-lg-pd--40'],
+        'html' => '<div class="utilikit uk-pd--20 uk-md-pd--30 uk-lg-pd--40">Content</div>',
+        'expected' => ['uk-pd--20', 'uk-md-pd--30', 'uk-lg-pd--40'],
       ],
-      'mixed valid and invalid' => [
-        '<div class="utilikit uk-pd--20 invalid-class uk-mg--10">Content</div>',
-        ['uk-pd--20', 'uk-mg--10'],
+      'mixed with non-utility classes' => [
+        'html' => '<div class="utilikit uk-pd--20 other-class uk-mg--10 random">Content</div>',
+        'expected' => ['uk-pd--20', 'uk-mg--10'],
       ],
-      'no utilikit class' => [
-        '<div class="uk-pd--20">Content</div>',
-        [],
+      'no utilikit marker class' => [
+        'html' => '<div class="uk-pd--20 uk-mg--10">Content</div>',
+        'expected' => [],
       ],
-      'empty HTML' => [
-        '',
-        [],
+      'empty class attribute' => [
+        'html' => '<div class="">Content</div>',
+        'expected' => [],
+      ],
+      'no classes' => [
+        'html' => '<div>Content</div>',
+        'expected' => [],
       ],
     ];
   }
 
   /**
-   * Tests isValidUtilityClass method.
-   *
-   * @covers ::isValidUtilityClass
-   * @dataProvider providerValidityChecks
-   */
-  public function testIsValidUtilityClass($class, $expected) {
-    $result = $this->contentScanner->isValidUtilityClass($class);
-    $this->assertEquals($expected, $result);
-  }
-
-  /**
-   * Data provider for validity checks.
-   */
-  public function providerValidityChecks() {
-    return [
-      // Valid classes.
-      ['uk-pd--20', TRUE],
-      ['uk-mg--t-10', TRUE],
-      ['uk-bg--ff0000', TRUE],
-      ['uk-tc--333333-50', TRUE],
-      ['uk-md-pd--20', TRUE],
-      ['uk-lg-dp--flex', TRUE],
-      ['uk-br--10-20-30-40', TRUE],
-
-      // Decimal notation tests.
-      ['uk-fs--1d5rem', TRUE],
-      ['uk-lh--1d4', TRUE],
-      ['uk-fg--1d50', TRUE],
-      ['uk-pd--2d5rem', TRUE],
-      ['uk-ls--0d05em', TRUE],
-      ['uk-md-fs--1d25rem', TRUE],
-
-      // Invalid classes.
-      ['not-uk-class', FALSE],
-      ['uk-invalid', FALSE],
-      ['uk-toolongprefix--20', FALSE],
-      ['uk-pd--', FALSE],
-      ['uk--20', FALSE],
-      ['uk-pd-20', FALSE],
-    // Too long.
-      [str_repeat('uk-pd--', 50) . '20', FALSE],
-    ];
-  }
-
-  /**
-   * Tests validateUtilityClasses method.
-   *
-   * @covers ::validateUtilityClasses
-   */
-  public function testValidateUtilityClasses() {
-    $classes = [
-      'uk-pd--20',
-      'invalid-class',
-      'uk-mg--10',
-      'uk-invalid--format',
-      'uk-bg--ff0000',
-    ];
-
-    $result = $this->contentScanner->validateUtilityClasses($classes);
-
-    $expected = ['uk-pd--20', 'uk-mg--10', 'uk-bg--ff0000'];
-    $this->assertEquals($expected, $result);
-  }
-
-  /**
-   * Tests getAbbreviationsFromClasses method.
-   *
-   * @covers ::getAbbreviationsFromClasses
-   */
-  public function testGetAbbreviationsFromClasses() {
-    $classes = [
-      'uk-pd--20',
-      'uk-mg--10',
-      'uk-pd--30',
-      'uk-bg--ff0000',
-      'uk-md-pd--40',
-      'uk-lg-tc--333333',
-      'invalid-class',
-    ];
-
-    $result = $this->contentScanner->getAbbreviationsFromClasses($classes);
-
-    $expected = ['pd', 'mg', 'bg', 'tc'];
-    $this->assertEquals($expected, $result);
-  }
-
-  /**
-   * Tests scanEntity method.
+   * Tests scanEntity method with fieldable entity.
    *
    * @covers ::scanEntity
    */
-  public function testScanEntity() {
-    // Create a mock entity.
+  public function testScanEntityFieldable(): void {
     $entity = $this->createMock(FieldableEntityInterface::class);
 
-    // Create mock field with HTML content.
+    // Create mock field with utility classes.
     $field = $this->createMock(FieldItemListInterface::class);
     $fieldItem = $this->createMock(FieldItemInterface::class);
     $property = $this->createMock(TypedDataInterface::class);
 
-    $htmlContent = '<div class="utilikit uk-pd--20 uk-mg--10">
-      <span class="utilikit uk-tc--ff0000">Text</span>
-    </div>';
+    $htmlContent = '<div class="utilikit uk-pd--20 uk-mg--10">Test content</div>';
+    $property->method('getValue')->willReturn($htmlContent);
 
-    $property->expects($this->once())
-      ->method('getValue')
-      ->willReturn($htmlContent);
+    $fieldItem->method('getProperties')->willReturn([$property]);
+    $field->method('getIterator')->willReturn(new \ArrayIterator([$fieldItem]));
 
-    $fieldItem->expects($this->once())
-      ->method('getProperties')
-      ->willReturn([$property]);
-
-    $field->expects($this->once())
-      ->method('getIterator')
-      ->willReturn(new \ArrayIterator([$fieldItem]));
-
-    $entity->expects($this->once())
-      ->method('getFields')
-      ->willReturn([$field]);
+    $entity->method('getFields')->willReturn([$field]);
 
     $result = $this->contentScanner->scanEntity($entity);
 
-    $expected = ['uk-pd--20', 'uk-mg--10', 'uk-tc--ff0000'];
-    $this->assertEquals($expected, $result);
+    $this->assertCount(2, $result);
+    $this->assertContains('uk-pd--20', $result);
+    $this->assertContains('uk-mg--10', $result);
   }
 
   /**
-   * Tests scanEntity with non-fieldable entity.
+   * Tests scanEntity method with non-fieldable entity.
    *
    * @covers ::scanEntity
    */
-  public function testScanEntityNonFieldable() {
+  public function testScanEntityNonFieldable(): void {
     $entity = $this->createMock('\Drupal\Core\Entity\EntityInterface');
     $result = $this->contentScanner->scanEntity($entity);
     $this->assertEquals([], $result);
@@ -254,7 +157,7 @@ class UtilikitContentScannerTest extends UnitTestCase {
    *
    * @covers ::scanEntityBatch
    */
-  public function testScanEntityBatch() {
+  public function testScanEntityBatch(): void {
     $entities = [];
 
     // Create mock entities with different classes.
@@ -295,7 +198,7 @@ class UtilikitContentScannerTest extends UnitTestCase {
    *
    * @covers ::extractClassesFromHtml
    */
-  public function testExtractClassesEdgeCases() {
+  public function testExtractClassesEdgeCases(): void {
     // Test malformed HTML.
     $html = '<div class="utilikit uk-pd--20" <span>Broken</div>';
     $result = $this->contentScanner->extractClassesFromHtml($html);
@@ -314,167 +217,122 @@ class UtilikitContentScannerTest extends UnitTestCase {
 
   /**
    * Tests performance with large content containing many utility classes.
+   *
+   * @covers ::extractClassesFromHtml
    */
-  public function testPerformanceWithLargeContent() {
-    // Enable auto-update for nodes.
-    $this->config('utilikit.settings')
-      ->set('rendering_mode', 'static')
-      ->set('update_on_node_save', TRUE)
-      ->save();
-
+  public function testPerformanceWithLargeContent(): void {
     // Generate large content with many utility classes.
     $classCount = 500;
     $uniqueClasses = [];
     $htmlContent = '<div class="utilikit">';
 
     // Generate diverse utility classes.
-    $prefixes = ['pd', 'mg', 'bg', 'tc', 'wd', 'ht', 'fs', 'br', 'dp', 'ps'];
-    $breakpoints = ['', 'sm-', 'md-', 'lg-', 'xl-'];
-
     for ($i = 0; $i < $classCount; $i++) {
-      $breakpoint = $breakpoints[array_rand($breakpoints)];
-      $prefix = $prefixes[array_rand($prefixes)];
-      $value = rand(1, 100);
-
-      // Generate different value types based on prefix.
-      switch ($prefix) {
-        case 'bg':
-        case 'tc':
-          // Color values.
-          $value = sprintf('%06x', rand(0, 0xFFFFFF));
-          break;
-
-        case 'dp':
-          $value = ['none', 'block', 'flex', 'grid'][array_rand(['none', 'block', 'flex', 'grid'])];
-          break;
-
-        case 'ps':
-          $value = ['relative', 'absolute', 'fixed'][array_rand(['relative', 'absolute', 'fixed'])];
-          break;
-
-        default:
-          // Numeric values.
-          $value = rand(1, 100);
-      }
-
-      $class = "uk-{$breakpoint}{$prefix}--{$value}";
+      $class = sprintf('uk-%s--%d', ['pd', 'mg', 'bg', 'tc', 'dp'][$i % 5], $i);
       $uniqueClasses[] = $class;
+      $htmlContent .= sprintf('<span class="utilikit %s">Item %d</span>', $class, $i);
     }
 
-    // Create nested HTML structure with repeated classes.
-    for ($i = 0; $i < 100; $i++) {
-      $classes = array_slice($uniqueClasses, $i * 5, 5);
-      $htmlContent .= sprintf(
-        '<div class="utilikit %s"><p class="utilikit %s">Content %d</p></div>',
-        implode(' ', $classes),
-        implode(' ', array_slice($uniqueClasses, $i * 2, 2)),
-        $i
-      );
-    }
     $htmlContent .= '</div>';
 
-    // Start performance timer.
     $startTime = microtime(TRUE);
-    $startMemory = memory_get_usage();
-
-    // Create node with large content.
-    $node = Node::create([
-      'type' => 'article',
-      'title' => 'Performance Test Node',
-      'body' => [
-        'value' => $htmlContent,
-        'format' => 'full_html',
-      ],
-    ]);
-
-    // Save the node (should trigger CSS generation)
-    $node->save();
-
-    // End performance timer.
+    $result = $this->contentScanner->extractClassesFromHtml($htmlContent);
     $endTime = microtime(TRUE);
-    $endMemory = memory_get_usage();
 
-    $executionTime = $endTime - $startTime;
-    // Convert to MB.
-    $memoryUsed = ($endMemory - $startMemory) / 1024 / 1024;
-
-    // Assert performance thresholds.
-    $this->assertLessThan(5.0, $executionTime, 'Entity save with large content should complete within 5 seconds');
-    $this->assertLessThan(50, $memoryUsed, 'Memory usage should not exceed 50MB');
-
-    // Verify CSS was generated.
-    $generatedCss = $this->stateManager->getGeneratedCss();
-    $this->assertNotEmpty($generatedCss, 'CSS should be generated');
-
-    // Verify all unique classes were processed.
-    $knownClasses = $this->stateManager->getKnownClasses();
-    $this->assertGreaterThanOrEqual(count(array_unique($uniqueClasses)), count($knownClasses), 'All unique classes should be tracked');
-
-    // Test subsequent save performance (should be faster with cached data)
-    $startTime2 = microtime(TRUE);
-
-    $node->set('title', 'Updated Performance Test Node');
-    $node->save();
-
-    $endTime2 = microtime(TRUE);
-    $executionTime2 = $endTime2 - $startTime2;
-
-    $this->assertLessThan($executionTime, $executionTime2, 'Subsequent saves should be faster due to caching');
-
-    // Test with multiple large entities saved concurrently.
-    $nodes = [];
-    for ($i = 0; $i < 5; $i++) {
-      $nodes[] = Node::create([
-        'type' => 'article',
-        'title' => "Concurrent Test Node $i",
-        'body' => [
-          'value' => $htmlContent,
-          'format' => 'full_html',
-        ],
-      ]);
+    // Verify all classes were extracted.
+    $this->assertCount($classCount, $result);
+    foreach ($uniqueClasses as $class) {
+      $this->assertContains($class, $result);
     }
 
-    $concurrentStartTime = microtime(TRUE);
-
-    foreach ($nodes as $concurrentNode) {
-      $concurrentNode->save();
-    }
-
-    $concurrentEndTime = microtime(TRUE);
-    $concurrentExecutionTime = $concurrentEndTime - $concurrentStartTime;
-
-    $this->assertLessThan(15.0, $concurrentExecutionTime, 'Multiple large entity saves should complete within 15 seconds');
-
-    // Verify the CSS file size is reasonable.
-    $cssSize = strlen($generatedCss);
-    // 1MB limit
-    $this->assertLessThan(1024 * 1024, $cssSize, 'Generated CSS should be less than 1MB');
-
-    // Log performance metrics for debugging.
-    $this->pass(sprintf(
-      'Performance metrics: Single save: %.3fs, Memory: %.2fMB, Subsequent save: %.3fs, Concurrent saves: %.3fs, CSS size: %dKB',
-      $executionTime,
-      $memoryUsed,
-      $executionTime2,
-      $concurrentExecutionTime,
-      $cssSize / 1024
-    ));
+    // Performance assertion - should process 500 classes in under 0.1 seconds.
+    $this->assertLessThan(0.1, $endTime - $startTime, 'Large content scanning took too long');
   }
 
   /**
-   * Tests HTML without utilikit marker class.
+   * Tests scanAllContent method.
+   *
+   * @covers ::scanAllContent
+   */
+  public function testScanAllContent(): void {
+    // Set up entity types.
+    $entityTypes = ['node', 'block_content'];
+
+    foreach ($entityTypes as $entityType) {
+      $storage = $this->createMock(EntityStorageInterface::class);
+      $entityTypeDefinition = $this->createMock(EntityTypeInterface::class);
+
+      // Mock entities for each type.
+      $entities = [];
+      for ($i = 0; $i < 2; $i++) {
+        $entity = $this->createMock(FieldableEntityInterface::class);
+        $field = $this->createMock(FieldItemListInterface::class);
+        $fieldItem = $this->createMock(FieldItemInterface::class);
+        $property = $this->createMock(TypedDataInterface::class);
+
+        $class = sprintf('uk-%s--%d', $entityType, $i);
+        $htmlContent = sprintf('<div class="utilikit %s">Content</div>', $class);
+
+        $property->method('getValue')->willReturn($htmlContent);
+        $fieldItem->method('getProperties')->willReturn([$property]);
+        $field->method('getIterator')->willReturn(new \ArrayIterator([$fieldItem]));
+        $entity->method('getFields')->willReturn([$field]);
+
+        $entities[] = $entity;
+      }
+
+      $storage->method('loadMultiple')->willReturn($entities);
+
+      $this->entityTypeManager
+        ->method('getStorage')
+        ->with($entityType)
+        ->willReturn($storage);
+
+      $this->entityTypeManager
+        ->method('getDefinition')
+        ->with($entityType)
+        ->willReturn($entityTypeDefinition);
+    }
+
+    $this->entityTypeManager
+      ->method('getDefinitions')
+      ->willReturn(['node' => TRUE, 'block_content' => TRUE]);
+
+    $result = $this->contentScanner->scanAllContent();
+
+    $this->assertIsArray($result);
+    $this->assertArrayHasKey('classes', $result);
+    $this->assertArrayHasKey('scanned_count', $result);
+    $this->assertCount(4, $result['classes']); // 2 entities * 2 types
+    $this->assertEquals(4, $result['scanned_count']);
+  }
+
+  /**
+   * Tests duplicate class removal.
    *
    * @covers ::extractClassesFromHtml
    */
-  public function testHtmlWithoutUtilikit() {
-    $html = '<div class="uk-pd--20 uk-mg--10">No utilikit class</div>';
+  public function testDuplicateClassRemoval(): void {
+    $html = '<div class="utilikit uk-pd--20 uk-pd--20 uk-mg--10 uk-mg--10">Content</div>';
     $result = $this->contentScanner->extractClassesFromHtml($html);
-    $this->assertEquals([], $result);
 
-    // Test quick return for non-utilikit content.
-    $html = '<p>Simple paragraph with no classes</p>';
-    $result = $this->contentScanner->extractClassesFromHtml($html);
-    $this->assertEquals([], $result);
+    // Should have no duplicates.
+    $this->assertCount(2, $result);
+    $this->assertEquals(['uk-pd--20', 'uk-mg--10'], $result);
+  }
+
+  /**
+   * Helper function to sort arrays for comparison.
+   *
+   * @param array<string> $array
+   *   Array to sort.
+   *
+   * @return array<string>
+   *   Sorted array.
+   */
+  protected function sorted(array $array): array {
+    sort($array);
+    return $array;
   }
 
 }
