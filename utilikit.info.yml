@@ -23,7 +23,7 @@ type: module
 
 # Brief description for module listing and administrative interfaces
 # Concise explanation of the module's core purpose and functionality
-description: 'A utility-first CSS framework for Drupal'
+description: 'Dynamic utility-first CSS framework with live generation and responsive design tools'
 
 # =============================================================================
 # PACKAGING AND ORGANIZATION
