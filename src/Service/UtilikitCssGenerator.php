@@ -91,9 +91,11 @@ class UtilikitCssGenerator {
     $classes = array_unique($classes);
 
     if (count($classes) > UtilikitConstants::MAX_CLASSES_WARNING_THRESHOLD) {
-      $this->logger->warning('Excessive number of utility classes detected: @count', [
+      $this->logger->error('Class count exceeds hard limit: @count > @limit', [
         '@count' => count($classes),
+        '@limit' => UtilikitConstants::MAX_CLASSES_WARNING_THRESHOLD,
       ]);
+      throw new \RuntimeException('Too many utility classes to process. Please clean up unused classes.');
     }
 
     sort($classes);

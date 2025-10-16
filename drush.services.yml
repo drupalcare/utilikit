@@ -1,0 +1,56 @@
+# UtiliKit Drush Command Service Definition
+#
+# Registers UtiliKit Drush commands with the Drush command system.
+# This file enables dependency injection for command classes and
+# ensures proper integration with Drupal's service container.
+#
+# Service Configuration:
+# - Registers UtilikitCommands class as a Drush command provider
+# - Injects required dependencies (config.factory, service provider)
+# - Tags service as 'drush.command' for Drush discovery
+# - Follows Drupal 11 and Drush 12+ best practices
+
+services:
+  # UtiliKit Drush commands service
+  # Provides command-line interface for CSS generation, content scanning,
+  # mode switching, and maintenance operations
+  utilikit.commands:
+    class: Drupal\utilikit\Commands\UtilikitCommands
+    arguments:
+      - '@config.factory'              # Configuration access for settings
+      - '@utilikit.service_provider'   # Main service provider for operations
+    tags:
+      - { name: drush.command }        # Register as Drush command provider
+
+# =============================================================================
+# SERVICE DEFINITION NOTES
+# =============================================================================
+#
+# Drush Service Integration:
+# - The 'drush.command' tag enables automatic discovery by Drush
+# - Commands are instantiated via dependency injection
+# - Service container provides all required dependencies
+# - No manual service instantiation needed in command methods
+#
+# Dependency Management:
+# - config.factory: Provides read/write access to module configuration
+# - utilikit.service_provider: Facade for CSS generation and scanning
+# - Additional dependencies can be added to arguments array as needed
+#
+# Command Discovery:
+# - Drush automatically discovers commands in tagged services
+# - Command definitions use PHP attributes (Drush 12+ style)
+# - Aliases defined in command attributes for user convenience
+# - No additional registration or routing configuration needed
+#
+# Best Practices:
+# - Keep command logic in Commands class, business logic in services
+# - Use dependency injection rather than \Drupal::service() calls
+# - Follow Drupal coding standards and type declarations
+# - Provide comprehensive usage examples in command attributes
+# - Use consistent alias naming (uk-* prefix for short aliases)
+#
+# Testing:
+# - Commands can be tested using Drush's testing framework
+# - Dependency injection enables easy mocking for unit tests
+# - Integration tests can verify command output and side effects

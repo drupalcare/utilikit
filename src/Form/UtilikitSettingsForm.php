@@ -6,6 +6,7 @@ use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\utilikit\Service\UtiliKitServiceProvider;
@@ -122,6 +123,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
     $config = $this->config('utilikit.settings');
 
     $form = array_merge($form, $this->buildRenderingModeSection($config));
+    $form = array_merge($form, $this->buildScanningScopeSection($config));
     $form = array_merge($form, $this->buildPerformanceSection($config));
     $form = array_merge($form, $this->buildScopeSection($config));
     $form = array_merge($form, $this->buildTriggersSection($config));
@@ -499,6 +501,64 @@ class UtilikitSettingsForm extends ConfigFormBase {
   }
 
   /**
+   * Builds the scanning scope section.
+   */
+  private function buildScanningScopeSection($config): array {
+    $entity_types = $this->entityTypeManager->getDefinitions();
+    $options = [];
+    $counts = [];
+
+    foreach ($entity_types as $entity_type_id => $entity_type) {
+      if ($entity_type->entityClassImplements(FieldableEntityInterface::class)) {
+        $count = $this->getEntityCount($entity_type_id);
+        $options[$entity_type_id] = $entity_type->getLabel() . ' (' . number_format($count) . ' entities)';
+        $counts[$entity_type_id] = $count;
+      }
+    }
+
+    asort($options);
+
+    $total_selected = 0;
+    $selected_types = $config->get('scanning_entity_types') ?? ['node', 'block_content', 'paragraph'];
+    foreach ($selected_types as $type) {
+      if (isset($counts[$type])) {
+        $total_selected += $counts[$type];
+      }
+    }
+
+    return [
+      'scanning_scope' => [
+        '#type' => 'details',
+        '#title' => $this->t('Content Scanning Scope'),
+        '#description' => $this->t('Select which entity types to scan for UtiliKit utility classes. Scanning only relevant types improves performance during CSS generation.'),
+        '#open' => TRUE,
+
+        'scanning_entity_types' => [
+          '#type' => 'checkboxes',
+          '#title' => $this->t('Entity types to scan'),
+          '#options' => $options,
+          '#default_value' => $selected_types,
+          '#description' => $this->t('Total selected: @count entities', ['@count' => number_format($total_selected)]),
+        ],
+      ],
+    ];
+  }
+
+  /**
+   * Gets entity count for an entity type.
+   */
+  private function getEntityCount(string $entity_type_id): int {
+    try {
+      $storage = $this->entityTypeManager->getStorage($entity_type_id);
+      $query = $storage->getQuery()->accessCheck(FALSE);
+      return (int) $query->count()->execute();
+    }
+    catch (\Exception $e) {
+      return 0;
+    }
+  }
+
+  /**
    * Builds the developer tools section.
    *
    * @param \Drupal\Core\Config\ImmutableConfig $config
@@ -646,7 +706,6 @@ class UtilikitSettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $oldMode = $this->config('utilikit.settings')->get('rendering_mode') ?? 'inline';
     $newMode = $form_state->getValue('rendering_mode');
-
     $this->saveAllSettings($form_state);
     $this->handleModeSwitch($oldMode, $newMode);
     $this->serviceProvider->getCacheManager()->clearAllCaches();
@@ -683,6 +742,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
     $breakpoints = array_intersect($breakpoints, $validBreakpoints);
     $config->set('active_breakpoints', $breakpoints);
 
+    $config->set('scanning_entity_types', array_values(array_filter($form_state->getValue('scanning_entity_types'))));
     $config->set('enabled_content_types', array_filter($form_state->getValue('enabled_content_types')));
     $config->save();
   }

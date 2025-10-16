@@ -33,7 +33,7 @@ class UtilikitConstants {
   /**
    * Threshold for logging warnings about excessive utility class counts.
    */
-  public const MAX_CLASSES_WARNING_THRESHOLD = 10000;
+  public const MAX_CLASSES_WARNING_THRESHOLD = 50000;
 
   /**
    * Default batch size for processing utility classes in chunks.

@@ -131,6 +131,7 @@ services:
       - '@queue'                      # For deferred task processing
       - '@renderer'                   # For AJAX response rendering
       - '@logger.channel.utilikit'    # For operation logging (ADD THIS LINE)
+      - '@datetime.time'
 
   # =============================================================================
   # LOGGING AND MONITORING

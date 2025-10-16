@@ -78,6 +78,8 @@ drush en utilikit
 
 ## Quick Start
 
+
+
 ### Basic Usage
 
 Add the `utilikit` base class to any element, then apply utility classes:
@@ -317,6 +319,28 @@ Access configuration at **Configuration > UtiliKit Settings**
 
 - **Access UtiliKit tools**: View playground and reference pages
 - **Administer UtiliKit**: Access settings and advanced tools
+
+## Drush Commands
+
+# CSS Generation
+drush utilikit:generate     # or: uk-gen, utilikit-generate
+
+# Content Scanning  
+drush utilikit:scan         # or: uk-scan, utilikit-scan
+
+# Clear Data
+drush utilikit:clear        # or: uk-clear, utilikit-clear
+
+# Mode Switching
+drush utilikit:mode static  # or: uk-mode, utilikit-mode
+
+# Status & Info
+drush utilikit:status       # or: uk-status, utilikit-status
+drush utilikit:classes      # or: uk-classes, utilikit-classes
+
+# Maintenance
+drush utilikit:validate     # or: uk-validate, utilikit-validate
+drush utilikit:cache-clear  # or: uk-cc, utilikit-cache-clear
 
 ## Performance
 

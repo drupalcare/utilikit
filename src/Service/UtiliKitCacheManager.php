@@ -312,7 +312,9 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
       }
     }
     catch (\Exception $e) {
-      // Continue silently.
+      $this->logger->warning('Failed to clear dynamic page cache: @message', [
+        '@message' => $e->getMessage(),
+      ]);
     }
 
     try {
@@ -321,7 +323,9 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
       }
     }
     catch (\Exception $e) {
-      // Continue silently.
+      $this->logger->warning('Failed to clear page cache: @message', [
+        '@message' => $e->getMessage(),
+      ]);
     }
   }
 

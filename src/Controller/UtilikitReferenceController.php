@@ -199,7 +199,7 @@ class UtilikitReferenceController extends ControllerBase {
         $output .= '<span class="syntax">';
         $output .= '<span class="syntax-uk">uk</span>';
         $output .= '<span class="syntax-dash">-</span>';
-        $output .= '<span class="syntax-prefix">' . $prefix . '</span>';
+        $output .= '<span class="syntax-prefix">' . htmlspecialchars($prefix, ENT_QUOTES, 'UTF-8') . '</span>';
         $output .= '<span class="syntax-dash">--</span>';
         $output .= '<span class="syntax-value">value</span>';
         $output .= '</span>';

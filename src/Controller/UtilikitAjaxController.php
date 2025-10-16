@@ -15,6 +15,7 @@ use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Render\RendererInterface;
 use Psr\Log\LoggerInterface;
+use Drupal\Component\Datetime\TimeInterface;
 
 /**
  * Provides AJAX endpoints for UtiliKit CSS processing.
@@ -63,7 +64,14 @@ class UtilikitAjaxController extends ControllerBase {
    *
    * @var \Psr\Log\LoggerInterface
    */
-  protected LoggerInterface $logger;
+  protected \Psr\Log\LoggerInterface $logger;
+
+  /**
+   * The time service.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected TimeInterface $time;
 
   /**
    * Constructs a new UtilikitAjaxController object.
@@ -82,15 +90,17 @@ class UtilikitAjaxController extends ControllerBase {
   public function __construct(
     UtiliKitServiceProvider $serviceProvider,
     LockBackendInterface $lock,
-    QueueFactory $queueFactory,
+    QueueFactory $queue,
     RendererInterface $renderer,
     LoggerInterface $logger,
+    TimeInterface $time
   ) {
     $this->serviceProvider = $serviceProvider;
     $this->lock = $lock;
-    $this->queueFactory = $queueFactory;
+    $this->queueFactory = $queue;
     $this->renderer = $renderer;
     $this->logger = $logger;
+    $this->time = $time;
   }
 
   /**
@@ -102,10 +112,10 @@ class UtilikitAjaxController extends ControllerBase {
       $container->get('lock'),
       $container->get('queue'),
       $container->get('renderer'),
-      $container->get('logger.channel.utilikit')
+      $container->get('logger.channel.utilikit'),
+      $container->get('datetime.time')
     );
   }
-
   /**
    * Checks rate limiting for the current request IP address.
    *
@@ -124,34 +134,56 @@ class UtilikitAjaxController extends ControllerBase {
    */
   private function checkRateLimit(Request $request): bool {
     $ip = $request->getClientIp();
-    $stateManager = $this->serviceProvider->getStateManager();
-    $rateLimitData = $stateManager->getRateLimitData($ip);
+    $lock_name = 'utilikit_rate_limit:' . $ip;
 
-    $now = time();
-
-    // Reset rate limit window if expired.
-    if ($now > $rateLimitData['reset_time']) {
-      $stateManager->setRateLimitData(
-        $ip,
-        1,
-        $now + UtilikitConstants::RATE_LIMIT_WINDOW_SECONDS
-      );
+    // Try to acquire lock with short timeout (250ms)
+    if (!$this->lock->acquire($lock_name, 0.25)) {
+      // Lock contention - allow request rather than false-positive rate limit
+      // This favors UX over strict enforcement during high concurrency
+      $this->logger->debug('Rate limit lock contention for IP @ip - allowing request', [
+        '@ip' => $ip,
+      ]);
       return TRUE;
     }
 
-    // Check if current rate limit exceeded.
-    if ($rateLimitData['current'] >=
-        UtilikitConstants::RATE_LIMIT_REQUESTS_PER_MINUTE) {
-      return FALSE;
-    }
+    try {
+      $stateManager = $this->serviceProvider->getStateManager();
+      $rateLimitData = $stateManager->getRateLimitData($ip);
 
-    // Increment counter and allow request.
-    $stateManager->setRateLimitData(
-      $ip,
-      $rateLimitData['current'] + 1,
-      $rateLimitData['reset_time']
-    );
-    return TRUE;
+      // Use Drupal's time service for testability
+      $now = $this->time->getRequestTime();
+
+      // Check if we need to reset the window
+      if ($now > $rateLimitData['reset_time']) {
+        $stateManager->setRateLimitData(
+          $ip,
+          1,
+          $now + UtilikitConstants::RATE_LIMIT_WINDOW_SECONDS
+        );
+        return TRUE;
+      }
+
+      // Check if over limit
+      if ($rateLimitData['current'] >= UtilikitConstants::RATE_LIMIT_REQUESTS_PER_MINUTE) {
+        $this->logger->warning('Rate limit exceeded for IP @ip: @current requests', [
+          '@ip' => $ip,
+          '@current' => $rateLimitData['current'],
+        ]);
+        return FALSE;
+      }
+
+      // Increment counter
+      $stateManager->setRateLimitData(
+        $ip,
+        $rateLimitData['current'] + 1,
+        $rateLimitData['reset_time']
+      );
+
+      return TRUE;
+    }
+    finally {
+      $this->lock->release($lock_name);
+    }
   }
 
   /**
@@ -274,7 +306,7 @@ class UtilikitAjaxController extends ControllerBase {
       ]);
 
       // Acquire lock to prevent concurrent CSS generation.
-      if (!$this->lock->acquire(UtilikitConstants::LOCK_CSS_UPDATE, 30)) {
+      if (!$this->lock->acquire(UtilikitConstants::LOCK_CSS_UPDATE, UtilikitConstants::CSS_UPDATE_LOCK_TIMEOUT)) {
         // If lock unavailable, queue the request for later processing.
         $this->queueCssUpdate($data['classes']);
         $this->logger->info('CSS update queued due to concurrent processing.');

@@ -74,36 +74,96 @@ class UtilikitContentScanner {
    *   - classes: Array of unique utility classes found
    *   - scanned_count: Total number of entities scanned
    */
-  public function scanAllContent(?int $batchSize = NULL): array {
+  public function scanAllContent(?int $batchSize = NULL, ?int $maxExecutionTime = NULL): array {
     $batchSize = $batchSize ?? UtilikitConstants::BATCH_SIZE_DEFAULT;
+    $maxExecutionTime = $maxExecutionTime ?? 30;
+    $startTime = time();
+
     $allClasses = [];
     $totalScanned = 0;
+    $completed = TRUE;
 
-    $entityTypes = array_filter($this->entityTypeManager->getDefinitions(), function ($entityType) {
-      return $entityType->entityClassImplements(FieldableEntityInterface::class);
-    });
+    // Get scanning configuration
+    $config = \Drupal::config('utilikit.settings');
+    $scanning_entity_types = $config->get('scanning_entity_types') ?? ['node', 'block_content', 'paragraph'];
+
+    // Filter entity types based on configuration
+    $entityTypes = array_filter(
+      $this->entityTypeManager->getDefinitions(),
+      function ($entityType) use ($scanning_entity_types) {
+        if (!$entityType->entityClassImplements(FieldableEntityInterface::class)) {
+          return FALSE;
+        }
+        return in_array($entityType->id(), $scanning_entity_types, TRUE);
+      }
+    );
 
     foreach ($entityTypes as $entityTypeId => $entityType) {
       $storage = $this->entityTypeManager->getStorage($entityTypeId);
-      $query = $storage->getQuery()->accessCheck(FALSE);
-      $entityIds = $query->execute();
+      $idKey = $entityType->getKey('id');
+      $lastId = 0;
+      $entityTypeCount = 0;
 
-      $chunks = array_chunk($entityIds, $batchSize);
+      while (TRUE) {
+        // Check timeout
+        if ((time() - $startTime) > $maxExecutionTime) {
+          $this->logger->warning('Scan timeout reached after @time seconds. Scanned @count entities.', [
+            '@time' => $maxExecutionTime,
+            '@count' => $totalScanned,
+          ]);
+          $completed = FALSE;
+          break 2;
+        }
 
-      foreach ($chunks as $chunk) {
-        $entities = $storage->loadMultiple($chunk);
+        $query = $storage->getQuery()
+          ->accessCheck(FALSE)
+          ->condition($idKey, $lastId, '>')
+          ->sort($idKey, 'ASC')
+          ->range(0, $batchSize);
+
+        $entityIds = $query->execute();
+
+        if (empty($entityIds)) {
+          break;
+        }
+
+        $entities = $storage->loadMultiple($entityIds);
 
         foreach ($entities as $entity) {
           $classes = $this->scanEntity($entity);
-          $allClasses = array_merge($allClasses, $classes);
+          if (!empty($classes)) {
+            array_push($allClasses, ...$classes);
+          }
           $totalScanned++;
+          $entityTypeCount++;
         }
+
+        // Progress logging every 10 batches
+        if ($entityTypeCount % ($batchSize * 10) === 0) {
+          $this->logger->info('Scanned @count @type entities', [
+            '@count' => $entityTypeCount,
+            '@type' => $entityTypeId,
+          ]);
+        }
+
+        $entityIdsArray = array_values($entityIds);
+        $lastId = end($entityIdsArray);
+        unset($entities, $entityIds, $entityIdsArray);
+      }
+
+      if ($entityTypeCount > 0) {
+        $this->logger->info('Completed @type: @count entities scanned', [
+          '@type' => $entityTypeId,
+          '@count' => $entityTypeCount,
+        ]);
       }
     }
 
     return [
       'classes' => array_unique($allClasses),
       'scanned_count' => $totalScanned,
+      'completed' => $completed,
+      'execution_time' => time() - $startTime,
     ];
   }
 

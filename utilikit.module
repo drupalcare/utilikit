@@ -349,7 +349,7 @@ function utilikit_update_classes(array $classes, bool $force = FALSE): void {
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
     foreach ($backtrace as $call) {
       if (isset($call['function']) && $call['function'] === 'utilikit_entity_presave') {
-        break;
+        return;
       }
     }
   }

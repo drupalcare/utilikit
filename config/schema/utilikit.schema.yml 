@@ -162,6 +162,22 @@ utilikit.settings:
         type: string
         label: 'Content type machine name'
 
+    # ADD THIS NEW SECTION:
+    # =========================================================================
+    # CONTENT SCANNING SCOPE
+    # =========================================================================
+    # Entity types to scan for UtiliKit utility classes during CSS generation
+    # Limiting scan scope improves performance for large sites
+
+    # List of entity types to scan for utility classes
+    # Controls which entities are processed during content scanning operations
+    scanning_entity_types:
+      type: sequence
+      label: 'Entity types to scan for utility classes'
+      sequence:
+        type: string
+        label: 'Entity type machine name'
+
     # =========================================================================
     # AUTOMATIC UPDATE TRIGGERS (STATIC MODE)
     # =========================================================================

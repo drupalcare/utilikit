@@ -90,7 +90,6 @@ class UtilikitRulesTest extends UnitTestCase {
 
   /**
    * Data provider for valid utility classes.
-   *
    * @return array<int, array<int, mixed>>
    */
   public function providerValidUtilityClasses(): array {
@@ -138,7 +137,6 @@ class UtilikitRulesTest extends UnitTestCase {
 
   /**
    * Data provider for parseValue tests.
-   *
    * @return array<int, array<int, string>>
    */
   public function providerParseValue(): array {

@@ -1,11 +1,11 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * @file
  * Mock implementations file system functions used in UtilikitFileManager tests.
  */
+
+declare(strict_types=1);
 
 namespace Drupal\utilikit\Service;
 
