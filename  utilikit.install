@@ -369,15 +369,18 @@ function utilikit_requirements($phase): array {
 }
 
 /**
- * Implements hook_update_N().
- *
- * Example: Add new 'feature_flag' configuration.
+ * Add scanning entity types configuration.
  */
-function utilikit_update_10001() {
+function utilikit_update_10001(): void {
   $config = \Drupal::configFactory()->getEditable('utilikit.settings');
 
-  if (!$config->get('feature_flag')) {
-    $config->set('feature_flag', FALSE);
+  // Add scanning entity types if not already set.
+  if ($config->get('scanning_entity_types') === NULL) {
+    $config->set('scanning_entity_types', [
+      'node',
+      'block_content',
+      'paragraph',
+    ]);
     $config->save();
   }
 }
