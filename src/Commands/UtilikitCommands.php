@@ -574,7 +574,7 @@ final class UtilikitCommands extends DrushCommands {
         $warnings[] = 'Generated CSS is empty. Ensure utility classes exist in content.';
       }
       else {
-        $this->io()->text(sprintf('✓ Generated CSS size: %s', format_size(strlen($css))));
+        $this->io()->text(sprintf('✓ Generated CSS size: %s', $this->formatBytes(strlen($css))));
       }
     }
 

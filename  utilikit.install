@@ -20,6 +20,7 @@
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Url;
 use Drupal\utilikit\Service\UtilikitConstants;
+use Drupal\Core\StringTranslation\ByteSizeMarkup;
 
 /**
  * Implements hook_install().
@@ -331,7 +332,7 @@ function utilikit_requirements($phase): array {
         $requirements['utilikit_static_css'] = [
           'title' => t('UtiliKit static CSS'),
           'value' => t('File exists (@size, @count classes)', [
-            '@size' => format_size($file_size),
+            '@size' => (string) ByteSizeMarkup::create((int) $file_size),
             '@count' => count($known_classes),
           ]),
           'severity' => REQUIREMENT_OK,
