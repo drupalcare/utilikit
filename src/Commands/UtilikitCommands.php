@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\utilikit\Commands;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\State\StateInterface;
 use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drush\Attributes as CLI;
@@ -34,20 +35,31 @@ final class UtilikitCommands extends DrushCommands {
   protected UtilikitServiceProvider $serviceProvider;
 
   /**
+   * The state service.
+   *
+   * @var \Drupal\Core\State\StateInterface
+   */
+  protected StateInterface $state;
+
+  /**
    * Constructs a UtilikitCommands object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory service.
    * @param \Drupal\utilikit\Service\UtilikitServiceProvider $serviceProvider
    *   The UtiliKit service provider.
+   * @param \Drupal\Core\State\StateInterface $state
+   *   The state service.
    */
   public function __construct(
     ConfigFactoryInterface $configFactory,
     UtilikitServiceProvider $serviceProvider,
+    StateInterface $state,
   ) {
     parent::__construct();
     $this->configFactory = $configFactory;
     $this->serviceProvider = $serviceProvider;
+    $this->state = $state;
   }
 
   /**
@@ -56,7 +68,8 @@ final class UtilikitCommands extends DrushCommands {
   public static function create(ContainerInterface $container): self {
     return new self(
       $container->get('config.factory'),
-      $container->get('utilikit.service_provider')
+      $container->get('utilikit.service_provider'),
+      $container->get('state')
     );
   }
 
@@ -335,8 +348,8 @@ final class UtilikitCommands extends DrushCommands {
     $stateManager = $this->serviceProvider->getStateManager();
     $classCount = count($stateManager->getKnownClasses());
 
-    // Clear state using State API directly.
-    \Drupal::state()->deleteMultiple([
+    // Clear state using State API.
+    $this->state->deleteMultiple([
       UtilikitConstants::STATE_GENERATED_CSS,
       UtilikitConstants::STATE_KNOWN_CLASSES,
       UtilikitConstants::STATE_CSS_TIMESTAMP,
@@ -477,7 +490,10 @@ final class UtilikitCommands extends DrushCommands {
 
       $rows[] = ['CSS File', $cssUrl ?? 'Not generated'];
       $rows[] = ['CSS Size', $css ? $this->formatBytes(strlen($css)) : 'N/A'];
-      $rows[] = ['Last Updated', $stateManager->getCssTimestamp() ? date('Y-m-d H:i:s', $stateManager->getCssTimestamp()) : 'Never'];
+      $rows[] = [
+        'Last Updated',
+        $stateManager->getCssTimestamp() ? date('Y-m-d H:i:s', $stateManager->getCssTimestamp()) : 'Never',
+      ];
     }
 
     $this->io()->title('UtiliKit Status');

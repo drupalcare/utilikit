@@ -80,12 +80,14 @@ class UtilikitAjaxController extends ControllerBase {
    *   The UtiliKit service provider for CSS operations.
    * @param \Drupal\Core\Lock\LockBackendInterface $lock
    *   The lock backend service for preventing concurrent operations.
-   * @param \Drupal\Core\Queue\QueueFactory $queueFactory
+   * @param \Drupal\Core\Queue\QueueFactory $queue
    *   The queue factory for handling deferred CSS processing.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service for generating HTML output.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service for recording operations and errors.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time service for timestamp operations.
    */
   public function __construct(
     UtilikitServiceProvider $serviceProvider,

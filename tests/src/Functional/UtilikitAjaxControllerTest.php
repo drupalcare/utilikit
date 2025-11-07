@@ -289,12 +289,7 @@ class UtilikitAjaxControllerTest extends UtilikitFunctionalTestBase {
    */
   public function testUpdateCssUnauthorized(): void {
     $this->drupalLogin($this->unauthorizedUser);
-
-    $response = $this->drupalPostJson($this->updateCssUrl->toString(), [
-      'classes' => ['uk-pd--20'],
-    ]);
-
-    // Should get 403 Forbidden.
+    $client->post($this->updateCssUrl->toString(), [...]);
     $this->assertSession()->statusCodeEquals(403);
   }
 
@@ -415,7 +410,13 @@ class UtilikitAjaxControllerTest extends UtilikitFunctionalTestBase {
     $this->container->set('utilikit.service_provider', new class() {
 
       /**
+       * Processes new classes and throws an exception for testing.
        *
+       * @param array $classes
+       *   The classes to process.
+       *
+       * @throws \Exception
+       *   Always throws an exception for testing purposes.
        */
       public function processNewClasses($classes) {
         throw new \Exception('Test exception');

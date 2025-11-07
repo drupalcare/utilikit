@@ -68,11 +68,16 @@ class UtilikitContentScanner {
    * @param int|null $batchSize
    *   Optional batch size for entity processing. Defaults to
    *   UtilikitConstants::BATCH_SIZE_DEFAULT if not specified.
+   * @param int|null $maxExecutionTime
+   *   Optional maximum execution time in seconds. Defaults to 30 seconds
+   *   if not specified. Used to prevent timeouts during large scans.
    *
    * @return array
    *   Results array containing:
    *   - classes: Array of unique utility classes found
    *   - scanned_count: Total number of entities scanned
+   *   - completed: Boolean indicating if scan completed or timed out
+   *   - execution_time: Total execution time in seconds
    */
   public function scanAllContent(?int $batchSize = NULL, ?int $maxExecutionTime = NULL): array {
     $batchSize = $batchSize ?? UtilikitConstants::BATCH_SIZE_DEFAULT;

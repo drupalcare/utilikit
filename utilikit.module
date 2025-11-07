@@ -201,7 +201,8 @@ function utilikit_page_attachments(array &$attachments): void {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
   }
 
-  if (\Drupal::currentUser()->hasPermission('use utilikit update button') && in_array($rendering_mode, ['static', 'head'], TRUE)) {
+  if (\Drupal::currentUser()->hasPermission('use utilikit update button')
+    && in_array($rendering_mode, ['static', 'head'], TRUE)) {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.update.button';
 
     $attachments['#attached']['drupalSettings']['utilikit']['updateButton'] = [
