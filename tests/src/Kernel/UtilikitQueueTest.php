@@ -40,7 +40,7 @@ class UtilikitQueueTest extends KernelTestBase {
   /**
    * The service provider.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitServiceProvider
+   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
    */
   protected $serviceProvider;
 
@@ -289,7 +289,7 @@ class UtilikitQueueTest extends KernelTestBase {
    */
   public function testQueueErrorHandling() {
     // Create a mock service provider that throws exception.
-    $mockServiceProvider = $this->createMock('\Drupal\utilikit\Service\UtiliKitServiceProvider');
+    $mockServiceProvider = $this->createMock('\Drupal\utilikit\Service\UtilikitServiceProvider');
     $mockServiceProvider->method('getContentScanner')
       ->willThrowException(new \Exception('Test exception'));
 

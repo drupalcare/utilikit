@@ -81,7 +81,7 @@ services:
   # Comprehensive caching system that handles render cache, page cache,
   # CSS optimization, theme registry, and cache tag invalidation
   utilikit.cache_manager:
-    class: Drupal\utilikit\Service\UtiliKitCacheManager
+    class: Drupal\utilikit\Service\UtilikitCacheManager
     arguments:
       - '@cache.render'  # For render cache invalidation
       - '@cache_tags.invalidator'  # For targeted cache tag invalidation
@@ -99,7 +99,7 @@ services:
   # Main service provider for coordinated UtiliKit operations
   # Facade that orchestrates CSS generation, file management, and caching
   utilikit.service_provider:
-    class: Drupal\utilikit\Service\UtiliKitServiceProvider
+    class: Drupal\utilikit\Service\UtilikitServiceProvider
     arguments:
       - '@utilikit.css_generator'        # For CSS generation operations
       - '@utilikit.file_manager'         # For static file operations

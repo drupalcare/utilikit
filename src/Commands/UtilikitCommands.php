@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Drupal\utilikit\Commands;
 
 use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\utilikit\Service\UtiliKitServiceProvider;
+use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drush\Attributes as CLI;
 use Drush\Commands\DrushCommands;
@@ -29,21 +29,21 @@ final class UtilikitCommands extends DrushCommands {
   /**
    * The UtiliKit service provider.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitServiceProvider
+   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
    */
-  protected UtiliKitServiceProvider $serviceProvider;
+  protected UtilikitServiceProvider $serviceProvider;
 
   /**
    * Constructs a UtilikitCommands object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    *   The config factory service.
-   * @param \Drupal\utilikit\Service\UtiliKitServiceProvider $serviceProvider
+   * @param \Drupal\utilikit\Service\UtilikitServiceProvider $serviceProvider
    *   The UtiliKit service provider.
    */
   public function __construct(
     ConfigFactoryInterface $configFactory,
-    UtiliKitServiceProvider $serviceProvider,
+    UtilikitServiceProvider $serviceProvider,
   ) {
     parent::__construct();
     $this->configFactory = $configFactory;

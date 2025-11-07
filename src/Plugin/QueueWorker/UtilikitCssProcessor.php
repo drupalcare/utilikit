@@ -5,7 +5,7 @@ namespace Drupal\utilikit\Plugin\QueueWorker;
 use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\utilikit\Service\UtiliKitServiceProvider;
+use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -34,9 +34,9 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
   /**
    * The UtiliKit service provider.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitServiceProvider
+   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
    */
-  protected UtiliKitServiceProvider $serviceProvider;
+  protected UtilikitServiceProvider $serviceProvider;
 
   /**
    * Constructs a new UtilikitCssProcessor object.
@@ -49,7 +49,7 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
    *   The plugin implementation definition.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service for recording processing events.
-   * @param \Drupal\utilikit\Service\UtiliKitServiceProvider $serviceProvider
+   * @param \Drupal\utilikit\Service\UtilikitServiceProvider $serviceProvider
    *   The UtiliKit service provider for CSS processing operations.
    */
   public function __construct(
@@ -57,7 +57,7 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
     $plugin_id,
     $plugin_definition,
     LoggerInterface $logger,
-    UtiliKitServiceProvider $serviceProvider,
+    UtilikitServiceProvider $serviceProvider,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->logger = $logger;

@@ -7,7 +7,7 @@ namespace Drupal\Tests\utilikit\Unit\Plugin\QueueWorker;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Plugin\QueueWorker\UtilikitCssProcessor;
 use Drupal\utilikit\Service\UtilikitServiceProvider;
-use Drupal\utilikit\Service\UtiliKitCacheManager;
+use Drupal\utilikit\Service\UtilikitCacheManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
@@ -36,9 +36,9 @@ class UtilikitCssProcessorTest extends UnitTestCase {
   /**
    * Mock cache manager.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitCacheManager&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitCacheManager&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected UtiliKitCacheManager&MockObject $cacheManager;
+  protected UtilikitCacheManager&MockObject $cacheManager;
 
   /**
    * Mock logger.
@@ -54,7 +54,7 @@ class UtilikitCssProcessorTest extends UnitTestCase {
     parent::setUp();
 
     $this->serviceProvider = $this->createMock(UtilikitServiceProvider::class);
-    $this->cacheManager = $this->createMock(UtiliKitCacheManager::class);
+    $this->cacheManager = $this->createMock(UtilikitCacheManager::class);
     $this->logger = $this->createMock(LoggerInterface::class);
 
     $configuration = [];

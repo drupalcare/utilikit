@@ -40,7 +40,7 @@ class UtilikitEntitySaveTest extends KernelTestBase {
   /**
    * The UtiliKit service provider.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitServiceProvider
+   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
    */
   protected $serviceProvider;
 

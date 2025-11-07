@@ -9,7 +9,7 @@ use Drupal\Core\Datetime\DateFormatterInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\utilikit\Service\UtiliKitServiceProvider;
+use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\utilikit\Traits\FormHelperTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -50,9 +50,9 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * The UtiliKit service provider.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitServiceProvider
+   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
    */
-  protected UtiliKitServiceProvider $serviceProvider;
+  protected UtilikitServiceProvider $serviceProvider;
 
   /**
    * The file system service.
@@ -70,7 +70,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *   The date formatter service.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
    *   The module handler service.
-   * @param \Drupal\utilikit\Service\UtiliKitServiceProvider $serviceProvider
+   * @param \Drupal\utilikit\Service\UtilikitServiceProvider $serviceProvider
    *   The UtiliKit service provider.
    * @param \Drupal\Core\File\FileSystemInterface $fileSystem
    *   The file system service.
@@ -79,7 +79,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
     EntityTypeManagerInterface $entityTypeManager,
     DateFormatterInterface $dateFormatter,
     ModuleHandlerInterface $moduleHandler,
-    UtiliKitServiceProvider $serviceProvider,
+    UtilikitServiceProvider $serviceProvider,
     FileSystemInterface $fileSystem,
   ) {
     $this->entityTypeManager = $entityTypeManager;

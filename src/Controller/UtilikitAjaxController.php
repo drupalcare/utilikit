@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\utilikit\Service\UtiliKitServiceProvider;
+use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\utilikit\Traits\ResponseHelperTrait;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -34,9 +34,9 @@ class UtilikitAjaxController extends ControllerBase {
   /**
    * The UtiliKit service provider.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitServiceProvider
+   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
    */
-  protected UtiliKitServiceProvider $serviceProvider;
+  protected UtilikitServiceProvider $serviceProvider;
 
   /**
    * The lock backend service.
@@ -76,7 +76,7 @@ class UtilikitAjaxController extends ControllerBase {
   /**
    * Constructs a new UtilikitAjaxController object.
    *
-   * @param \Drupal\utilikit\Service\UtiliKitServiceProvider $serviceProvider
+   * @param \Drupal\utilikit\Service\UtilikitServiceProvider $serviceProvider
    *   The UtiliKit service provider for CSS operations.
    * @param \Drupal\Core\Lock\LockBackendInterface $lock
    *   The lock backend service for preventing concurrent operations.
@@ -88,7 +88,7 @@ class UtilikitAjaxController extends ControllerBase {
    *   The logger service for recording operations and errors.
    */
   public function __construct(
-    UtiliKitServiceProvider $serviceProvider,
+    UtilikitServiceProvider $serviceProvider,
     LockBackendInterface $lock,
     QueueFactory $queue,
     RendererInterface $renderer,
