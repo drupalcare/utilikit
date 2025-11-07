@@ -43,7 +43,7 @@ final class UtilikitCommands extends DrushCommands {
    */
   public function __construct(
     ConfigFactoryInterface $configFactory,
-    UtiliKitServiceProvider $serviceProvider
+    UtiliKitServiceProvider $serviceProvider,
   ) {
     parent::__construct();
     $this->configFactory = $configFactory;
@@ -98,13 +98,13 @@ final class UtilikitCommands extends DrushCommands {
 
     $this->io()->title('UtiliKit CSS Generation');
 
-    // Check mode first
+    // Check mode first.
     if ($mode !== 'static') {
       $this->io()->warning([
-        'UtiliKit is currently in INLINE mode.',
+        'UtiliKit is currently in ' . strtoupper($mode) . ' mode.',
         'CSS file generation is only available in STATIC mode.',
         '',
-        'In inline mode, CSS is generated dynamically by JavaScript on each page load.',
+        'In ' . $mode . ' mode, CSS is generated ' . ($mode === 'inline' ? 'dynamically by JavaScript' : 'in the page head') . ' on each page load.',
         'No static CSS file is needed or created.',
       ]);
       $this->io()->note([
@@ -193,17 +193,19 @@ final class UtilikitCommands extends DrushCommands {
   #[CLI\Option(name: 'timeout', description: 'Maximum execution time in seconds')]
   #[CLI\Usage(name: 'utilikit:scan', description: 'Scan all configured entity types')]
   #[CLI\Usage(name: 'utilikit:scan --entity-types=node,paragraph', description: 'Scan only nodes and paragraphs')]
-  public function scan(array $options = [
-    'entity-types' => NULL,
-    'batch-size' => 50,
-    'timeout' => 300,
-  ]): void {
+  public function scan(
+    array $options = [
+      'entity-types' => NULL,
+      'batch-size' => 50,
+      'timeout' => 300,
+    ],
+  ): void {
     $config = $this->configFactory->get('utilikit.settings');
     $mode = $config->get('rendering_mode') ?? 'inline';
 
     $this->io()->title('UtiliKit Content Scanner');
 
-    // Show current mode
+    // Show current mode.
     if ($mode === 'inline') {
       $this->io()->note([
         'Current mode: INLINE',
@@ -218,7 +220,7 @@ final class UtilikitCommands extends DrushCommands {
       ]);
     }
 
-    // Override config temporarily if entity-types specified
+    // Override config temporarily if entity-types specified.
     $originalTypes = $config->get('scanning_entity_types');
 
     if ($options['entity-types']) {
@@ -240,19 +242,19 @@ final class UtilikitCommands extends DrushCommands {
       (int) $options['timeout']
     );
 
-    // CRITICAL: Save classes to state immediately after scanning
+    // CRITICAL: Save classes to state immediately after scanning.
     $stateManager = $this->serviceProvider->getStateManager();
     if (!empty($result['classes'])) {
       $stateManager->addKnownClasses($result['classes']);
     }
 
-    // Restore original config if it was changed
+    // Restore original config if it was changed.
     if ($options['entity-types']) {
       $editableConfig = $this->configFactory->getEditable('utilikit.settings');
       $editableConfig->set('scanning_entity_types', $originalTypes)->save();
     }
 
-    // Check for timeout
+    // Check for timeout.
     if (!$result['completed']) {
       $this->io()->warning([
         'Content scan timed out after ' . $result['execution_time'] . ' seconds.',
@@ -262,7 +264,7 @@ final class UtilikitCommands extends DrushCommands {
       ]);
     }
 
-    // Display scan results
+    // Display scan results.
     $this->io()->success('Content scan completed');
 
     $this->io()->definitionList(
@@ -272,7 +274,7 @@ final class UtilikitCommands extends DrushCommands {
       ['Status' => $result['completed'] ? 'Complete' : 'Timed out (partial)'],
     );
 
-    // Show found classes if any
+    // Show found classes if any.
     if (!empty($result['classes'])) {
       $this->io()->section('Sample Classes Found');
       $sampleClasses = array_slice($result['classes'], 0, 10);
@@ -282,7 +284,7 @@ final class UtilikitCommands extends DrushCommands {
         $this->io()->text(sprintf('... and %d more classes', count($result['classes']) - 10));
       }
 
-      // Auto-generate CSS in static mode
+      // Auto-generate CSS in static mode.
       if ($mode === 'static') {
         $this->io()->section('Generating Static CSS File');
         $this->io()->text('Automatically generating CSS file from scanned classes...');
@@ -314,6 +316,7 @@ final class UtilikitCommands extends DrushCommands {
       ]);
     }
   }
+
   /**
    * Clear all UtiliKit CSS and reset known classes.
    *
@@ -332,7 +335,7 @@ final class UtilikitCommands extends DrushCommands {
     $stateManager = $this->serviceProvider->getStateManager();
     $classCount = count($stateManager->getKnownClasses());
 
-    // Clear state using State API directly
+    // Clear state using State API directly.
     \Drupal::state()->deleteMultiple([
       UtilikitConstants::STATE_GENERATED_CSS,
       UtilikitConstants::STATE_KNOWN_CLASSES,
@@ -340,10 +343,10 @@ final class UtilikitCommands extends DrushCommands {
       UtilikitConstants::STATE_LAST_CLEANUP,
     ]);
 
-    // Clear caches
+    // Clear caches.
     $this->serviceProvider->getCacheManager()->clearAllCaches();
 
-    // Clean up files
+    // Clean up files.
     $fileManager = $this->serviceProvider->getFileManager();
     $fileManager->cleanupStaticFiles();
 
@@ -375,9 +378,9 @@ final class UtilikitCommands extends DrushCommands {
   #[CLI\Usage(name: 'utilikit:mode static', description: 'Switch to static mode')]
   #[CLI\Usage(name: 'utilikit:mode inline', description: 'Switch to inline mode')]
   public function switchMode(string $mode): void {
-    // Validate mode
-    if (!in_array($mode, ['inline', 'static'], TRUE)) {
-      $this->io()->error('Mode must be either "inline" or "static"');
+    // Validate mode.
+    if (!in_array($mode, ['inline', 'static', 'head'], TRUE)) {
+      $this->io()->error('Mode must be "inline", "static", or "head"');
       return;
     }
 
@@ -391,18 +394,36 @@ final class UtilikitCommands extends DrushCommands {
 
     $this->io()->title(sprintf('Switching from %s to %s mode', $oldMode, $mode));
 
-    // Save new mode
+    // Save new mode.
     $config->set('rendering_mode', $mode)->save();
 
-    // Clean up old mode artifacts
+    // Clean up old mode artifacts.
     if ($mode === 'inline') {
-      // Switching to inline - clean up static files
+      // Switching to inline - clean up static files.
       $fileManager = $this->serviceProvider->getFileManager();
       $fileManager->cleanupStaticFiles();
       $this->io()->text('Cleaned up static CSS files');
     }
+    elseif ($mode === 'head') {
+      // Switching to head - clean up static files.
+      $fileManager = $this->serviceProvider->getFileManager();
+      $fileManager->cleanupStaticFiles();
+      $this->io()->text('Cleaned up static CSS files');
+
+      $stateManager = $this->serviceProvider->getStateManager();
+      $knownClasses = $stateManager->getKnownClasses();
+
+      if (empty($knownClasses)) {
+        $this->io()->text('Scanning content for utility classes...');
+        $scanResult = $this->serviceProvider->getContentScanner()->scanAllContent();
+        if (!empty($scanResult['classes'])) {
+          $stateManager->setKnownClasses($scanResult['classes']);
+          $this->io()->text(sprintf('Found %d utility classes', count($scanResult['classes'])));
+        }
+      }
+    }
     else {
-      // Switching to static - generate CSS if classes exist
+      // Switching to static - generate CSS if classes exist.
       $stateManager = $this->serviceProvider->getStateManager();
       $knownClasses = $stateManager->getKnownClasses();
 
@@ -415,7 +436,7 @@ final class UtilikitCommands extends DrushCommands {
       }
     }
 
-    // Clear caches
+    // Clear caches.
     $this->serviceProvider->getCacheManager()->clearAllCaches();
 
     $this->io()->success(sprintf('Switched to %s mode', $mode));
@@ -487,10 +508,12 @@ final class UtilikitCommands extends DrushCommands {
   #[CLI\Option(name: 'filter', description: 'Filter classes by prefix')]
   #[CLI\Usage(name: 'utilikit:classes', description: 'List first 50 utility classes')]
   #[CLI\Usage(name: 'utilikit:classes --limit=0', description: 'List all utility classes')]
-  public function listClasses(array $options = [
-    'limit' => 50,
-    'filter' => NULL,
-  ]): void {
+  public function listClasses(
+    array $options = [
+      'limit' => 50,
+      'filter' => NULL,
+    ],
+  ): void {
     $stateManager = $this->serviceProvider->getStateManager();
     $classes = $stateManager->getKnownClasses();
 
@@ -499,7 +522,7 @@ final class UtilikitCommands extends DrushCommands {
       return;
     }
 
-    // Filter if requested
+    // Filter if requested.
     if ($options['filter']) {
       $classes = array_filter($classes, function ($class) use ($options) {
         return str_starts_with($class, $options['filter']);
@@ -548,7 +571,7 @@ final class UtilikitCommands extends DrushCommands {
     $issues = [];
     $warnings = [];
 
-    // Check for known classes
+    // Check for known classes.
     $knownClasses = $stateManager->getKnownClasses();
     if (empty($knownClasses)) {
       $warnings[] = 'No utility classes found. Run "drush utilikit:scan" to scan content.';
@@ -557,7 +580,7 @@ final class UtilikitCommands extends DrushCommands {
       $this->io()->text(sprintf('✓ Found %d utility classes', count($knownClasses)));
     }
 
-    // Check static mode requirements
+    // Check static mode requirements.
     if ($mode === 'static') {
       $fileManager = $this->serviceProvider->getFileManager();
       $cssUrl = $fileManager->getStaticCssUrl();
@@ -578,7 +601,7 @@ final class UtilikitCommands extends DrushCommands {
       }
     }
 
-    // Check scanning configuration
+    // Check scanning configuration.
     $scanningTypes = $config->get('scanning_entity_types') ?? [];
     if (empty($scanningTypes)) {
       $warnings[] = 'No entity types configured for scanning.';
@@ -587,7 +610,7 @@ final class UtilikitCommands extends DrushCommands {
       $this->io()->text(sprintf('✓ Scanning entity types: %s', implode(', ', $scanningTypes)));
     }
 
-    // Output results
+    // Output results.
     if (!empty($issues)) {
       $this->io()->error('Validation failed:');
       foreach ($issues as $issue) {

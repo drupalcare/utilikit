@@ -11,7 +11,6 @@ use Drupal\utilikit\Service\UtilikitCssParser;
 use Drupal\utilikit\Service\UtilikitFileManager;
 use Drupal\utilikit\Service\UtiliKitCacheManager;
 use Drupal\utilikit\Service\UtilikitClassNameValidator;
-use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use PHPUnit\Framework\MockObject\MockObject;

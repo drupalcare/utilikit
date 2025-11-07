@@ -343,11 +343,15 @@
 
     // Apply rendering mode specific body classes for CSS targeting
     if (Drupal.utilikit.renderingMode === 'static') {
-      document.body.classList.remove('utilikit-inline-mode');
+      document.body.classList.remove('utilikit-inline-mode', 'utilikit-head-mode');
       document.body.classList.add('utilikit-static-mode');
       Drupal.utilikit.utilikitLog('Body class added: utilikit-static-mode', null, 'log');
+    } else if (Drupal.utilikit.renderingMode === 'head') {
+      document.body.classList.remove('utilikit-inline-mode', 'utilikit-static-mode');
+      document.body.classList.add('utilikit-head-mode');
+      Drupal.utilikit.utilikitLog('Body class added: utilikit-head-mode', null, 'log');
     } else {
-      document.body.classList.remove('utilikit-static-mode');
+      document.body.classList.remove('utilikit-static-mode', 'utilikit-head-mode');
       document.body.classList.add('utilikit-inline-mode');
       Drupal.utilikit.utilikitLog('Body class added: utilikit-inline-mode', null, 'log');
     }

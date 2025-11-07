@@ -222,6 +222,14 @@
             if (sanitizedData.css) {
               updateInlineStaticCss(sanitizedData.css);
             }
+          } else if (mode === 'head') {
+            // Head mode: update the style tag content directly
+            if (sanitizedData.css) {
+              const styleElement = document.getElementById('utilikit-head-mode');
+              if (styleElement) {
+                styleElement.textContent = sanitizedData.css;
+              }
+            }
           } else {
             if (Drupal.utilikit && Drupal.utilikit.applyClasses) {
               setTimeout(() => {

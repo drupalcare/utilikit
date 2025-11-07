@@ -38,6 +38,11 @@
 #   - Minimal JavaScript payload for optimal performance
 #   - Requires file system write permissions
 #   - Manual or automatic CSS regeneration workflow
+# 'head': Server-generated CSS in page head (balanced approach)
+#   - Server-side CSS generation without file system
+#   - No file permissions required
+#   - Fresh CSS on every page load
+#   - No JavaScript overhead for CSS application
 rendering_mode: inline
 
 # =============================================================================
@@ -62,6 +67,11 @@ debounce: 50
 # Reduces file size significantly in static mode (typically 30-50% reduction)
 # Recommended: Always enabled for production environments
 optimize_css: true
+
+# Apply !important to all utility classes to ensure they override inline styles
+# Recommended: true (matches Tailwind CSS behavior)
+# Set to false if you want to be able to override utilities with inline styles
+use_important: true
 
 # Active responsive breakpoints configuration
 # Controls which breakpoint variants are generated for utility classes
@@ -107,11 +117,11 @@ scope_content_types: false
 enabled_content_types: []
 
 # =============================================================================
-# AUTOMATIC UPDATE TRIGGERS (Static Mode Only)
+# AUTOMATIC UPDATE TRIGGERS (Static & Head Modes)
 # =============================================================================
 # Entity-based triggers that automatically regenerate CSS when content changes.
-# These settings only function in static rendering mode and provide real-time
-# CSS updates as content is created and modified.
+# These settings function in static and head rendering modes and provide
+# real-time CSS updates as content is created and modified.
 #
 # Performance considerations:
 # - Each enabled trigger adds processing overhead to entity save operations
@@ -290,8 +300,9 @@ experimental_features:
 # 1. Disable all developer tools ('dev_mode', 'admin_preview', 'show_page_errors')
 # 2. Set 'log_level' to 'off' or 'warnings'
 # 3. Enable 'optimize_css' for better performance
-# 4. Consider 'static' rendering mode for high-traffic sites
-# 5. Configure appropriate cache TTL based on content update frequency
+# 4. Enable 'use_important' for better forcing the sytle.
+# 5. Consider 'static' rendering mode for high-traffic sites
+# 6. Configure appropriate cache TTL based on content update frequency
 #
 # Performance Optimization:
 # 1. Disable unused responsive breakpoints to reduce CSS size

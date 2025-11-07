@@ -146,6 +146,7 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
       UtilikitConstants::CACHE_TAG_CSS,
       UtilikitConstants::CACHE_TAG_INLINE_MODE,
       UtilikitConstants::CACHE_TAG_STATIC_MODE,
+      UtilikitConstants::CACHE_TAG_HEAD_MODE,
     ]);
   }
 
@@ -216,6 +217,7 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
       UtilikitConstants::CACHE_TAG_CSS,
       UtilikitConstants::CACHE_TAG_INLINE_MODE,
       UtilikitConstants::CACHE_TAG_STATIC_MODE,
+      UtilikitConstants::CACHE_TAG_HEAD_MODE,
       UtilikitConstants::CACHE_TAG_RENDERED,
     ];
 

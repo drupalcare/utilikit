@@ -180,6 +180,16 @@ class UtilikitCssGenerator {
       }
 
       $selector = '.' . $this->escapeCssSelector($class);
+
+      // Add !important if configured (static/head modes only)
+      $config = $this->configFactory->get('utilikit.settings');
+      $useImportant = $config->get('use_important') ?? TRUE;
+      $renderingMode = $config->get('rendering_mode') ?? 'inline';
+
+      if ($useImportant && in_array($renderingMode, ['static', 'head'], TRUE)) {
+        $declaration = str_replace(';', ' !important;', $declaration);
+      }
+
       $cssRule = "  $selector { $declaration }";
 
       $cssRules[$group][] = $cssRule;

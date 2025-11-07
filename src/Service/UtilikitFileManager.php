@@ -233,7 +233,7 @@ class UtilikitFileManager {
    * @return string
    *   The minified CSS content.
    */
-  private function minifyCss(string $css): string {
+  public function minifyCss(string $css): string {
     $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css);
     $css = strtr($css, [
       "\r\n" => '',

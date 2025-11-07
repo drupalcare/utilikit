@@ -58,10 +58,10 @@
  *
  * Attributes:
  * - id: "utilikit-test-suite" - Required for JavaScript targeting
- * - class: "utilikit-test-page" - Provides base styling context
+ * - class: Uses Drupal admin layout classes for consistent admin UI styling
  */
 #}
-<div id="utilikit-test-suite" class="utilikit-test-page">
+<div id="utilikit-test-suite" class="layout-container utilikit-test-page">
   {#
   /**
    * Test Summary Dashboard Section
@@ -76,8 +76,8 @@
    * - Primary action buttons for test execution and management
    */
   #}
-  <div class="test-summary-section">
-    <h2>{{ 'UtiliKit Comprehensive Test Suite'|t }}</h2>
+  <div class="layout-region layout-region--content test-summary-section">
+    <h1 class="page-title">{{ 'UtiliKit Comprehensive Test Suite'|t }}</h1>
 
     {#
     /**
@@ -95,21 +95,21 @@
      */
     #}
     <div id="test-summary" class="test-summary">
-      <div class="stat-card">
-        <div class="label">{{ 'Total Tests'|t }}</div>
-        <div class="value" id="total-tests">{{ statistics.totalTests }}</div>
+      <div class="stat-card region region-highlighted">
+        <div class="label field__label">{{ 'Total Tests'|t }}</div>
+        <div class="value field__item" id="total-tests">{{ statistics.totalTests }}</div>
       </div>
-      <div class="stat-card">
-        <div class="label">{{ 'Tests Passed'|t }}</div>
-        <div class="value" id="passed-count">0</div>
+      <div class="stat-card region region-highlighted">
+        <div class="label field__label">{{ 'Tests Passed'|t }}</div>
+        <div class="value field__item" id="passed-count">0</div>
       </div>
-      <div class="stat-card">
-        <div class="label">{{ 'Tests Failed'|t }}</div>
-        <div class="value" id="failed-count">0</div>
+      <div class="stat-card region region-highlighted">
+        <div class="label field__label">{{ 'Tests Failed'|t }}</div>
+        <div class="value field__item" id="failed-count">0</div>
       </div>
-      <div class="stat-card">
-        <div class="label">{{ 'Status'|t }}</div>
-        <div class="value" id="test-status">{{ 'Ready to test'|t }}</div>
+      <div class="stat-card region region-highlighted">
+        <div class="label field__label">{{ 'Status'|t }}</div>
+        <div class="value field__item" id="test-status">{{ 'Ready to test'|t }}</div>
       </div>
     </div>
 
@@ -128,12 +128,12 @@
      * - Export Results: Downloads comprehensive test results as JSON
      */
     #}
-    <div class="test-controls">
-      <button id="run-all-tests" class="button button--primary">{{ 'Run All Tests'|t }}</button>
-      <button id="run-visible-tests" class="button">{{ 'Run Visible Tests'|t }}</button>
-      <button id="expand-all" class="button">{{ 'Expand All'|t }}</button>
-      <button id="collapse-all" class="button">{{ 'Collapse All'|t }}</button>
-      <button id="export-results" class="button">{{ 'Export Results'|t }}</button>
+    <div class="form-actions js-form-wrapper form-wrapper test-controls">
+      <button id="run-all-tests" type="button" class="button button--primary js-form-submit form-submit">{{ 'Run All Tests'|t }}</button>
+      <button id="run-visible-tests" type="button" class="button js-form-submit form-submit">{{ 'Run Visible Tests'|t }}</button>
+      <button id="expand-all" type="button" class="button js-form-submit form-submit">{{ 'Expand All'|t }}</button>
+      <button id="collapse-all" type="button" class="button js-form-submit form-submit">{{ 'Collapse All'|t }}</button>
+      <button id="export-results" type="button" class="button js-form-submit form-submit">{{ 'Export Results'|t }}</button>
     </div>
   </div>
 
@@ -151,25 +151,25 @@
    */
   #}
   <div class="test-filters">
-    <label>
-      {{ 'Filter by status:'|t }}
-      <select id="status-filter">
+    <div class="js-form-item form-item js-form-type-select form-type-select js-form-item-status-filter form-item-status-filter">
+      <label for="status-filter" class="js-form-required form-required">{{ 'Filter by status'|t }}</label>
+      <select id="status-filter" name="status_filter" class="form-select form-element form-element--type-select form-element--api-select required">
         <option value="all">{{ 'All Tests'|t }}</option>
         <option value="passed">{{ 'Passed Only'|t }}</option>
         <option value="failed">{{ 'Failed Only'|t }}</option>
         <option value="pending">{{ 'Pending Only'|t }}</option>
       </select>
-    </label>
+    </div>
 
-    <label>
-      {{ 'Filter by group:'|t }}
-      <select id="group-filter">
+    <div class="js-form-item form-item js-form-type-select form-type-select js-form-item-group-filter form-item-group-filter">
+      <label for="group-filter" class="js-form-required form-required">{{ 'Filter by group'|t }}</label>
+      <select id="group-filter" name="group_filter" class="form-select form-element form-element--type-select form-element--api-select required">
         <option value="all">{{ 'All Groups'|t }}</option>
         {% for group_name in test_groups|keys %}
           <option value="{{ group_name }}">{{ group_name }}</option>
         {% endfor %}
       </select>
-    </label>
+    </div>
   </div>
 
   {#
@@ -181,13 +181,16 @@
    * guidance for optimal test execution strategies.
    */
   #}
-  <div class="test-controls-help">
-    <p><strong>Test Controls:</strong></p>
-    <ul>
-      <li><strong>Run All Tests:</strong> Executes the complete test suite</li>
-      <li><strong>Run Visible Tests:</strong> Executes only tests in currently expanded groups - expand groups first to test specific utility categories</li>
-      <li><strong>Expand/Collapse All:</strong> Show or hide all test groups at once</li>
-    </ul>
+  <div class="messages messages--status test-controls-help">
+    <div role="contentinfo" aria-label="{{ 'Status message'|t }}">
+      <h2 class="visually-hidden">{{ 'Status message'|t }}</h2>
+      <strong>{{ 'Test Controls:'|t }}</strong>
+      <ul>
+        <li><strong>{{ 'Run All Tests:'|t }}</strong> {{ 'Executes the complete test suite'|t }}</li>
+        <li><strong>{{ 'Run Visible Tests:'|t }}</strong> {{ 'Executes only tests in currently expanded groups - expand groups first to test specific utility categories'|t }}</li>
+        <li><strong>{{ 'Expand/Collapse All:'|t }}</strong> {{ 'Show or hide all test groups at once'|t }}</li>
+      </ul>
+    </div>
   </div>
 
   {#
@@ -223,11 +226,11 @@
        * - data-group: Used by JavaScript for filtering functionality
        */
       #}
-      <div class="test-group" data-group="{{ group_name }}">
-        <h3 class="group-title">
+      <div class="test-group block block-system" data-group="{{ group_name }}">
+        <h2 class="block-title group-title">
           {{ group_name }}
-          <span class="group-count">({{ rule_tests|length }} {{ 'properties'|t }})</span>
-        </h3>
+          <span class="group-count description">({{ rule_tests|length }} {{ 'properties'|t }})</span>
+        </h2>
 
         {% for rule_test in rule_tests %}
           {% set prefix = rule_test.prefix %}
@@ -245,7 +248,7 @@
            * - data-prefix: Utility prefix for identification and debugging
            */
           #}
-          <div class="test-rule" data-prefix="{{ prefix }}">
+          <div class="test-rule details-wrapper" data-prefix="{{ prefix }}">
             {#
             /**
              * Rule Header with Metadata and Toggle Control
@@ -260,11 +263,11 @@
              */
             #}
             <div class="rule-header">
-              <h4>
+              <h3 class="details-title">
                 {{ prefix }} - {{ rule.css }}
-                <span class="test-count">({{ tests|length }} {{ 'tests'|t }})</span>
-              </h4>
-              <button class="toggle-tests button button--small">{{ 'Show Tests'|t }}</button>
+                <span class="test-count description">({{ tests|length }} {{ 'tests'|t }})</span>
+              </h3>
+              <button type="button" class="toggle-tests button button--small button--extrasmall js-form-submit form-submit">{{ 'Show Tests'|t }}</button>
             </div>
 
             {#
@@ -283,86 +286,90 @@
              */
             #}
             <div class="rule-tests" style="display: none;">
-              <table class="test-table">
-                <thead>
-                  <tr>
-                    <th>{{ 'Class'|t }}</th>
-                    <th>{{ 'Type'|t }}</th>
-                    <th>{{ 'Expected'|t }}</th>
-                    <th>{{ 'Actual'|t }}</th>
-                    <th>{{ 'Status'|t }}</th>
-                    <th>{{ 'Preview'|t }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for test in tests %}
-                    {% set test_id = prefix ~ '-' ~ loop.index0 %}
-                    {#
-                    /**
-                     * Individual Test Case Row
-                     *
-                     * Represents a single test case with complete validation
-                     * metadata embedded for JavaScript processing.
-                     *
-                     * Data Attributes:
-                     * - data-test-id: Unique identifier for result tracking
-                     * - data-test: JSON-encoded test case metadata including:
-                     *   - className: The utility class being tested
-                     *   - cssProperty: Expected CSS property to be set
-                     *   - expectedValue: Expected CSS value
-                     *   - testType: Category of test for validation logic
-                     *   - breakpoint: Responsive breakpoint if applicable
-                     *
-                     * Cell Contents:
-                     * - Class: The UtiliKit utility class name
-                     * - Type: Test category for validation strategy
-                     * - Expected: Expected CSS property and value
-                     * - Actual: Real-time computed value (updated by JavaScript)
-                     * - Status: Pass/fail indicator (updated by JavaScript)
-                     * - Preview: Live element showing CSS application
-                     */
-                    #}
-                    <tr class="test-case" data-test-id="{{ test_id }}" data-test='{{ test|json_encode }}'>
-                      <td class="test-class"><code>{{ test.className }}</code></td>
-                      <td class="test-type">{{ test.testType }}</td>
-                      <td class="test-expected">
-                        {% if test.cssProperty %}
-                          <code>{{ test.cssProperty }}: {{ test.expectedValue }}</code>
-                        {% else %}
-                          <code>{{ test.expectedValue }}</code>
-                        {% endif %}
-                      </td>
-                      <td class="test-actual">-</td>
-                      <td class="test-status">
-                        <span class="status-badge pending">{{ 'Pending'|t }}</span>
-                      </td>
-                      <td class="test-preview">
-                        {#
-                        /**
-                         * Test Preview Element
-                         *
-                         * Live demonstration element that receives the utility
-                         * class being tested. This element is processed by
-                         * UtiliKit's CSS application system and validated
-                         * against expected results.
-                         *
-                         * Special Handling:
-                         * - Border width tests automatically include border-style
-                         * - Element has 'utilikit' base class for processing
-                         * - Contains "TEST" text for visual feedback
-                         * - CSS properties are applied and validated in real-time
-                         */
-                        #}
-                        {% set preview_classes = test.className %}
-                        {% if prefix == 'bw' %}
-                          {% set preview_classes = preview_classes ~ ' uk-bs--solid' %}
-                        {% endif %}
-                        <div class="preview-element utilikit {{ preview_classes }}">TEST</div>
-                      </td>
+              <div class="table-responsive">
+                <table class="test-table responsive-enabled" data-striping="1">
+                  <thead>
+                    <tr>
+                      <th class="priority-medium">{{ 'Class'|t }}</th>
+                      <th class="priority-low">{{ 'Type'|t }}</th>
+                      <th class="priority-medium">{{ 'Expected'|t }}</th>
+                      <th class="priority-medium">{{ 'Actual'|t }}</th>
+                      <th class="priority-high">{{ 'Status'|t }}</th>
+                      <th class="priority-low">{{ 'Preview'|t }}</th>
                     </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {% for test in tests %}
+                      {% set test_id = prefix ~ '-' ~ loop.index0 %}
+                      {#
+                      /**
+                       * Individual Test Case Row
+                       *
+                       * Represents a single test case with complete validation
+                       * metadata embedded for JavaScript processing.
+                       *
+                       * Data Attributes:
+                       * - data-test-id: Unique identifier for result tracking
+                       * - data-test: JSON-encoded test case metadata including:
+                       *   - className: The utility class being tested
+                       *   - cssProperty: Expected CSS property to be set
+                       *   - expectedValue: Expected CSS value
+                       *   - testType: Category of test for validation logic
+                       *   - breakpoint: Responsive breakpoint if applicable
+                       *
+                       * Cell Contents:
+                       * - Class: The UtiliKit utility class name
+                       * - Type: Test category for validation strategy
+                       * - Expected: Expected CSS property and value
+                       * - Actual: Real-time computed value (updated by JavaScript)
+                       * - Status: Pass/fail indicator (updated by JavaScript)
+                       * - Preview: Live element showing CSS application
+                       */
+                      #}
+                      <tr class="test-case {{ cycle(['odd', 'even'], loop.index0) }}" data-test-id="{{ test_id }}" data-test='{{ test|json_encode }}'>
+                        <td class="test-class priority-medium">
+                          <code class="code-inline">{{ test.className }}</code>
+                        </td>
+                        <td class="test-type priority-low">{{ test.testType }}</td>
+                        <td class="test-expected priority-medium">
+                          {% if test.cssProperty %}
+                            <code class="code-inline">{{ test.cssProperty }}: {{ test.expectedValue }}</code>
+                          {% else %}
+                            <code class="code-inline">{{ test.expectedValue }}</code>
+                          {% endif %}
+                        </td>
+                        <td class="test-actual priority-medium">-</td>
+                        <td class="test-status priority-high">
+                          <span class="status-badge pending badge badge--warning">{{ 'Pending'|t }}</span>
+                        </td>
+                        <td class="test-preview priority-low">
+                          {#
+                          /**
+                           * Test Preview Element
+                           *
+                           * Live demonstration element that receives the utility
+                           * class being tested. This element is processed by
+                           * UtiliKit's CSS application system and validated
+                           * against expected results.
+                           *
+                           * Special Handling:
+                           * - Border width tests automatically include border-style
+                           * - Element has 'utilikit' base class for processing
+                           * - Contains "TEST" text for visual feedback
+                           * - CSS properties are applied and validated in real-time
+                           */
+                          #}
+                          {% set preview_classes = test.className %}
+                          {% if prefix == 'bw' %}
+                            {% set preview_classes = preview_classes ~ ' uk-bs--solid' %}
+                          {% endif %}
+                          <div class="preview-element utilikit {{ preview_classes }}">{{ 'TEST'|t }}</div>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         {% endfor %}
@@ -386,12 +393,14 @@
    * - Comprehensive execution history for debugging
    */
   #}
-  <div class="test-log-section">
-    <h3>{{ 'Test Execution Log'|t }}</h3>
-    <div id="test-log" class="test-log">
-      <div id="test-log-content"></div>
+  <div class="test-log-section region region-content">
+    <h2 class="block-title">{{ 'Test Execution Log'|t }}</h2>
+    <div id="test-log" class="test-log form-textarea-wrapper">
+      <div id="test-log-content" class="form-textarea form-element form-element--type-textarea form-element--api-textarea"></div>
     </div>
-    <button id="clear-log" class="button button--small">{{ 'Clear Log'|t }}</button>
+    <div class="form-actions js-form-wrapper form-wrapper">
+      <button id="clear-log" type="button" class="button button--small button--extrasmall button--danger js-form-submit form-submit">{{ 'Clear Log'|t }}</button>
+    </div>
   </div>
 </div>
 
@@ -416,6 +425,14 @@
  * - Semantic HTML structure supports screen readers
  * - Logical tab order enables keyboard navigation
  * - Clear visual hierarchy with appropriate heading levels
+ * - ARIA labels and roles provide context for assistive technologies
+ *
+ * Admin Theme Integration:
+ * - Uses Claro/Gin compatible classes throughout
+ * - Leverages Drupal's form system classes for consistency
+ * - Applies responsive table classes for mobile compatibility
+ * - Uses standard Drupal button and status badge patterns
+ * - Implements proper heading hierarchy for admin pages
  *
  * Performance Considerations:
  * - Large test suites may contain thousands of test cases

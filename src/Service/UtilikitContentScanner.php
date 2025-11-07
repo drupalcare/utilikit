@@ -83,11 +83,11 @@ class UtilikitContentScanner {
     $totalScanned = 0;
     $completed = TRUE;
 
-    // Get scanning configuration
+    // Get scanning configuration.
     $config = \Drupal::config('utilikit.settings');
     $scanning_entity_types = $config->get('scanning_entity_types') ?? ['node', 'block_content', 'paragraph'];
 
-    // Filter entity types based on configuration
+    // Filter entity types based on configuration.
     $entityTypes = array_filter(
       $this->entityTypeManager->getDefinitions(),
       function ($entityType) use ($scanning_entity_types) {
@@ -105,7 +105,7 @@ class UtilikitContentScanner {
       $entityTypeCount = 0;
 
       while (TRUE) {
-        // Check timeout
+        // Check timeout.
         if ((time() - $startTime) > $maxExecutionTime) {
           $this->logger->warning('Scan timeout reached after @time seconds. Scanned @count entities.', [
             '@time' => $maxExecutionTime,
@@ -138,7 +138,7 @@ class UtilikitContentScanner {
           $entityTypeCount++;
         }
 
-        // Progress logging every 10 batches
+        // Progress logging every 10 batches.
         if ($entityTypeCount % ($batchSize * 10) === 0) {
           $this->logger->info('Scanned @count @type entities', [
             '@count' => $entityTypeCount,

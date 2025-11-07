@@ -5,14 +5,30 @@
  * Filename: utiliki.admin.preview.css
  * Website: https://www.flashwebcenter.com
  * Developer: Alaa Haddad https://www.alaahaddad.com.
+ *
+ * This stylesheet uses Gin/Claro CSS variables where safe for both light and dark modes.
+ * Critical visual elements use hardcoded values to ensure consistent appearance.
+ *
+ * Variable Priority:
+ * 1. Gin theme variables (--gin-*) - supports light/dark modes
+ * 2. Claro theme variables (--color-*, --space-*)
+ * 3. Hardcoded fallback values
+ *
+ * Light/Dark Mode Safety:
+ * - Spacing: Always safe (no visual impact between modes)
+ * - Borders: Use semantic border colors that adapt
+ * - Backgrounds: Use layer variables that switch automatically
+ * - Text colors: Use semantic text colors that adapt
+ * - Shadows: Safe, automatically adjust
+ * - Border radius: Always safe
  */
 
 /* Column structure */
 .utilikit-column {
   box-sizing: border-box;
-  padding: 0 1rem;
-  border: 1px solid currentColor;
-  border-radius: 8px;
+  padding: 0 var(--gin-spacing-m, var(--space-m, 1rem));
+  border: 1px solid var(--gin-border-color, var(--color-gray-300, currentColor));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
 }
 
 .utilikit-playground-wrapper * {
@@ -39,29 +55,29 @@
 
 }
 
-/* Description text */
+/* Description text - Use semantic text colors for light/dark mode */
 .utilikit-description {
-  color: inherit;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, inherit));
+  font-size: var(--gin-font-size-s, var(--font-size-s, 0.9rem));
+  margin-bottom: var(--gin-spacing-xs, var(--space-xs, 0.5rem));
 }
 
-/* Form inputs */
+/* Form inputs - Use semantic variables for light/dark compatibility */
 .utilikit-select,
 .utilikit-text-input,
 .utilikit-textarea {
   width: 100%;
-  padding: 0.6rem 0.75rem;
-  border: 1px solid currentColor;
-  border-radius: 6px;
-  font-size: 1rem;
-  margin-bottom: 1rem;
-  background-color: inherit;
-  color: inherit;
+  padding: var(--gin-spacing-xs, var(--space-xs, 0.6rem)) var(--gin-spacing-s, var(--space-s, 0.75rem));
+  border: 1px solid var(--gin-border-color, var(--color-gray-300, currentColor));
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
+  font-size: var(--gin-font-size-s, var(--font-size-base, 1rem));
+  margin-bottom: var(--gin-spacing-m, var(--space-m, 1rem));
+  background-color: var(--gin-bg-layer, var(--color-white, inherit));
+  color: var(--gin-color-text, var(--color-text, inherit));
 }
 
 .utilikit-textarea {
-  font-family: monospace;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
   resize: vertical;
 }
 
@@ -78,22 +94,22 @@
 
 .utilikit-buttons-wrapper .buttons-wrapper {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--gin-spacing-xs, var(--space-xs, 0.5rem));
 }
 
-/* Output areas */
+/* Output areas - Preview and code blocks with light/dark mode support */
 .utilikit-preview-output,
 .utilikit-code-block {
   min-height: 50px;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: inherit;
-  font-family: monospace;
+  padding: var(--gin-spacing-m, var(--space-m, 1rem));
+  border: 1px solid var(--gin-border-color, var(--color-gray-300, #ddd));
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
+  background-color: var(--gin-bg-layer, var(--color-white, inherit));
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
   white-space: pre-wrap;
   margin: 0;
-  margin-bottom: 1.5rem;
-  color: inherit;
+  margin-bottom: var(--gin-spacing-l, var(--space-l, 1.5rem));
+  color: var(--gin-color-text, var(--color-text, inherit));
   transition: all 0.3s ease;
   opacity: 0.8;
 }
@@ -107,7 +123,7 @@
 .utilikit-code-block:hover {
   opacity: 1;
   padding-bottom: 1.2rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--gin-shadow-m, 0 2px 6px rgba(0, 0, 0, 0.15));
 }
 
 .utilikit-preview-output {
@@ -128,65 +144,65 @@
 .color-wrapper {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-family: system-ui, sans-serif;
+  gap: var(--gin-spacing-s, var(--space-s, 0.75rem));
+  font-family: var(--gin-font, var(--font-sans, system-ui, sans-serif));
 }
 
-/* Style the color picker input */
+/* Style the color picker input - Mostly hardcoded for consistent appearance */
 #utilikit-color-picker {
   -webkit-appearance: none;
   color: #495057;
   border: none;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
   cursor: pointer;
   padding: 0;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--gin-shadow-s, 0 2px 6px rgba(0, 0, 0, 0.15));
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 #utilikit-color-picker:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--gin-shadow-m, 0 4px 10px rgba(0, 0, 0, 0.2));
 }
 
 #utilikit-color-picker::-webkit-color-swatch-wrapper {
   padding: 0;
-  border-radius: 8px;
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
 }
 
 #utilikit-color-picker::-webkit-color-swatch {
   border: none;
-  border-radius: 8px;
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
 }
 
-/* Style the text hex value box */
+/* Style the text hex value box - Adaptive colors for light/dark mode */
 #utilikit-color-value {
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.9rem;
+  border: 1px solid var(--gin-border-color, var(--color-gray-300, #ddd));
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
+  padding: var(--gin-spacing-xs, var(--space-xs, 0.5rem)) var(--gin-spacing-s, var(--space-s, 0.75rem));
+  font-size: var(--gin-font-size-s, var(--font-size-s, 0.9rem));
   font-weight: 500;
   letter-spacing: 0.5px;
   width: 100px;
   text-align: center;
-  background: #f9f9f9;
-  color: #495057;
+  background: var(--gin-bg-layer-2, var(--color-bg, #f9f9f9));
+  color: var(--gin-color-text, var(--color-text, #495057));
   cursor: pointer;
   transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 #utilikit-color-value:hover {
-  background: #fff;
-  border-color: #bbb;
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border-color: var(--gin-border-color-dark, var(--color-gray-400, #bbb));
 }
 
 #utilikit-color-value:active,
 #utilikit-color-value:focus {
   outline: none;
-  border-color: #007bff;
-  background: #eef6ff;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+  background: var(--gin-color-primary-light, #eef6ff);
 }
 
 #utilikit-html-input {

@@ -74,7 +74,8 @@ class UtilikitContentScannerTest extends UnitTestCase {
   /**
    * Data provider for valid HTML extraction tests.
    *
-   * @return array<string, array{html: string, expected: array<string>}>
+   * @return array<string, array>
+   *   html: string, expected: array<string>
    */
   public function providerValidHtml(): array {
     return [
@@ -303,7 +304,8 @@ class UtilikitContentScannerTest extends UnitTestCase {
     $this->assertIsArray($result);
     $this->assertArrayHasKey('classes', $result);
     $this->assertArrayHasKey('scanned_count', $result);
-    $this->assertCount(4, $result['classes']); // 2 entities * 2 types
+    // 2 entities * 2 types
+    $this->assertCount(4, $result['classes']);
     $this->assertEquals(4, $result['scanned_count']);
   }
 

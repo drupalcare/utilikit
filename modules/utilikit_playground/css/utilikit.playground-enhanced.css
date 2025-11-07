@@ -5,6 +5,20 @@
  * Filename: utiliki.admin.preview.css
  * Website: https://www.flashwebcenter.com
  * Developer: Alaa Haddad https://www.alaahaddad.com.
+ *
+ * Enhanced styles with Gin/Claro CSS variable support.
+ * Carefully designed for light and dark mode compatibility.
+ *
+ * Variable Priority:
+ * 1. Gin theme variables (--gin-*) - light/dark mode aware
+ * 2. Claro theme variables (--color-*, --space-*)
+ * 3. Hardcoded fallback values
+ *
+ * Light/Dark Mode Strategy:
+ * - Use semantic color variables (--gin-color-text, --gin-bg-layer)
+ * - Avoid hardcoded light colors (white, #f8f9fa) for backgrounds
+ * - Avoid hardcoded dark colors (black, #343a40) for text
+ * - Specific UI elements (badges, indicators) keep brand colors
  */
 
 /**
@@ -12,27 +26,27 @@
  * Enhanced styles for UtiliKit Playground
  */
 
-/* Main wrapper improvements */
+/* Main wrapper improvements - Fully adaptive for light/dark mode */
 
 .utilikit-playground-wrapper {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: var(--gin-spacing-xs, var(--space-xs, 0.5rem));
   max-width: 1800px;
-  margin: 0.5rem auto;
-  padding: 0.5rem;
+  margin: var(--gin-spacing-xs, var(--space-xs, 0.5rem)) auto;
+  padding: var(--gin-spacing-xs, var(--space-xs, 0.5rem));
   box-sizing: border-box;
   color-scheme: light dark;
-  background: #f8f9fa;
+  background: var(--gin-bg-app, var(--color-bg, #f8f9fa));
   min-height: calc(100vh - 100px);
 }
 
-/* Enhanced columns */
+/* Enhanced columns - Adaptive backgrounds and shadows */
 .utilikit-column {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  padding: 20px;
+  background: var(--gin-bg-layer, var(--color-white, white));
+  border-radius: var(--gin-border-l, var(--border-radius, 12px));
+  box-shadow: var(--gin-shadow-m, 0 2px 8px rgba(0, 0, 0, 0.08));
+  padding: var(--gin-spacing-m, var(--space-m, 20px));
   border: none;
 }
 
@@ -44,84 +58,84 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem
+  gap: var(--gin-spacing-xs, var(--space-xs, 0.5rem))
 }
 
-/* Preset Examples Section */
+/* Preset Examples Section - Adaptive colors */
 .preset-examples {
-  margin-bottom: 25px;
-  background: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
+  margin-bottom: var(--gin-spacing-l, var(--space-l, 25px));
+  background: var(--gin-bg-layer-2, var(--color-bg, #f8f9fa));
+  padding: var(--gin-spacing-s, var(--space-s, 15px));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
 }
 
 .preset-examples h3 {
-  margin: 0 0 15px 0;
-  font-size: 16px;
-  color: #343a40;
+  margin: 0 0 var(--gin-spacing-s, var(--space-s, 15px)) 0;
+  font-size: var(--gin-font-size-m, var(--font-size-base, 16px));
+  color: var(--gin-color-text, var(--color-text, #343a40));
 }
 
 .preset-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: var(--gin-spacing-s, var(--space-s, 10px));
 }
 
 .preset-btn {
-  padding: 10px 15px;
-  background: white;
-  border: 2px solid #dee2e6;
-  border-radius: 6px;
+  padding: var(--gin-spacing-s, var(--space-s, 10px)) var(--gin-spacing-s, var(--space-s, 15px));
+  background: var(--gin-bg-layer, var(--color-white, white));
+  border: 2px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
   cursor: pointer;
   transition: all 0.2s;
   text-align: left;
-  font-size: 13px;
+  font-size: var(--gin-font-size-xs, var(--font-size-s, 13px));
 }
 
 .preset-btn:hover {
-  border-color: #007bff;
-  background: #f8f9fa;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+  background: var(--gin-bg-layer-2, var(--color-bg, #f8f9fa));
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
 }
 
 .preset-btn strong {
   display: block;
-  color: #343a40;
+  color: var(--gin-color-text, var(--color-text, #343a40));
   margin-bottom: 4px;
 }
 
 .preset-btn small {
-  color: #6c757d;
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, #6c757d));
   line-height: 1.3;
 }
 
-/* Class Builder */
+/* Class Builder - Adaptive with brand color icons */
 .class-builder {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  background: var(--gin-bg-layer-2, var(--color-bg, #f8f9fa));
+  padding: var(--gin-spacing-m, var(--space-m, 20px));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+  margin-bottom: var(--gin-spacing-m, var(--space-m, 20px));
 }
 
 .builder-section {
-  margin-bottom: 20px;
+  margin-bottom: var(--gin-spacing-m, var(--space-m, 20px));
 }
 
 .builder-section h4 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
+  margin: 0 0 var(--gin-spacing-xs, var(--space-xs, 12px)) 0;
+  font-size: var(--gin-font-size-s, var(--font-size-s, 14px));
   font-weight: 600;
-  color: #495057;
+  color: var(--gin-color-text, var(--color-text, #495057));
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gin-spacing-xs, var(--space-xs, 8px));
 }
 
 .builder-icon {
   width: 24px;
   height: 24px;
-  background: #007bff;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)); /* Keep brand color */
   color: white;
   border-radius: 50%;
   display: flex;
@@ -134,64 +148,64 @@
 .builder-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--gin-spacing-xs, var(--space-xs, 8px));
 }
 
 .builder-chip {
-  padding: 6px 12px;
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 20px;
-  font-size: 12px;
+  padding: var(--gin-spacing-xxs, 6px) var(--gin-spacing-xs, var(--space-xs, 12px));
+  background: var(--gin-bg-layer, var(--color-white, white));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-xl, 20px);
+  font-size: var(--gin-font-size-xs, var(--font-size-xs, 12px));
   cursor: pointer;
   transition: all 0.2s;
-  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, 'SF Mono', Monaco, Consolas, monospace));
 }
 
 .builder-chip:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
+  background: var(--gin-bg-layer-2, var(--color-bg, #e9ecef));
+  border-color: var(--gin-border-color-dark, var(--color-gray-400, #adb5bd));
 }
 
 .builder-chip.active {
-  background: #007bff;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)); /* Keep brand color */
   color: white;
-  border-color: #007bff;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
 }
 
-/* Quick Actions */
+/* Quick Actions - Adaptive colors */
 .quick-actions {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: var(--gin-spacing-s, var(--space-s, 10px));
+  margin-bottom: var(--gin-spacing-m, var(--space-m, 20px));
   flex-wrap: wrap;
-  color: gray;
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, gray));
 }
 
 .quick-actions * {
-  color: gray;
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, gray));
 }
 
 .quick-action-btn {
-  padding: 8px 16px;
-  background: white;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  font-size: 13px;
+  padding: var(--gin-spacing-xs, var(--space-xs, 8px)) var(--gin-spacing-s, var(--space-s, 16px));
+  background: var(--gin-bg-layer, var(--color-white, white));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
+  font-size: var(--gin-font-size-xs, var(--font-size-s, 13px));
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
 }
 
 .quick-action-btn:hover {
-  background: #f8f9fa;
-  border-color: #007bff;
+  background: var(--gin-bg-layer-2, var(--color-bg, #f8f9fa));
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
 }
 
 .quick-action-btn.active {
-  background: #007bff;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)); /* Brand color */
   color: white;
-  border-color: #007bff;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
 }
 
 /* Enhanced input area */

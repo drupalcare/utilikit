@@ -90,6 +90,11 @@ class UtilikitConstants {
   public const CACHE_TAG_STATIC_MODE = 'utilikit:mode:static';
 
   /**
+   * Cache tag for head mode specific cache entries.
+   */
+  public const CACHE_TAG_HEAD_MODE = 'utilikit:mode:head';
+
+  /**
    * Cache tag for timestamp-based cache invalidation.
    */
   public const CACHE_TAG_TIMESTAMP = 'utilikit:timestamp';
@@ -224,6 +229,10 @@ class UtilikitConstants {
   // ======================================================================= */
   // CSS AND TIMING CONFIGURATION
   // ======================================================================= */
+  /**
+   * Default setting for applying !important to utility classes.
+   */
+  public const DEFAULT_USE_IMPORTANT = TRUE;
   /**
    * Cache TTL in seconds for CSS-related cache entries.
    */

@@ -18,7 +18,7 @@ body.utilikit-inline-mode .utilikit:not([data-utilikit-props]) {
 }
 
 /* Alternative rule for backwards compatibility */
-body:not(.utilikit-static-mode) .utilikit:not([data-utilikit-props]) {
+body:not(.utilikit-static-mode):not(.utilikit-head-mode) .utilikit:not([data-utilikit-props]) {
   visibility: hidden;
 }
 
@@ -32,6 +32,10 @@ body.utilikit-static-mode .utilikit {
   visibility: visible;
 }
 
+/* Head mode - elements are always visible (CSS in head handles styling) */
+body.utilikit-head-mode .utilikit {
+  visibility: visible;
+}
 /* =============================================================================
    Developer Mode Features
    ========================================================================== */
@@ -93,6 +97,10 @@ body.utilikit-static-mode .utilikit {
   will-change: auto;
 }
 
+/* Head mode doesn't need change optimization */
+body.utilikit-head-mode .utilikit {
+  will-change: auto;
+}
 /* =============================================================================
    Accessibility & Debug Features
    ========================================================================== */

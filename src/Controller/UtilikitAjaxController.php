@@ -64,7 +64,7 @@ class UtilikitAjaxController extends ControllerBase {
    *
    * @var \Psr\Log\LoggerInterface
    */
-  protected \Psr\Log\LoggerInterface $logger;
+  protected LoggerInterface $logger;
 
   /**
    * The time service.
@@ -93,7 +93,7 @@ class UtilikitAjaxController extends ControllerBase {
     QueueFactory $queue,
     RendererInterface $renderer,
     LoggerInterface $logger,
-    TimeInterface $time
+    TimeInterface $time,
   ) {
     $this->serviceProvider = $serviceProvider;
     $this->lock = $lock;
@@ -116,6 +116,7 @@ class UtilikitAjaxController extends ControllerBase {
       $container->get('datetime.time')
     );
   }
+
   /**
    * Checks rate limiting for the current request IP address.
    *
@@ -139,7 +140,7 @@ class UtilikitAjaxController extends ControllerBase {
     // Try to acquire lock with short timeout (250ms)
     if (!$this->lock->acquire($lock_name, 0.25)) {
       // Lock contention - allow request rather than false-positive rate limit
-      // This favors UX over strict enforcement during high concurrency
+      // This favors UX over strict enforcement during high concurrency.
       $this->logger->debug('Rate limit lock contention for IP @ip - allowing request', [
         '@ip' => $ip,
       ]);
@@ -150,10 +151,10 @@ class UtilikitAjaxController extends ControllerBase {
       $stateManager = $this->serviceProvider->getStateManager();
       $rateLimitData = $stateManager->getRateLimitData($ip);
 
-      // Use Drupal's time service for testability
+      // Use Drupal's time service for testability.
       $now = $this->time->getRequestTime();
 
-      // Check if we need to reset the window
+      // Check if we need to reset the window.
       if ($now > $rateLimitData['reset_time']) {
         $stateManager->setRateLimitData(
           $ip,
@@ -163,7 +164,7 @@ class UtilikitAjaxController extends ControllerBase {
         return TRUE;
       }
 
-      // Check if over limit
+      // Check if over limit.
       if ($rateLimitData['current'] >= UtilikitConstants::RATE_LIMIT_REQUESTS_PER_MINUTE) {
         $this->logger->warning('Rate limit exceeded for IP @ip: @current requests', [
           '@ip' => $ip,
@@ -172,7 +173,7 @@ class UtilikitAjaxController extends ControllerBase {
         return FALSE;
       }
 
-      // Increment counter
+      // Increment counter.
       $stateManager->setRateLimitData(
         $ip,
         $rateLimitData['current'] + 1,
@@ -262,7 +263,7 @@ class UtilikitAjaxController extends ControllerBase {
       $config = $this->config('utilikit.settings');
       $mode = $data['mode'] ?? $config->get('rendering_mode') ?? 'inline';
 
-      if (!in_array($mode, ['inline', 'static'], TRUE)) {
+      if (!in_array($mode, ['inline', 'static', 'head'], TRUE)) {
         return $this->createErrorResponse('Invalid rendering mode.', 400);
       }
 
@@ -321,7 +322,41 @@ class UtilikitAjaxController extends ControllerBase {
       }
 
       try {
-        // Add any new classes from the request to known classes.
+        // Process based on mode.
+        if ($mode === 'head') {
+          // Head mode: update state only, no file.
+          $validClasses = $this->serviceProvider->getContentScanner()->validateUtilityClasses($data['classes']);
+
+          if (!empty($validClasses)) {
+            $allClasses = $this->serviceProvider->getStateManager()->addKnownClasses($validClasses);
+            $css = $this->serviceProvider->getCssGenerator()->generateCssFromClasses($allClasses);
+
+            // Apply optimization if enabled.
+            if ($config->get('optimize_css')) {
+              $css = $this->serviceProvider->getFileManager()->minifyCss($css);
+            }
+
+            $this->serviceProvider->getStateManager()->setGeneratedCss($css);
+            $this->serviceProvider->getStateManager()->updateCssTimestamp();
+            $this->serviceProvider->getCacheManager()->clearCssCaches();
+          }
+
+          $this->logger->info('CSS updated in head mode with @count classes.', [
+            '@count' => count($validClasses ?? []),
+          ]);
+
+          return $this->createSuccessResponse(
+            'CSS updated successfully in head mode.',
+            [
+              'mode' => 'head',
+              'count' => count($validClasses ?? []),
+              'css' => $css ?? '',
+              'timestamp' => time(),
+            ]
+          );
+        }
+
+        // Add any new classes from the request to known classes (static mode).
         if (!empty($data['classes'])) {
           $stateManager = $this->serviceProvider->getStateManager();
           $beforeCount = count($stateManager->getKnownClasses());
@@ -477,9 +512,10 @@ class UtilikitAjaxController extends ControllerBase {
       return new Response('', 403);
     }
 
-    // Only render button in static mode.
+    // Only render button in static and head modes.
     $config = $this->config('utilikit.settings');
-    if ($config->get('rendering_mode') !== 'static') {
+    $renderingMode = $config->get('rendering_mode');
+    if (!in_array($renderingMode, ['static', 'head'], TRUE)) {
       return new Response('', 204);
     }
 

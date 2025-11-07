@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Functional;
 
+use GuzzleHttp\Promise\Utils;
 use Drupal\Core\Url;
 use Drupal\Tests\utilikit\Traits\UtilikitTestHelpers;
 use Drupal\utilikit\Service\UtilikitConstants;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Tests the UtilikitAjaxController functionality.
@@ -395,7 +395,7 @@ class UtilikitAjaxControllerTest extends UtilikitFunctionalTestBase {
     }
 
     // Wait for all requests to complete.
-    $responses = \GuzzleHttp\Promise\Utils::settle($promises)->wait();
+    $responses = Utils::settle($promises)->wait();
 
     // Verify all succeeded.
     foreach ($responses as $response) {
@@ -413,9 +413,14 @@ class UtilikitAjaxControllerTest extends UtilikitFunctionalTestBase {
 
     // Mock a service to throw exception.
     $this->container->set('utilikit.service_provider', new class() {
+
+      /**
+       *
+       */
       public function processNewClasses($classes) {
         throw new \Exception('Test exception');
       }
+
     });
 
     $response = $this->drupalPostJson($this->updateCssUrl->toString(), [

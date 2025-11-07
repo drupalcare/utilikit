@@ -23,44 +23,44 @@
  */
 #}
 
-<div class="utilikit-playground-wrapper">
+<div class="utilikit-playground-wrapper layout-container">
 
   {#
     LEFT PANEL: INPUT CONTROLS
     Contains all user input interfaces including presets, form controls,
     visual builders, and helper tools for creating UtiliKit classes.
   #}
-  <div class="utilikit-column utilikit-input-panel">
+  <div class="utilikit-column utilikit-input-panel region region-sidebar-first">
 
     {#
       PRESET EXAMPLES SECTION
       Quick-start buttons that load predefined HTML and class combinations
       for common UI patterns like cards, hero sections, forms, etc.
     #}
-    <div class="preset-examples">
-      <h3>Quick Start Examples</h3>
+    <div class="preset-examples block">
+      <h3 class="block-title">Quick Start Examples</h3>
       <div class="preset-grid">
-        <button type="button" class="preset-btn" data-preset="card">
+        <button type="button" class="preset-btn button js-form-submit form-submit" data-preset="card">
           <strong>Card Component</strong>
           <small>Modern card with shadow</small>
         </button>
-        <button type="button" class="preset-btn" data-preset="hero">
+        <button type="button" class="preset-btn button js-form-submit form-submit" data-preset="hero">
           <strong>Hero Section</strong>
           <small>Centered hero banner</small>
         </button>
-        <button type="button" class="preset-btn" data-preset="flex">
+        <button type="button" class="preset-btn button js-form-submit form-submit" data-preset="flex">
           <strong>Flex Layout</strong>
           <small>3-column responsive</small>
         </button>
-        <button type="button" class="preset-btn" data-preset="grid">
+        <button type="button" class="preset-btn button js-form-submit form-submit" data-preset="grid">
           <strong>Grid Layout</strong>
           <small>Responsive grid</small>
         </button>
-        <button type="button" class="preset-btn" data-preset="form">
+        <button type="button" class="preset-btn button js-form-submit form-submit" data-preset="form">
           <strong>Form Styling</strong>
           <small>Styled form inputs</small>
         </button>
-        <button type="button" class="preset-btn" data-preset="pricing">
+        <button type="button" class="preset-btn button js-form-submit form-submit" data-preset="pricing">
           <strong>Pricing Card</strong>
           <small>Product pricing display</small>
         </button>
@@ -79,10 +79,10 @@
         Toggle buttons for additional tools like visual builder,
         responsive helper, and tutorial overlay.
       #}
-      <div class="quick-actions">
-        <button type="button" class="quick-action-btn" data-action="builder">🔧 Visual Builder</button>
-        <button type="button" class="quick-action-btn" data-action="responsive">📱 Responsive Helper</button>
-        <button type="button" class="quick-action-btn" data-action="tutorial">📚 Show Tutorial</button>
+      <div class="quick-actions form-actions js-form-wrapper form-wrapper">
+        <button type="button" class="quick-action-btn button js-form-submit form-submit" data-action="builder">🔧 Visual Builder</button>
+        <button type="button" class="quick-action-btn button js-form-submit form-submit" data-action="responsive">📱 Responsive Helper</button>
+        <button type="button" class="quick-action-btn button js-form-submit form-submit" data-action="tutorial">📚 Show Tutorial</button>
       </div>
 
       {#
@@ -90,12 +90,12 @@
         Switch between basic (class-only) and advanced (full HTML) input modes.
         Controls visibility of different input sections.
       #}
-      <div class="form-item">
-        <label class="form-item__label" for="utilikit-mode"><strong>Select Mode:</strong></label>
-        <p class="utilikit-description">
+      <div class="form-item js-form-item js-form-type-select form-type-select">
+        <label class="form-item__label js-form-required form-required" for="utilikit-mode"><strong>Select Mode:</strong></label>
+        <p class="utilikit-description description">
           Choose <strong>Basic</strong> to enter only utility classes. Choose <strong>Advanced</strong> to enter a complete HTML structure with UtiliKit classes.
         </p>
-        <select id="utilikit-mode" class="form-select form-element form-element--type-select">
+        <select id="utilikit-mode" class="form-select form-element form-element--type-select form-element--api-select">
           <option value="basic">Basic (Class-based)</option>
           <option value="advanced">Advanced (Full HTML)</option>
         </select>
@@ -106,15 +106,15 @@
         Simple text input for entering space-separated UtiliKit utility classes.
         Includes autocomplete functionality for class suggestions.
       #}
-      <div id="utilikit-basic-input-group" class="form-item">
-        <label for="utilikit-class-input"><strong>Enter Utility Classes:</strong></label>
-        <p class="utilikit-description">
+      <div id="utilikit-basic-input-group" class="form-item js-form-item js-form-type-textfield form-type-textfield">
+        <label for="utilikit-class-input" class="js-form-required form-required"><strong>Enter Utility Classes:</strong></label>
+        <p class="utilikit-description description">
           Start typing a utility class like <code>uk-pd</code>, <code>uk-mg</code>, or <code>uk-bg</code> to see autocomplete suggestions. Separate multiple classes with spaces.
         </p>
         <div class="input-wrapper">
           <input type="text"
                  id="utilikit-class-input"
-                 class="utilikit-text-input form-text form-element form-element--type-text"
+                 class="utilikit-text-input form-text form-element form-element--type-text form-element--api-textfield required"
                  placeholder="e.g., up uk-pd--24 uk-mg--16 uk-bw--2 uk-bs--solid uk-bc--3b82f6 uk-br--8 uk-bg--f0f9ff uk-tc--1e40af uk-fs--18"
                  autocomplete="off" />
           {# Autocomplete dropdown container (hidden by default) #}
@@ -127,8 +127,8 @@
         Interactive interface for building UtiliKit classes by clicking chips
         organized into categories. Hidden by default, toggled by quick action.
       #}
-      <div class="class-builder" id="class-builder" style="display: none;">
-        <h3>Visual Class Builder</h3>
+      <div class="class-builder details-wrapper" id="class-builder" style="display: none;">
+        <h3 class="details-title">Visual Class Builder</h3>
 
         {# SPACING UTILITIES SECTION #}
         <div class="builder-section">
@@ -245,7 +245,7 @@
           <h4>Convert Your Classes:</h4>
           <input type="text"
                  id="responsive-input"
-                 class="text-full form-textarea form-element form-element--type-textarea form-element--api-textarea" row="12"
+                 class="text-full form-text form-element form-element--type-text form-element--api-textfield"
                  placeholder="Enter a class like uk-pd--20">
           <div class="responsive-output" id="responsive-output"></div>
         </div>
@@ -256,13 +256,13 @@
         Textarea for entering complete HTML structures with UtiliKit classes.
         Hidden by default, shown when advanced mode is selected.
       #}
-      <div id="utilikit-advanced-input-group" class="form-item" style="display: none;">
-        <label for="utilikit-html-input"><strong>Enter Full HTML Structure:</strong></label>
-        <p class="utilikit-description">
+      <div id="utilikit-advanced-input-group" class="form-item js-form-item js-form-type-textarea form-type-textarea" style="display: none;">
+        <label for="utilikit-html-input" class="js-form-required form-required"><strong>Enter Full HTML Structure:</strong></label>
+        <p class="utilikit-description description">
           Write complete HTML with UtiliKit classes. The <code>utilikit</code> class will be added automatically.
         </p>
         <textarea id="utilikit-html-input"
-                 class="text-full form-textarea form-element form-element--type-textarea form-element--api-textarea" row="16"
+                 class="text-full form-textarea form-element form-element--type-textarea form-element--api-textarea required" rows="16"
                   placeholder='<div class="utilikit uk-dp--grid uk-gc--1fr uk-md-gc--repeat-2-1fr uk-lg-gc--repeat-3-1fr uk-gp--16 uk-bg--fee2e2 uk-pd--16 uk-mg--t-16"><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 1</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 2</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 3</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 4</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 5</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 6</div></div>'></textarea>
       </div>
 
@@ -271,14 +271,14 @@
         HTML5 color input with text display for getting hex values
         to use in UtiliKit color utility classes.
       #}
-      <div class="form-item">
-        <label for="utilikit-color-picker"><strong>Pick a Color:</strong></label>
-        <p class="utilikit-description">
+      <div class="form-item js-form-item js-form-type-color form-type-color">
+        <label for="utilikit-color-picker" class="js-form-required form-required"><strong>Pick a Color:</strong></label>
+        <p class="utilikit-description description">
           Use this to get a HEX color for classes like <code>uk-bg--</code>, <code>uk-tc--</code>, or <code>uk-bc--</code>.
         </p>
         <div class="color-wrapper">
-          <input type="color" id="utilikit-color-picker" value="#007bff" />
-          <input type="text" id="utilikit-color-value" value="#007bff" readonly title="Click to copy" />
+          <input type="color" id="utilikit-color-picker" class="form-element form-element--type-color form-element--api-color" value="#007bff" />
+          <input type="text" id="utilikit-color-value" class="form-text form-element form-element--type-text" value="#007bff" readonly title="Click to copy" />
         </div>
       </div>
 
@@ -316,25 +316,25 @@
     Contains live preview, style inspector, and code output sections
     for visualizing and copying the results.
   #}
-  <div class="utilikit-column utilikit-output-panel">
+  <div class="utilikit-column utilikit-output-panel region region-content">
 
     {#
       LIVE PREVIEW SECTION
       Interactive preview container with viewport simulation controls
       for testing responsive behavior at different screen sizes.
     #}
-    <div class="preview-container">
+    <div class="preview-container block">
       <div class="preview-controls">
-        <h3>Live Preview</h3>
+        <h3 class="block-title">Live Preview</h3>
         {# VIEWPORT SIMULATION CONTROLS #}
         <div class="viewport-selector">
-          <button type="button" class="viewport-btn active" data-viewport="desktop">
+          <button type="button" class="viewport-btn active button js-form-submit form-submit" data-viewport="desktop">
             <span class="viewport-icon">💻</span> Desktop
           </button>
-          <button type="button" class="viewport-btn" data-viewport="tablet">
+          <button type="button" class="viewport-btn button js-form-submit form-submit" data-viewport="tablet">
             <span class="viewport-icon">📱</span> Tablet
           </button>
-          <button type="button" class="viewport-btn" data-viewport="mobile">
+          <button type="button" class="viewport-btn button js-form-submit form-submit" data-viewport="mobile">
             <span class="viewport-icon">📱</span> Mobile
           </button>
          </div>
@@ -351,15 +351,15 @@
       Real-time analysis of applied styles with render/reset controls.
       Shows computed styles and class effects for debugging.
     #}
-    <div class="style-inspector">
+    <div class="style-inspector block">
       <div class="utilikit-buttons-wrapper">
-      <h3>Style Inspector <span class="inspector-badge">Live</span></h3>
+      <h3 class="block-title">Style Inspector <span class="inspector-badge badge">Live</span></h3>
         {# PRIMARY ACTION BUTTONS #}
-        <div class="buttons-wrapper">
-          <button type="submit" form="utilikit-preview-form" class="utilikit-button utilikit-button-render button button--primary">
+        <div class="buttons-wrapper form-actions js-form-wrapper form-wrapper">
+          <button type="submit" form="utilikit-preview-form" class="utilikit-button utilikit-button-render button button--primary js-form-submit form-submit">
             Render
           </button>
-          <button type="reset" id="utilikit-reset-btn" class="utilikit-button utilikit-button-reset button">
+          <button type="reset" id="utilikit-reset-btn" class="utilikit-button utilikit-button-reset button js-form-submit form-submit">
             Reset
           </button>
         </div>
@@ -375,13 +375,13 @@
       Displays the raw HTML that should be copied to user's project.
       Includes copy-to-clipboard functionality.
     #}
-    <section class="form-item">
-      <label for="utilikit-output-code"><strong>Copy This HTML:</strong></label>
-      <p class="utilikit-description">
+    <section class="form-item js-form-item">
+      <label for="utilikit-output-code" class="js-form-required form-required"><strong>Copy This HTML:</strong></label>
+      <p class="utilikit-description description">
         This is the HTML you should copy and paste into your project.
       </p>
       <pre id="utilikit-output-code" class="utilikit-code-block"></pre>
-      <button type="button" id="utilikit-copy-btn" class="utilikit-button utilikit-button-copy button button--primary">
+      <button type="button" id="utilikit-copy-btn" class="utilikit-button utilikit-button-copy button button--primary js-form-submit form-submit">
         📋 Copy HTML
       </button>
     </section>
@@ -391,9 +391,9 @@
       Shows the final HTML after UtiliKit engine has processed and
       applied inline styles, useful for debugging and understanding.
     #}
-    <section class="form-item">
-      <label for="utilikit-rendered-html"><strong>What the Browser Sees:</strong></label>
-      <p class="utilikit-description">
+    <section class="form-item js-form-item">
+      <label for="utilikit-rendered-html" class="js-form-required form-required"><strong>What the Browser Sees:</strong></label>
+      <p class="utilikit-description description">
         This shows the HTML after UtiliKit has applied inline styles.
       </p>
       <pre id="utilikit-rendered-html" class="utilikit-code-block"></pre>
@@ -419,7 +419,7 @@
 #}
 <div class="tutorial-overlay" id="tutorial-overlay">
   <div class="tutorial-content">
-    <button type="button" class="tutorial-close" id="tutorial-close">×</button>
+    <button type="button" class="tutorial-close button" id="tutorial-close">×</button>
     <h2>Welcome to UtiliKit Playground! 🎨</h2>
     <p>This interactive playground helps you learn and experiment with UtiliKit utility classes.</p>
 
@@ -435,6 +435,6 @@
 
     <p>Try starting with a preset example or type <code>uk-pd--20</code> to begin!</p>
 
-    <button type="button" class="button button--primary" id="tutorial-start">Get Started</button>
+    <button type="button" class="button button--primary js-form-submit form-submit" id="tutorial-start">Get Started</button>
   </div>
 </div>

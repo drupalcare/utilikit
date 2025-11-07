@@ -116,6 +116,39 @@ function utilikit_page_attachments(array &$attachments): void {
       $rendering_mode = 'inline';
     }
   }
+  elseif ($rendering_mode === 'head') {
+    $stateManager = \Drupal::service('utilikit.state_manager');
+    $knownClasses = $stateManager->getKnownClasses();
+
+    if (!empty($knownClasses)) {
+      $css = $stateManager->getGeneratedCss();
+
+      if (empty($css)) {
+        $cssGenerator = \Drupal::service('utilikit.css_generator');
+        $css = $cssGenerator->generateCssFromClasses($knownClasses);
+        $stateManager->setGeneratedCss($css);
+      }
+
+      if (!empty($css)) {
+        // Apply optimization if enabled (same as static mode)
+        if ($config->get('optimize_css')) {
+          $fileManager = \Drupal::service('utilikit.file_manager');
+          $css = $fileManager->minifyCss($css);
+        }
+
+        $attachments['#attached']['html_head'][] = [
+          [
+            '#type' => 'html_tag',
+            '#tag' => 'style',
+            '#value' => $css,
+            '#attributes' => ['id' => 'utilikit-head-mode'],
+            '#weight' => -100,
+          ],
+          'utilikit_head_css',
+        ];
+      }
+    }
+  }
 
   $stateManager = \Drupal::service('utilikit.state_manager');
 
@@ -153,6 +186,9 @@ function utilikit_page_attachments(array &$attachments): void {
       'utilikit_static_css',
     ];
   }
+  elseif ($rendering_mode === 'head') {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.static';
+  }
   else {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
   }
@@ -165,7 +201,7 @@ function utilikit_page_attachments(array &$attachments): void {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
   }
 
-  if (\Drupal::currentUser()->hasPermission('use utilikit update button') && $rendering_mode === 'static') {
+  if (\Drupal::currentUser()->hasPermission('use utilikit update button') && in_array($rendering_mode, ['static', 'head'], TRUE)) {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.update.button';
 
     $attachments['#attached']['drupalSettings']['utilikit']['updateButton'] = [
@@ -178,6 +214,7 @@ function utilikit_page_attachments(array &$attachments): void {
     ];
   }
 
+  // CSP nonce only needed for inline mode (dynamic JS injection)
   if ($rendering_mode === 'inline') {
     $nonce = Crypt::randomBytesBase64(16);
     $attachments['#attached']['drupalSettings']['utilikit']['cspNonce'] = $nonce;
@@ -230,7 +267,7 @@ function utilikit_entity_presave($entity): void {
 
   $mode = $config->get('rendering_mode') ?? 'inline';
 
-  if ($mode === 'static') {
+  if (in_array($mode, ['static', 'head'], TRUE)) {
     $lock = \Drupal::lock();
     $locked = $lock->acquire(UtilikitConstants::LOCK_CSS_UPDATE, UtilikitConstants::CSS_UPDATE_LOCK_WAIT);
 

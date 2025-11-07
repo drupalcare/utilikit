@@ -68,6 +68,8 @@ function utilikit_install() {
   $config->set('debounce', 50);
   // Enable CSS optimization by default.
   $config->set('optimize_css', TRUE);
+  // Use Important by default.
+  $config->set('use_important', TRUE);
   // Standard responsive breakpoints.
   $config->set('active_breakpoints', UtilikitConstants::DEFAULT_BREAKPOINTS);
 
@@ -119,13 +121,12 @@ function utilikit_install() {
     'media_query_optimization' => FALSE,
   ]);
 
-  // Add default scanning entity types
+  // Add default scanning entity types.
   $config->set('scanning_entity_types', [
     'node',
     'block_content',
     'paragraph',
   ]);
-
 
   $config->save();
 
@@ -192,6 +193,7 @@ function utilikit_uninstall() {
     UtilikitConstants::CACHE_TAG_CSS,
     UtilikitConstants::CACHE_TAG_INLINE_MODE,
     UtilikitConstants::CACHE_TAG_STATIC_MODE,
+    UtilikitConstants::CACHE_TAG_HEAD_MODE,
   ]);
 
   // Step 5: Delete CSS files and directories using constants.
@@ -231,7 +233,6 @@ function utilikit_uninstall() {
  *
  * @see hook_requirements()
  */
-
 function utilikit_requirements($phase): array {
   $requirements = [];
 
@@ -259,18 +260,18 @@ function utilikit_requirements($phase): array {
           'title' => t('UtiliKit CSS directory'),
           'value' => t('Directory does not exist'),
           'severity' => REQUIREMENT_ERROR,
-          'description' => t('The UtiliKit CSS directory at %path does not exist. This is required for static mode. Please create it and ensure it is writable, or switch to inline mode.', [
+          'description' => t('The UtiliKit CSS directory at %path does not exist. This is required for static mode. Please create it and ensure it is writable, or switch to inline/head mode.', [
             '%path' => $directory,
           ]),
         ];
       }
       else {
-        // WARNING in inline mode - directory not needed but should exist.
+        // WARNING in inline/head mode - directory not needed but should exist.
         $requirements['utilikit_directory'] = [
           'title' => t('UtiliKit CSS directory'),
           'value' => t('Directory does not exist'),
           'severity' => REQUIREMENT_WARNING,
-          'description' => t('The UtiliKit CSS directory at %path does not exist. This is normal for inline mode. The directory will be created automatically if you switch to static mode.', [
+          'description' => t('The UtiliKit CSS directory at %path does not exist. This is normal for inline/head mode. The directory will be created automatically if you switch to static mode.', [
             '%path' => $directory,
           ]),
         ];
@@ -290,7 +291,7 @@ function utilikit_requirements($phase): array {
         ];
       }
       else {
-        // WARNING in inline mode.
+        // WARNING in inline/head mode.
         $requirements['utilikit_directory'] = [
           'title' => t('UtiliKit CSS directory'),
           'value' => t('Not writable'),
@@ -341,14 +342,19 @@ function utilikit_requirements($phase): array {
     }
 
     // Validate overall configuration status.
+    $mode_labels = [
+      'static' => t('Static'),
+      'inline' => t('Inline'),
+      'head' => t('Head'),
+    ];
     $requirements['utilikit_config'] = [
       'title' => t('UtiliKit configuration'),
       'value' => t('Mode: @mode', [
-        '@mode' => $rendering_mode === 'static' ? t('Static') : t('Inline'),
+        '@mode' => $mode_labels[$rendering_mode] ?? t('Unknown'),
       ]),
       'severity' => REQUIREMENT_OK,
       'description' => t('UtiliKit is running in @mode mode.', [
-        '@mode' => $rendering_mode === 'static' ? t('static') : t('inline'),
+        '@mode' => $mode_labels[$rendering_mode] ?? t('unknown'),
       ]),
     ];
 

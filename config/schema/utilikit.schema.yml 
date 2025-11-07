@@ -43,7 +43,7 @@ utilikit.settings:
           choices:
             - inline    # Dynamic CSS generation with JavaScript
             - static    # Pre-generated CSS files with server delivery
-
+            - head      # Server-generated CSS injected in page head
     # =========================================================================
     # PERFORMANCE & OPTIMIZATION SETTINGS
     # =========================================================================
@@ -69,6 +69,12 @@ utilikit.settings:
     # CSS output optimization including minification and compression
     # Reduces file size and improves loading performance in static mode
     optimize_css:
+      type: boolean
+      label: 'Optimize CSS output'
+
+    # Use Important to force the style specially if your site is using vars.
+    # Make sure your style is applied
+    use_important:
       type: boolean
       label: 'Optimize CSS output'
 

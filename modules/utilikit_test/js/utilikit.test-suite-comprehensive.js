@@ -998,7 +998,7 @@
       actualCell.textContent = results.actual;
 
       statusBadge.textContent = results.passed ? 'Passed' : 'Failed';
-      statusBadge.className = `status-badge ${results.passed ? 'passed' : 'failed'}`;
+      statusBadge.className = `status-badge badge ${results.passed ? 'passed' : 'failed'}`;
 
       testCase.classList.add(results.passed ? 'test-passed' : 'test-failed');
     }
@@ -1123,7 +1123,7 @@
         testCase.classList.remove('test-passed', 'test-failed');
         const statusBadge = testCase.querySelector('.status-badge');
         statusBadge.textContent = 'Pending';
-        statusBadge.className = 'status-badge pending';
+        statusBadge.className = 'status-badge pending badge badge--warning';
         testCase.querySelector('.test-actual').textContent = '-';
       });
 

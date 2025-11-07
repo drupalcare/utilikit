@@ -150,6 +150,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
         '#options' => [
           'inline' => $this->t('<strong>Inline Mode</strong> - JavaScript processes all utility classes dynamically on page load'),
           'static' => $this->t('<strong>Static Mode</strong> - Pre-generated CSS file that must be updated either automatically (on save) or manually (update button) when adding new classes'),
+          'head' => $this->t('<strong>Head Mode</strong> - Server-generated CSS injected into page head on each request (no file system required)'),
         ],
         '#default_value' => $config->get('rendering_mode') ?? 'inline',
       ],
@@ -196,12 +197,26 @@ class UtilikitSettingsForm extends ConfigFormBase {
         ),
         'optimize_css' => $this->createCheckboxField(
           $this->t('Optimize CSS output'),
-          $this->t('Minify and optimize the generated CSS file to reduce file size.'),
+          $this->t('Minify and optimize the generated CSS to reduce size.'),
           $config->get('optimize_css') ?? TRUE,
           [
             'states' => [
               'visible' => [
-                ':input[name="rendering_mode"]' => ['value' => 'static'],
+                [':input[name="rendering_mode"]' => ['value' => 'static']],
+                [':input[name="rendering_mode"]' => ['value' => 'head']],
+              ],
+            ],
+          ]
+        ),
+        'use_important' => $this->createCheckboxField(
+          $this->t('Use !important in CSS rules'),
+          $this->t('Add !important to all utility class rules to ensure they override inline styles or css variables. Recommended for utility-first workflows. <strong>Note:</strong> Changing this setting will regenerate all site CSS.'),
+          $config->get('use_important') ?? TRUE,
+          [
+            'states' => [
+              'visible' => [
+                [':input[name="rendering_mode"]' => ['value' => 'static']],
+                [':input[name="rendering_mode"]' => ['value' => 'head']],
               ],
             ],
           ]
@@ -292,19 +307,24 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *   Form elements for automatic update triggers in static mode.
    */
   private function buildTriggersSection($config): array {
-    $description = $this->t('<div class="messages messages--info"><strong>How automatic updates work in Static Mode:</strong><br>@enabled_text<br>@disabled_text<br><br><em>@note_text</em></div>', [
-      '@enabled_text' => '• Enabled: When you save content with new utility classes, they are automatically added to the CSS file.',
-      '@disabled_text' => '• Disabled: When you save content, new classes are NOT added to the CSS file. You must click the "Update UtiliKit" button to scan for and add them.',
-      '@note_text' => 'Note: This setting only applies to Static Mode. In Inline Mode, all classes are processed dynamically without needing updates.',
+    $description = $this->t('<div class="messages messages--info"><strong>How automatic updates work in Static & Head Modes:</strong><br>@enabled_text<br>@disabled_text<br><br><em>@note_text</em></div>', [
+      '@enabled_text' => '• Enabled: When you save content with new utility classes, they are automatically added to the generated CSS.',
+      '@disabled_text' => '• Disabled: When you save content, new classes are NOT added to the generated CSS. You must click the "Update UtiliKit" button to scan for and add them.',
+      '@note_text' => 'Note: This setting only applies to Static & Head Modes. In Inline Mode, all classes are processed dynamically without needing updates.',
     ]);
 
     return [
       'triggers' => [
         '#type' => 'details',
-        '#title' => $this->t('Automatic CSS Updates (Static Mode Only)'),
+        '#title' => $this->t('Automatic CSS Updates (Static & Head Modes)'),
         '#description' => $description,
         '#open' => FALSE,
-        '#states' => ['visible' => [':input[name="rendering_mode"]' => ['value' => 'static']]],
+        '#states' => [
+          'visible' => [
+            [':input[name="rendering_mode"]' => ['value' => 'static']],
+            [':input[name="rendering_mode"]' => ['value' => 'head']],
+          ],
+        ],
         'update_on_node_save' => $this->createCheckboxField(
           $this->t('Update when saving nodes'),
           '',
@@ -607,11 +627,14 @@ class UtilikitSettingsForm extends ConfigFormBase {
         ),
         'static_css_info' => [
           '#type' => 'fieldset',
-          '#title' => $this->t('Generated CSS File (Static Mode)'),
+          '#title' => $this->t('Generated CSS (Static & Head Modes)'),
           '#states' => [
             'visible' => [
               ':input[name="dev_mode"]' => ['checked' => TRUE],
-              ':input[name="rendering_mode"]' => ['value' => 'static'],
+              [
+                [':input[name="rendering_mode"]' => ['value' => 'static']],
+                [':input[name="rendering_mode"]' => ['value' => 'head']],
+              ],
             ],
           ],
         ],
@@ -622,7 +645,26 @@ class UtilikitSettingsForm extends ConfigFormBase {
     $css_url = $fileManager->getStaticCssUrl();
     $known_classes = $this->serviceProvider->getStateManager()->getKnownClasses();
 
-    if ($css_url) {
+    $rendering_mode = $config->get('rendering_mode') ?? 'inline';
+
+    if ($rendering_mode === 'head') {
+      $css_timestamp = $this->serviceProvider->getStateManager()->getCssTimestamp();
+      $file_time = $css_timestamp
+        ? $this->dateFormatter->format($css_timestamp, 'custom', 'j M Y - g:i A T')
+        : $this->t('Unknown');
+
+      $css = $this->serviceProvider->getStateManager()->getGeneratedCss();
+      $css_size = !empty($css) ? round(strlen($css) / 1024, 1) . ' KB' : '0 KB';
+
+      $developerSection['developer']['static_css_info']['file_details'] = [
+        '#markup' => $this->t('<div class="messages messages--status"><strong>CSS Generated (Head Mode):</strong><br>CSS is injected in page head on each request<br><small>Classes: @count | Size: @size | Last Updated: @time</small></div>', [
+          '@count' => count($known_classes),
+          '@size' => $css_size,
+          '@time' => $file_time,
+        ]),
+      ];
+    }
+    elseif ($css_url) {
       $css_timestamp = $this->serviceProvider->getStateManager()->getCssTimestamp();
       $file_time = $css_timestamp
         ? $this->dateFormatter->format($css_timestamp, 'custom', 'j M Y - g:i A T')
@@ -705,9 +747,18 @@ class UtilikitSettingsForm extends ConfigFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $oldMode = $this->config('utilikit.settings')->get('rendering_mode') ?? 'inline';
+    $oldUseImportant = $this->config('utilikit.settings')->get('use_important') ?? TRUE;
     $newMode = $form_state->getValue('rendering_mode');
+    $newUseImportant = $form_state->getValue('use_important');
+
     $this->saveAllSettings($form_state);
     $this->handleModeSwitch($oldMode, $newMode);
+
+    // Regenerate CSS if use_important setting changed.
+    if ($oldUseImportant !== $newUseImportant) {
+      $this->serviceProvider->regenerateStaticCss();
+    }
+
     $this->serviceProvider->getCacheManager()->clearAllCaches();
 
     parent::submitForm($form, $form_state);
@@ -724,7 +775,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
       'dev_mode', 'show_page_errors', 'enable_transitions', 'log_level',
       'admin_preview', 'rendering_mode', 'scope_global', 'disable_admin',
       'scope_content_types', 'update_on_node_save', 'update_on_block_save',
-      'update_on_paragraph_save', 'optimize_css',
+      'update_on_paragraph_save', 'optimize_css', 'use_important',
     ];
     $config = $this->config('utilikit.settings');
     foreach ($settingsMap as $setting) {
@@ -759,6 +810,9 @@ class UtilikitSettingsForm extends ConfigFormBase {
     if ($oldMode !== $newMode) {
       if ($newMode === 'static') {
         $this->switchToStaticMode();
+      }
+      elseif ($newMode === 'head') {
+        $this->switchToHeadMode();
       }
       else {
         $this->switchToInlineMode();
@@ -801,6 +855,34 @@ class UtilikitSettingsForm extends ConfigFormBase {
     ]));
 
     $this->messenger()->addStatus($this->t('All caches cleared. Inline mode is now active.'));
+  }
+
+  /**
+   * Switches to head rendering mode and ensures classes are scanned.
+   */
+  private function switchToHeadMode(): void {
+    $this->serviceProvider->getFileManager()->cleanupStaticFiles();
+
+    $stateManager = $this->serviceProvider->getStateManager();
+    $knownClasses = $stateManager->getKnownClasses();
+
+    if (empty($knownClasses)) {
+      $scanResult = $this->serviceProvider->getContentScanner()->scanAllContent();
+      $knownClasses = $scanResult['classes'];
+
+      if (!empty($knownClasses)) {
+        $stateManager->setKnownClasses($knownClasses);
+        $this->messenger()->addStatus($this->t('Scanned content and found @count utility classes.', [
+          '@count' => count($knownClasses),
+        ]));
+      }
+    }
+
+    $this->serviceProvider->getCacheManager()->clearAllCaches();
+
+    $this->messenger()->addStatus($this->t('Switched to head mode. CSS will be generated in page head. Tracking @count classes.', [
+      '@count' => count($knownClasses),
+    ]));
   }
 
   /**

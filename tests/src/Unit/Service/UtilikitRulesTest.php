@@ -6,7 +6,6 @@ namespace Drupal\Tests\utilikit\Unit\Service;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitRules;
-use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -90,7 +89,9 @@ class UtilikitRulesTest extends UnitTestCase {
 
   /**
    * Data provider for valid utility classes.
-   * @return array<int, array<int, mixed>>
+   *
+   * @return array <int, mixed>
+   *   The data sets used for testing providerValidUtilityClasses().
    */
   public function providerValidUtilityClasses(): array {
     return [
@@ -137,7 +138,9 @@ class UtilikitRulesTest extends UnitTestCase {
 
   /**
    * Data provider for parseValue tests.
-   * @return array<int, array<int, string>>
+   *
+   * @return array<int, string>
+   *   The data sets used for testing parseValue().
    */
   public function providerParseValue(): array {
     return [
@@ -200,7 +203,8 @@ class UtilikitRulesTest extends UnitTestCase {
             'property' => 'padding',
             'value_template' => '{value}rem',
           ],
-        ]],
+        ],
+        ],
         ['rule_priority', 'custom_first'],
         ['rule_cache_enabled', FALSE],
       ]);
@@ -246,7 +250,8 @@ class UtilikitRulesTest extends UnitTestCase {
             'property' => 'padding',
             'value_template' => '{value}rem',
           ],
-        ]],
+        ],
+        ],
         ['rule_priority', 'default_first'],
         ['rule_cache_enabled', FALSE],
       ]);
@@ -265,7 +270,8 @@ class UtilikitRulesTest extends UnitTestCase {
     $rule = $rules->getRule('pd', '20');
     $this->assertNotNull($rule);
     $this->assertEquals('padding', $rule['property']);
-    $this->assertEquals('20px', $rule['value']); // Default rule uses px.
+    // Default rule uses px.
+    $this->assertEquals('20px', $rule['value']);
   }
 
   /**
@@ -380,7 +386,8 @@ class UtilikitRulesTest extends UnitTestCase {
           'broken' => [
             // Missing required fields.
           ],
-        ]],
+        ],
+        ],
         ['rule_priority', 'custom_first'],
         ['rule_cache_enabled', FALSE],
       ]);
