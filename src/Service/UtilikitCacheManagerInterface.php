@@ -3,19 +3,19 @@
 namespace Drupal\utilikit\Service;
 
 /**
- * Interface for UtiliKit cache management operations.
+ * Interface for Utilikit cache management operations.
  *
- * Defines the contract for cache management services that handle UtiliKit-
+ * Defines the contract for cache management services that handle Utilikit-
  * specific cache operations including CSS cache clearing, tracked data
  * management, cache tag invalidation, and statistics reporting.
  */
-interface UtiliKitCacheManagerInterface {
+interface UtilikitCacheManagerInterface {
 
   /**
-   * Clear all UtiliKit-related caches.
+   * Clear all Utilikit-related caches.
    *
    * Performs a comprehensive cache clear including render cache, page caches,
-   * asset optimization caches, theme registry, and all UtiliKit-specific
+   * asset optimization caches, theme registry, and all Utilikit-specific
    * cache tags. Also triggers a full Drupal cache flush.
    */
   public function clearAllCaches(): void;
@@ -23,7 +23,7 @@ interface UtiliKitCacheManagerInterface {
   /**
    * Clear only CSS-related caches.
    *
-   * Targets caches specifically related to CSS processing and UtiliKit
+   * Targets caches specifically related to CSS processing and Utilikit
    * functionality while preserving other system caches for better
    * performance during CSS updates.
    */
@@ -33,7 +33,7 @@ interface UtiliKitCacheManagerInterface {
    * Clear tracked data (classes, generated CSS).
    *
    * Removes generated CSS content and known classes from the state API,
-   * effectively resetting UtiliKit to a clean state without affecting
+   * effectively resetting Utilikit to a clean state without affecting
    * other cache layers.
    */
   public function clearTrackedData(): void;
@@ -56,16 +56,16 @@ interface UtiliKitCacheManagerInterface {
   public function clearCachesWithStrategy(array $options = []): void;
 
   /**
-   * Invalidate UtiliKit cache tags.
+   * Invalidate Utilikit cache tags.
    *
-   * Invalidates cache entries tagged with UtiliKit-specific tags to ensure
-   * that cached content using UtiliKit classes is regenerated with the
+   * Invalidates cache entries tagged with Utilikit-specific tags to ensure
+   * that cached content using Utilikit classes is regenerated with the
    * latest CSS rules and configurations.
    *
    * @param array $tags
-   *   Additional cache tags to invalidate beyond the default UtiliKit tags.
+   *   Additional cache tags to invalidate beyond the default Utilikit tags.
    */
-  public function invalidateUtiliKitTags(array $tags = []): void;
+  public function invalidateUtilikitTags(array $tags = []): void;
 
   /**
    * Update CSS timestamp for browser cache busting.
@@ -78,7 +78,7 @@ interface UtiliKitCacheManagerInterface {
   /**
    * Get cache statistics.
    *
-   * Provides information about the current state of UtiliKit caches
+   * Provides information about the current state of Utilikit caches
    * including counts, sizes, and timestamps for monitoring purposes.
    *
    * @return array

@@ -9,14 +9,14 @@ use Drupal\Core\Theme\Registry;
 use Drupal\Core\Asset\AssetCollectionOptimizerInterface;
 
 /**
- * Manages cache operations for UtiliKit utility classes and CSS.
+ * Manages cache operations for Utilikit utility classes and CSS.
  *
  * This service provides comprehensive cache management including render cache,
- * page cache, asset optimization caches, and UtiliKit-specific cache tags.
+ * page cache, asset optimization caches, and Utilikit-specific cache tags.
  * It supports different clearing strategies and provides cache statistics
  * for monitoring and debugging purposes.
  */
-class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
+class UtilikitCacheManager implements UtilikitCacheManagerInterface {
 
   /**
    * The render cache backend service.
@@ -75,7 +75,7 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
   protected ?CacheBackendInterface $dynamicPageCache;
 
   /**
-   * Constructs a new UtiliKitCacheManager object.
+   * Constructs a new UtilikitCacheManager object.
    *
    * @param \Drupal\Core\Cache\CacheBackendInterface $renderCache
    *   The render cache backend service.
@@ -115,10 +115,10 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
   }
 
   /**
-   * Clears all caches and resets the UtiliKit system.
+   * Clears all caches and resets the Utilikit system.
    *
    * Performs a comprehensive cache clear including render cache, page caches,
-   * asset optimization caches, theme registry, and all UtiliKit-specific
+   * asset optimization caches, theme registry, and all Utilikit-specific
    * cache tags. Also triggers a full Drupal cache flush.
    */
   public function clearAllCaches(): void {
@@ -126,7 +126,7 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
     $this->clearPageCaches();
     $this->clearAssetCaches();
     $this->updateCssTimestamp();
-    $this->invalidateUtiliKitTags();
+    $this->invalidateUtilikitTags();
     $this->themeRegistry->reset();
     drupal_flush_all_caches();
   }
@@ -134,7 +134,7 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
   /**
    * Clears CSS-related caches without full system flush.
    *
-   * Targets caches specifically related to CSS processing and UtiliKit
+   * Targets caches specifically related to CSS processing and Utilikit
    * functionality while preserving other system caches for better
    * performance during CSS updates.
    */
@@ -142,7 +142,7 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
     $this->clearRenderCache();
     $this->clearAssetCaches();
     $this->updateCssTimestamp();
-    $this->invalidateUtiliKitTags([
+    $this->invalidateUtilikitTags([
       UtilikitConstants::CACHE_TAG_CSS,
       UtilikitConstants::CACHE_TAG_INLINE_MODE,
       UtilikitConstants::CACHE_TAG_STATIC_MODE,
@@ -151,10 +151,10 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
   }
 
   /**
-   * Clears tracked UtiliKit data from state storage.
+   * Clears tracked Utilikit data from state storage.
    *
    * Removes generated CSS content and known classes from the state API,
-   * effectively resetting UtiliKit to a clean state without affecting
+   * effectively resetting Utilikit to a clean state without affecting
    * other cache layers.
    */
   public function clearTrackedData(): void {
@@ -202,16 +202,16 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
   }
 
   /**
-   * Invalidates UtiliKit-specific cache tags.
+   * Invalidates Utilikit-specific cache tags.
    *
-   * Invalidates cache entries tagged with UtiliKit-specific tags to ensure
-   * that cached content using UtiliKit classes is regenerated with the
+   * Invalidates cache entries tagged with Utilikit-specific tags to ensure
+   * that cached content using Utilikit classes is regenerated with the
    * latest CSS rules and configurations.
    *
    * @param array $tags
-   *   Additional cache tags to invalidate beyond the default UtiliKit tags.
+   *   Additional cache tags to invalidate beyond the default Utilikit tags.
    */
-  public function invalidateUtiliKitTags(array $tags = []): void {
+  public function invalidateUtilikitTags(array $tags = []): void {
     $defaultTags = [
       UtilikitConstants::CACHE_TAG_CONFIG,
       UtilikitConstants::CACHE_TAG_CSS,
@@ -238,7 +238,7 @@ class UtiliKitCacheManager implements UtiliKitCacheManagerInterface {
   /**
    * Gets cache statistics for monitoring and debugging.
    *
-   * Provides information about the current state of UtiliKit caches
+   * Provides information about the current state of Utilikit caches
    * including counts, sizes, and timestamps for monitoring purposes.
    *
    * @return array

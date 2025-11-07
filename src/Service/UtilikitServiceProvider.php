@@ -5,9 +5,9 @@ namespace Drupal\utilikit\Service;
 use Psr\Log\LoggerInterface;
 
 /**
- * Main service provider for UtiliKit module operations.
+ * Main service provider for Utilikit module operations.
  *
- * This class acts as a facade that coordinates between various UtiliKit
+ * This class acts as a facade that coordinates between various Utilikit
  * services to provide high-level functionality such as CSS generation,
  * file management, content scanning, and switching between rendering modes.
  *
@@ -18,7 +18,7 @@ use Psr\Log\LoggerInterface;
  * - State management for persistent data
  * - Cache management for performance optimization
  */
-class UtiliKitServiceProvider {
+class UtilikitServiceProvider {
 
   /**
    * The CSS generator service.
@@ -51,9 +51,9 @@ class UtiliKitServiceProvider {
   /**
    * The cache manager service.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitCacheManagerInterface
+   * @var \Drupal\utilikit\Service\UtilikitCacheManagerInterface
    */
-  protected UtiliKitCacheManagerInterface $cacheManager;
+  protected UtilikitCacheManagerInterface $cacheManager;
 
   /**
    * The logger service.
@@ -70,7 +70,7 @@ class UtiliKitServiceProvider {
   protected ?UtilikitTestCssGenerator $testCssGenerator;
 
   /**
-   * Constructs a new UtiliKitServiceProvider.
+   * Constructs a new UtilikitServiceProvider.
    *
    * @param \Drupal\utilikit\Service\UtilikitCssGenerator $cssGenerator
    *   The CSS generator service for creating CSS from utility classes.
@@ -80,7 +80,7 @@ class UtiliKitServiceProvider {
    *   The content scanner service for discovering utility classes.
    * @param \Drupal\utilikit\Service\UtilikitStateManager $stateManager
    *   The state manager service for persistent data operations.
-   * @param \Drupal\utilikit\Service\UtiliKitCacheManagerInterface $cacheManager
+   * @param \Drupal\utilikit\Service\UtilikitCacheManagerInterface $cacheManager
    *   The cache manager service for cache operations and invalidation.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service for recording operations and errors.
@@ -92,7 +92,7 @@ class UtiliKitServiceProvider {
     UtilikitFileManager $fileManager,
     UtilikitContentScanner $contentScanner,
     UtilikitStateManager $stateManager,
-    UtiliKitCacheManagerInterface $cacheManager,
+    UtilikitCacheManagerInterface $cacheManager,
     LoggerInterface $logger,
     ?UtilikitTestCssGenerator $testCssGenerator = NULL,
   ) {
@@ -148,10 +148,10 @@ class UtiliKitServiceProvider {
   /**
    * Gets the cache manager service.
    *
-   * @return \Drupal\utilikit\Service\UtiliKitCacheManagerInterface
+   * @return \Drupal\utilikit\Service\UtilikitCacheManagerInterface
    *   The cache manager service instance.
    */
-  public function getCacheManager(): UtiliKitCacheManagerInterface {
+  public function getCacheManager(): UtilikitCacheManagerInterface {
     return $this->cacheManager;
   }
 
@@ -274,10 +274,10 @@ class UtiliKitServiceProvider {
   }
 
   /**
-   * Switches UtiliKit to static rendering mode.
+   * Switches Utilikit to static rendering mode.
    *
    * This method performs a complete transition to static mode by:
-   * - Clearing existing UtiliKit data
+   * - Clearing existing Utilikit data
    * - Cleaning up old static files
    * - Scanning all content for utility classes
    * - Generating and saving CSS to a static file
@@ -289,7 +289,7 @@ class UtiliKitServiceProvider {
    *   - 'scanned_count': Total number of entities scanned
    */
   public function switchToStaticMode(): array {
-    $this->stateManager->clearUtiliKitData();
+    $this->stateManager->clearUtilikitData();
     $this->fileManager->cleanupStaticFiles();
 
     $scanResult = $this->contentScanner->scanAllContent();
@@ -303,7 +303,7 @@ class UtiliKitServiceProvider {
       $this->fileManager->ensureStaticCssFile();
     }
     else {
-      $this->stateManager->setGeneratedCss('/* UtiliKit Static CSS - Add utility classes to your content */');
+      $this->stateManager->setGeneratedCss('/* Utilikit Static CSS - Add utility classes to your content */');
       $this->fileManager->ensureStaticCssFile();
     }
 
@@ -327,7 +327,7 @@ class UtiliKitServiceProvider {
   }
 
   /**
-   * Switches UtiliKit to inline rendering mode.
+   * Switches Utilikit to inline rendering mode.
    *
    * This method transitions from static to inline mode by:
    * - Cleaning up static CSS files

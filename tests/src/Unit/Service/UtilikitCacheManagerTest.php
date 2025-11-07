@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\utilikit\Unit\Service;
 
 use Drupal\Tests\UnitTestCase;
-use Drupal\utilikit\Service\UtiliKitCacheManager;
+use Drupal\utilikit\Service\UtilikitCacheManager;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
@@ -15,19 +15,19 @@ use Drupal\Core\Asset\AssetCollectionOptimizerInterface;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
- * Tests the UtiliKitCacheManager service.
+ * Tests the UtilikitCacheManager service.
  *
  * @group utilikit
- * @coversDefaultClass \Drupal\utilikit\Service\UtiliKitCacheManager
+ * @coversDefaultClass \Drupal\utilikit\Service\UtilikitCacheManager
  */
-class UtiliKitCacheManagerTest extends UnitTestCase {
+class UtilikitCacheManagerTest extends UnitTestCase {
 
   /**
    * The cache manager service under test.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitCacheManager
+   * @var \Drupal\utilikit\Service\UtilikitCacheManager
    */
-  protected UtiliKitCacheManager $cacheManager;
+  protected UtilikitCacheManager $cacheManager;
 
   /**
    * Mock render cache.
@@ -105,7 +105,7 @@ class UtiliKitCacheManagerTest extends UnitTestCase {
     $GLOBALS['_utilikit_test_drupal_flush_all_caches_called'] = FALSE;
 
     // Create cache manager.
-    $this->cacheManager = new UtiliKitCacheManager(
+    $this->cacheManager = new UtilikitCacheManager(
       $this->renderCache,
       $this->cacheTagsInvalidator,
       $this->state,

@@ -9,7 +9,7 @@ use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Service\UtilikitStateManager;
 use Drupal\utilikit\Service\UtilikitCssParser;
 use Drupal\utilikit\Service\UtilikitFileManager;
-use Drupal\utilikit\Service\UtiliKitCacheManager;
+use Drupal\utilikit\Service\UtilikitCacheManager;
 use Drupal\utilikit\Service\UtilikitClassNameValidator;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
@@ -55,9 +55,9 @@ class UtilikitServiceProviderTest extends UnitTestCase {
   /**
    * Mock cache manager.
    *
-   * @var \Drupal\utilikit\Service\UtiliKitCacheManager&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitCacheManager&\PHPUnit\Framework\MockObject\MockObject
    */
-  protected UtiliKitCacheManager&MockObject $cacheManager;
+  protected UtilikitCacheManager&MockObject $cacheManager;
 
   /**
    * Mock class validator.
@@ -89,7 +89,7 @@ class UtilikitServiceProviderTest extends UnitTestCase {
     $this->stateManager = $this->createMock(UtilikitStateManager::class);
     $this->cssParser = $this->createMock(UtilikitCssParser::class);
     $this->fileManager = $this->createMock(UtilikitFileManager::class);
-    $this->cacheManager = $this->createMock(UtiliKitCacheManager::class);
+    $this->cacheManager = $this->createMock(UtilikitCacheManager::class);
     $this->classValidator = $this->createMock(UtilikitClassNameValidator::class);
     $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
     $this->logger = $this->createMock(LoggerInterface::class);

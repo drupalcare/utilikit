@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Mock implementations for Drupal functions used in UtiliKitCacheManager tests.
+ * Mock implementations for Drupal functions used in UtilikitCacheManager tests.
  */
 
 declare(strict_types=1);
