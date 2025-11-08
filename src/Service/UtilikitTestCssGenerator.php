@@ -184,4 +184,94 @@ class UtilikitTestCssGenerator {
     }
   }
 
+  /**
+   * Generates and returns all possible utility classes.
+   *
+   * This method retrieves all possible utility classes from the test
+   * generator without generating CSS. Useful for enumerating classes
+   * for external tools or validation.
+   *
+   * @return array
+   *   Array of all possible utility class names, or empty array if
+   *   test generator is not available.
+   */
+  public function generateAllUtilityClasses(): array {
+    // Check if test module is enabled.
+    if (!$this->testGenerator) {
+      return [];
+    }
+
+    // Get all possible classes from test generator.
+    return $this->testGenerator->getAllPossibleClasses();
+  }
+
+  /**
+   * Deletes the test CSS file.
+   *
+   * Removes the generated test CSS file from the file system. This is
+   * useful for cleanup operations, testing, or when regenerating the
+   * test CSS file.
+   *
+   * @return bool
+   *   TRUE if file was deleted successfully or doesn't exist,
+   *   FALSE if deletion failed.
+   */
+  public function deleteTestCssFile(): bool {
+    $directory = UtilikitConstants::CSS_DIRECTORY;
+    $filename = 'utilikit-test-complete.css';
+    $filepath = $directory . '/' . $filename;
+
+    // If file doesn't exist, consider it a success.
+    if (!file_exists($filepath)) {
+      return TRUE;
+    }
+
+    try {
+      return $this->fileSystem->delete($filepath);
+    }
+    catch (\Exception $e) {
+      return FALSE;
+    }
+  }
+
+  /**
+   * Gets information about the test CSS file.
+   *
+   * Returns metadata about the generated test CSS file including
+   * existence, size, URL, and modification time.
+   *
+   * @return array
+   *   An associative array with file information:
+   *   - 'exists': (bool) Whether the file exists
+   *   - 'size': (int|null) File size in bytes, NULL if file doesn't exist
+   *   - 'url': (string|null) Public URL to the file, NULL if doesn't exist
+   *   - 'modified': (int|null) Unix timestamp of last modification,
+   *     NULL if file doesn't exist.
+   */
+  public function getTestCssFileInfo(): array {
+    $directory = UtilikitConstants::CSS_DIRECTORY;
+    $filename = 'utilikit-test-complete.css';
+    $filepath = $directory . '/' . $filename;
+
+    // Check if file exists.
+    if (!file_exists($filepath)) {
+      return [
+        'exists' => FALSE,
+        'size' => NULL,
+        'url' => NULL,
+        'modified' => NULL,
+      ];
+    }
+
+    // Get file information.
+    $realpath = $this->fileSystem->realpath($filepath);
+
+    return [
+      'exists' => TRUE,
+      'size' => filesize($realpath),
+      'url' => $this->fileUrlGenerator->generateAbsoluteString($filepath),
+      'modified' => filemtime($realpath),
+    ];
+  }
+
 }
