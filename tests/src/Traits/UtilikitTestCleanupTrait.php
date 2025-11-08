@@ -1,77 +1,64 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Drupal\Tests\utilikit\Traits;
 
+use Drupal\utilikit\Service\UtilikitConstants;
+
 /**
- * Provides cleanup methods for Utilikit tests.
+ * Provides cleanup methods for UtiliKit tests.
  *
- * This trait handles cleanup of generated CSS files, cache entries,
- * and other test artifacts after test execution.
+ * This trait follows Drupal best practices by using the file_system
+ * service and state API for cleanup operations.
  */
 trait UtilikitTestCleanupTrait {
 
   /**
-   * Cleans up test artifacts after test execution.
+   * Cleans up UtiliKit test artifacts.
    *
-   * This method should be called in tearDown() to ensure proper cleanup
-   * of CSS files, cache entries, and other test data.
+   * This method is safe to call multiple times and will only
+   * clean up test-specific data.
    */
-  protected function cleanupTestArtifacts(): void {
-    // Clean up generated CSS files.
-    $this->cleanupGeneratedCss();
-
-    // Clear relevant caches.
-    $this->cleanupCaches();
-  }
-
-  /**
-   * Removes generated CSS files from the file system.
-   */
-  protected function cleanupGeneratedCss(): void {
-    $file_system = \Drupal::service('file_system');
-    $public_path = \Drupal::service('file_system')->realpath('public://');
-    $css_directory = $public_path . '/css/utilikit';
-
-    if (is_dir($css_directory)) {
-      $this->recursiveDelete($css_directory);
+  protected function cleanupUtilikitArtifacts(): void {
+    // Use existing service if available (Functional/Kernel tests).
+    if (isset($this->fileManager)) {
+      // Reuse the existing cleanupStaticFiles method.
+      $this->fileManager->cleanupStaticFiles();
     }
-  }
-
-  /**
-   * Clears Utilikit-related caches.
-   */
-  protected function cleanupCaches(): void {
-    // Clear render cache.
-    \Drupal::cache('render')->deleteAll();
-
-    // Clear discovery cache.
-    \Drupal::cache('discovery')->deleteAll();
-
-    // Clear CSS cache if it exists.
-    if (\Drupal::hasService('cache.utilikit_css')) {
-      \Drupal::cache('utilikit_css')->deleteAll();
+    elseif ($this->container && $this->container->has('utilikit.file_manager')) {
+      // For tests that have container but not the service injected.
+      $this->container->get('utilikit.file_manager')->cleanupStaticFiles();
     }
+
+    // Clean state for all test types.
+    $this->cleanupUtilikitState();
   }
 
   /**
-   * Recursively deletes a directory and its contents.
-   *
-   * @param string $dir
-   *   The directory path to delete.
+   * Cleans up UtiliKit state data.
    */
-  protected function recursiveDelete(string $dir): void {
-    if (!is_dir($dir)) {
+  protected function cleanupUtilikitState(): void {
+    if (!$this->container || !$this->container->has('state')) {
       return;
     }
 
-    $files = array_diff(scandir($dir), ['.', '..']);
-    foreach ($files as $file) {
-      $path = $dir . '/' . $file;
-      is_dir($path) ? $this->recursiveDelete($path) : unlink($path);
+    $stateManager = $this->container->has('utilikit.state_manager')
+      ? $this->container->get('utilikit.state_manager')
+      : NULL;
+
+    if ($stateManager) {
+      // Use the service's built-in cleanup method.
+      $stateManager->clearUtiliKitData();
     }
-    rmdir($dir);
+    else {
+      // Fallback for tests without the service.
+      $state = $this->container->get('state');
+      $state->deleteMultiple([
+        UtilikitConstants::STATE_KNOWN_CLASSES,
+        UtilikitConstants::STATE_GENERATED_CSS,
+        UtilikitConstants::STATE_CSS_TIMESTAMP,
+        UtilikitConstants::STATE_LAST_CLEANUP,
+      ]);
+    }
   }
 
 }
