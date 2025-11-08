@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\utilikit\Traits;
 
 /**
@@ -86,15 +88,15 @@ trait FormHelperTrait {
     return $field;
   }
 
-  /**
+/**
    * Creates a checkbox form field.
    *
    * Provides a simplified API for creating checkbox fields with consistent
    * structure and optional configuration.
    *
-   * @param string $title
+   * @param string|\Stringable $title
    *   The checkbox label/title.
-   * @param string $description
+   * @param string|\Stringable $description
    *   The checkbox description/help text.
    * @param bool $defaultValue
    *   The default checked state (TRUE for checked, FALSE for unchecked).
@@ -104,7 +106,7 @@ trait FormHelperTrait {
    * @return array
    *   Checkbox form field render array.
    */
-  protected function createCheckboxField(string $title, string $description, bool $defaultValue, array $options = []): array {
+  protected function createCheckboxField(string|\Stringable $title, string|\Stringable $description, bool $defaultValue, array $options = []): array {
     return $this->createFormField('checkbox', [
       'title' => $title,
       'description' => $description,
@@ -135,7 +137,7 @@ trait FormHelperTrait {
    * @return array
    *   Number input form field render array.
    */
-  protected function createNumberField(string $title, string $description, int $defaultValue, array $options = []): array {
+  protected function createNumberField(string|\Stringable $title, string|\Stringable $description, int $defaultValue, array $options = []): array {
     return $this->createFormField('number', [
       'title' => $title,
       'description' => $description,
@@ -164,7 +166,7 @@ trait FormHelperTrait {
    * @return array
    *   Checkboxes form field render array.
    */
-  protected function createCheckboxesField(string $title, string $description, array $optionsList, array $defaultValue, array $options = []): array {
+  protected function createCheckboxesField(string|\Stringable $title, string|\Stringable $description, array $optionsList, array $defaultValue, array $options = []): array {
     return $this->createFormField('checkboxes', [
       'title' => $title,
       'description' => $description,
@@ -194,7 +196,7 @@ trait FormHelperTrait {
    * @return array
    *   Select form field render array.
    */
-  protected function createSelectField(string $title, string $description, array $optionsList, string $defaultValue, array $options = []): array {
+  protected function createSelectField(string|\Stringable $title, string|\Stringable $description, array $optionsList, string $defaultValue, array $options = []): array {
     return $this->createFormField('select', [
       'title' => $title,
       'description' => $description,
@@ -223,7 +225,7 @@ trait FormHelperTrait {
    * @return array
    *   Submit button form element render array.
    */
-  protected function createSubmitButton(string $value, array $submit, array $classes = [], array $attributes = []): array {
+  protected function createSubmitButton(string|\Stringable $value, array $submit, array $classes = [], array $attributes = []): array {
     $button = [
       '#type' => 'submit',
       '#value' => $value,

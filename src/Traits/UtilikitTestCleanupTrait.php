@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\Tests\utilikit\Traits;
 
 use Drupal\utilikit\Service\UtilikitConstants;

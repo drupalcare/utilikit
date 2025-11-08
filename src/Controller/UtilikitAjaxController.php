@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\utilikit\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
@@ -531,7 +533,7 @@ class UtilikitAjaxController extends ControllerBase {
 
     $html = $this->renderer->renderPlain($build);
 
-    return new Response($html, 200, [
+    return new Response((string) $html, 200, [
       'Content-Type' => 'text/html',
     ]);
   }

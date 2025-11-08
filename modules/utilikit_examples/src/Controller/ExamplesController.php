@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\utilikit_examples\Controller;
 
 use Drupal\Core\Controller\ControllerBase;

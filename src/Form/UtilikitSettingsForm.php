@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\utilikit\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
@@ -175,7 +177,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'enable_transitions' => $this->createCheckboxField(
           $this->t('Enable smooth transitions'),
           $this->t('Apply CSS transitions when styles change dynamically (recommended for better UX).'),
-          $config->get('enable_transitions') ?? TRUE
+          (bool) $config->get('enable_transitions') ?? TRUE
         ),
         'debounce' => $this->createNumberField(
           $this->t('Resize debounce delay'),
@@ -198,7 +200,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'optimize_css' => $this->createCheckboxField(
           $this->t('Optimize CSS output'),
           $this->t('Minify and optimize the generated CSS to reduce size.'),
-          $config->get('optimize_css') ?? TRUE,
+          (bool) $config->get('optimize_css') ?? TRUE,
           [
             'states' => [
               'visible' => [
@@ -211,7 +213,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'use_important' => $this->createCheckboxField(
           $this->t('Use !important in CSS rules'),
           $this->t('Add !important to all utility class rules to ensure they override inline styles or css variables. Recommended for utility-first workflows. <strong>Note:</strong> Changing this setting will regenerate all site CSS.'),
-          $config->get('use_important') ?? TRUE,
+          (bool) $config->get('use_important') ?? TRUE,
           [
             'states' => [
               'visible' => [
@@ -243,18 +245,18 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'scope_global' => $this->createCheckboxField(
           $this->t('Enable globally on all pages'),
           $this->t('Load UtiliKit across your entire site.'),
-          $config->get('scope_global') ?? TRUE
+          (bool) $config->get('scope_global') ?? TRUE
         ),
         'disable_admin' => $this->createCheckboxField(
           $this->t('Disable on admin pages'),
           $this->t('Prevent UtiliKit from loading on administrative routes. This does not affect UtiliKit development tools (Playground, Examples, Test Suite) which always run independently.'),
-          $config->get('disable_admin') ?? FALSE,
+          (bool) $config->get('disable_admin') ?? FALSE,
           ['states' => ['visible' => [':input[name="scope_global"]' => ['checked' => TRUE]]]]
         ),
         'scope_content_types' => $this->createCheckboxField(
           $this->t('Limit to specific content types'),
           $this->t('Only load UtiliKit on selected content types.'),
-          $config->get('scope_content_types') ?? FALSE,
+          (bool) $config->get('scope_content_types') ?? FALSE,
           ['states' => ['disabled' => [':input[name="scope_global"]' => ['checked' => TRUE]]]]
         ),
         'enabled_content_types' => $this->buildContentTypesField($config),
@@ -328,17 +330,17 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'update_on_node_save' => $this->createCheckboxField(
           $this->t('Update when saving nodes'),
           '',
-          $config->get('update_on_node_save') ?? FALSE
+          (bool) $config->get('update_on_node_save') ?? FALSE
         ),
         'update_on_block_save' => $this->createCheckboxField(
           $this->t('Update when saving custom blocks'),
           '',
-          $config->get('update_on_block_save') ?? FALSE
+          (bool) $config->get('update_on_block_save') ?? FALSE
         ),
         'update_on_paragraph_save' => $this->createCheckboxField(
           $this->t('Update when saving paragraphs'),
           '',
-          $config->get('update_on_paragraph_save') ?? FALSE
+          (bool) $config->get('update_on_paragraph_save') ?? FALSE
         ),
       ],
     ];
@@ -596,17 +598,17 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'dev_mode' => $this->createCheckboxField(
           $this->t('Enable developer mode'),
           $this->t('Output debug information to browser console.'),
-          $config->get('dev_mode') ?? FALSE
+          (bool) $config->get('dev_mode') ?? FALSE
         ),
         'admin_preview' => $this->createCheckboxField(
           $this->t('Visual debugging'),
           $this->t('Show outlines around UtiliKit elements for debugging.'),
-          $config->get('admin_preview') ?? FALSE
+          (bool) $config->get('admin_preview') ?? FALSE
         ),
         'show_page_errors' => $this->createCheckboxField(
           $this->t('Display errors on page'),
           $this->t('Show validation errors as Drupal messages (requires developer mode). <strong>Note:</strong> Only works in inline mode - static mode uses pre-generated CSS and does not validate classes in real-time.'),
-          $config->get('show_page_errors') ?? FALSE,
+          (bool) $config->get('show_page_errors') ?? FALSE,
           [
             'states' => [
               'visible' => [':input[name="dev_mode"]' => ['checked' => TRUE]],

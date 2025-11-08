@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\utilikit_test\Service;
 
 use Drupal\utilikit\Service\UtilikitRules;

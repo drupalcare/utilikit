@@ -19,6 +19,7 @@ services:
     arguments:
       - '@config.factory'              # Configuration access for settings
       - '@utilikit.service_provider'   # Main service provider for operations
+      - '@state'                       # State service for storing runtime data
     tags:
       - { name: drush.command }        # Register as Drush command provider
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Drupal\utilikit\Service;
 
 use Drupal\utilikit_test\Service\TestGenerator;
