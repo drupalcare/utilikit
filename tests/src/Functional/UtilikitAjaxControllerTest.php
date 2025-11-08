@@ -289,8 +289,14 @@ class UtilikitAjaxControllerTest extends UtilikitFunctionalTestBase {
    */
   public function testUpdateCssUnauthorized(): void {
     $this->drupalLogin($this->unauthorizedUser);
-    $client->post($this->updateCssUrl->toString(), [...]);
-    $this->assertSession()->statusCodeEquals(403);
+
+    $client = $this->getHttpClient();
+    $response = $client->post($this->updateCssUrl->toString(), [
+      'json' => ['classes' => ['uk-pd--20']],
+      'http_errors' => FALSE,
+    ]);
+
+    $this->assertEquals(403, $response->getStatusCode());
   }
 
   /**
