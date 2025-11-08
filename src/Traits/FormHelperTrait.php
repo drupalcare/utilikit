@@ -88,7 +88,7 @@ trait FormHelperTrait {
     return $field;
   }
 
-/**
+  /**
    * Creates a checkbox form field.
    *
    * Provides a simplified API for creating checkbox fields with consistent
