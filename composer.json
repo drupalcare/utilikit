@@ -17,8 +17,7 @@
         "drupal/core": "^10 || ^11"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5",
-        "drupal/core-dev": "^10 || ^11"
+        "drupal/core-dev": "^11.0"
     },
     "support": {
         "issues": "https://drupal.org/project/issues/utilikit",
