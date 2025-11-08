@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\utilikit\Unit\Traits;
+namespace Drupal\Tests\utilikit\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Traits\ResponseHelperTrait;

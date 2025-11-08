@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\utilikit\Unit\Service;
+namespace Drupal\Tests\utilikit\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitServiceProvider;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\Tests\utilikit;
+namespace Drupal\Tests\utilikit\Traits;
 
 use PHPUnit\Framework\MockObject\MockObject;
 use Drupal\Core\Config\ImmutableConfig;

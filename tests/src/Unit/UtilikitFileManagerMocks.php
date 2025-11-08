@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace Drupal\utilikit\Service;
+namespace Drupal\Tests\utilikit\Unit;
 
 /**
  * Mock implementation of file_get_contents for testing.
