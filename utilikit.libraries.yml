@@ -207,3 +207,11 @@ utilikit.debug:
 # - Progressive enhancement ensures functionality across browser versions
 # - Responsive design considerations for mobile and tablet interfaces
 # - Accessibility features integrated throughout user interface libraries
+
+# =============================================================================
+# CUSTOM LIBRARY FOR SETTINGTS FORM
+# =============================================================================
+utilikit-settings:
+  css:
+    theme:
+      css/utilikit-settings.css: {}

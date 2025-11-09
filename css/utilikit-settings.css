@@ -1,0 +1,66 @@
+form.utilikit-settings-form {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+#edit-developer > .details-wrapper,
+#edit-triggers > .details-wrapper,
+#edit-scope > .details-wrapper,
+#edit-performance > .details-wrapper,
+#edit-rendering-mode--wrapper .fieldset__wrapper .form-radios,
+form.utilikit-settings-form .form-wrapper .form-radios,
+form.utilikit-settings-form .form-wrapper .form-checkboxes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0 12px;
+}
+
+#edit-developer > .details-wrapper #edit-static-css-info,
+#edit-triggers > .details-wrapper > *:first-child,
+#edit-performance > .details-wrapper > *:first-child {
+  grid-column: 1 / -1;
+}
+
+/* Tablet: 2 Columns */
+@media (min-width:768px) {
+  #edit-developer > .details-wrapper,
+  #edit-triggers > .details-wrapper,
+  #edit-scope > .details-wrapper,
+  #edit-performance > .details-wrapper,
+  form.utilikit-settings-form .form-wrapper .form-radios,
+  form.utilikit-settings-form .form-wrapper .form-checkboxes {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 24px;
+  }
+
+  #edit-developer > .details-wrapper #edit-static-css-info,
+  #edit-triggers > .details-wrapper > *:first-child,
+  #edit-performance > .details-wrapper > *:first-child {
+    grid-column: 1 / -1;
+  }
+
+}
+
+/* Desktop: 3 Columns */
+@media (min-width:1024px) {
+  #edit-developer > .details-wrapper,
+  #edit-triggers > .details-wrapper,
+  #edit-scope > .details-wrapper,
+  #edit-performance > .details-wrapper,
+  form.utilikit-settings-form .form-wrapper .form-radios,
+  form.utilikit-settings-form .form-wrapper .form-checkboxes {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px 32px;
+  }
+
+  #edit-developer > .details-wrapper #edit-static-css-info,
+  #edit-triggers > .details-wrapper > *:first-child,
+  #edit-performance > .details-wrapper > *:first-child {
+    grid-column: 1 / -1;
+  }
+
+}
+
+#edit-rendering-mode--wrapper .form-radios input[type="radio"]:checked+label {
+  color: #009900!important;
+}

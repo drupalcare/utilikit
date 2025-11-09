@@ -122,6 +122,8 @@ class UtilikitSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
+    // Attach the CSS library.
+    $form['#attached']['library'][] = 'utilikit/utilikit-settings';
     $config = $this->config('utilikit.settings');
 
     $form = array_merge($form, $this->buildRenderingModeSection($config));
@@ -174,29 +176,14 @@ class UtilikitSettingsForm extends ConfigFormBase {
         '#type' => 'details',
         '#title' => $this->t('Performance & Optimization'),
         '#open' => TRUE,
-        'enable_transitions' => $this->createCheckboxField(
-          $this->t('Enable smooth transitions'),
-          $this->t('Apply CSS transitions when styles change dynamically (recommended for better UX).'),
-          (bool) $config->get('enable_transitions') ?? TRUE
-        ),
-        'debounce' => $this->createNumberField(
-          $this->t('Resize debounce delay'),
-          $this->t('Milliseconds to wait before reapplying styles on window resize.'),
-          $config->get('debounce') ?? 50,
-          [
-            'min' => 0,
-            'max' => 500,
-            'step' => 10,
-            'field_suffix' => $this->t('ms'),
-            'attributes' => ['style' => 'width: 100px'],
-          ]
-        ),
+
         'active_breakpoints' => $this->createCheckboxesField(
           $this->t('Active breakpoints'),
           $this->t('Select which responsive breakpoints to enable. Disabling unused breakpoints can improve performance.'),
           $this->getBreakpointOptions(),
           $config->get('active_breakpoints') ?? UtilikitConstants::DEFAULT_BREAKPOINTS
         ),
+
         'optimize_css' => $this->createCheckboxField(
           $this->t('Optimize CSS output'),
           $this->t('Minify and optimize the generated CSS to reduce size.'),
@@ -210,6 +197,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
             ],
           ]
         ),
+
         'use_important' => $this->createCheckboxField(
           $this->t('Use !important in CSS rules'),
           $this->t('Add !important to all utility class rules to ensure they override inline styles or css variables. Recommended for utility-first workflows. <strong>Note:</strong> Changing this setting will regenerate all site CSS.'),
@@ -221,6 +209,24 @@ class UtilikitSettingsForm extends ConfigFormBase {
                 [':input[name="rendering_mode"]' => ['value' => 'head']],
               ],
             ],
+          ]
+        ),
+        'enable_transitions' => $this->createCheckboxField(
+          $this->t('Enable smooth transitions'),
+          $this->t('Apply CSS transitions when styles change dynamically (recommended for better UX).'),
+          (bool) $config->get('enable_transitions') ?? TRUE
+        ),
+
+        'debounce' => $this->createNumberField(
+          $this->t('Resize debounce delay'),
+          $this->t('Milliseconds to wait before reapplying styles on window resize.'),
+          $config->get('debounce') ?? 50,
+          [
+            'min' => 0,
+            'max' => 500,
+            'step' => 10,
+            'field_suffix' => $this->t('ms'),
+            'attributes' => ['style' => 'width: 100px'],
           ]
         ),
       ],
