@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\utilikit\Service;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -76,7 +77,7 @@ class UtilikitServiceProvider {
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
-  protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory;
+  protected ConfigFactoryInterface $configFactory;
 
   /**
    * Constructs a new UtilikitServiceProvider.
@@ -105,7 +106,7 @@ class UtilikitServiceProvider {
     UtilikitStateManager $stateManager,
     UtilikitCacheManagerInterface $cacheManager,
     LoggerInterface $logger,
-    \Drupal\Core\Config\ConfigFactoryInterface $configFactory,
+    ConfigFactoryInterface $configFactory,
     ?UtilikitTestCssGenerator $testCssGenerator = NULL,
   ) {
     $this->cssGenerator = $cssGenerator;

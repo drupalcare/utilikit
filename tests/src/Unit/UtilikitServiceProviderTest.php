@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitCacheManagerInterface;
 use Drupal\utilikit\Service\UtilikitContentScanner;
@@ -16,49 +18,74 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
 /**
+ * Tests for the UtilikitServiceProvider service.
+ *
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitServiceProvider
  */
 final class UtilikitServiceProviderTest extends UnitTestCase {
 
   /**
+   * The service provider under test.
+   *
    * @var \Drupal\utilikit\Service\UtilikitServiceProvider
    */
   protected UtilikitServiceProvider $serviceProvider;
 
   /**
+   * The CSS generator mock.
+   *
    * @var \Drupal\utilikit\Service\UtilikitCssGenerator|\PHPUnit\Framework\MockObject\MockObject
    */
   protected UtilikitCssGenerator&MockObject $cssGenerator;
 
   /**
+   * The file manager mock.
+   *
    * @var \Drupal\utilikit\Service\UtilikitFileManager|\PHPUnit\Framework\MockObject\MockObject
    */
   protected UtilikitFileManager&MockObject $fileManager;
 
   /**
+   * The content scanner mock.
+   *
    * @var \Drupal\utilikit\Service\UtilikitContentScanner|\PHPUnit\Framework\MockObject\MockObject
    */
   protected UtilikitContentScanner&MockObject $contentScanner;
 
   /**
+   * The state manager mock.
+   *
    * @var \Drupal\utilikit\Service\UtilikitStateManager|\PHPUnit\Framework\MockObject\MockObject
    */
   protected UtilikitStateManager&MockObject $stateManager;
 
   /**
+   * The cache manager mock.
+   *
    * @var \Drupal\utilikit\Service\UtilikitCacheManagerInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected UtilikitCacheManagerInterface&MockObject $cacheManager;
 
   /**
+   * The logger mock.
+   *
    * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected LoggerInterface&MockObject $logger;
 
   /**
+   * The config factory mock.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected ConfigFactoryInterface&MockObject $configFactory;
+
+  /**
+   * The test CSS generator mock.
+   *
    * @var \Drupal\utilikit\Service\UtilikitTestCssGenerator|\PHPUnit\Framework\MockObject\MockObject|null
    */
-  protected ?UtilikitTestCssGenerator $testCssGenerator = null;
+  protected ?UtilikitTestCssGenerator $testCssGenerator = NULL;
 
   /**
    * {@inheritdoc}
@@ -72,6 +99,7 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
     $this->stateManager = $this->createMock(UtilikitStateManager::class);
     $this->cacheManager = $this->createMock(UtilikitCacheManagerInterface::class);
     $this->logger = $this->createMock(LoggerInterface::class);
+    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
     $this->testCssGenerator = $this->createMock(UtilikitTestCssGenerator::class);
 
     $this->serviceProvider = new UtilikitServiceProvider(
@@ -81,11 +109,14 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
       $this->stateManager,
       $this->cacheManager,
       $this->logger,
+      $this->configFactory,
       $this->testCssGenerator,
     );
   }
 
   /**
+   * Tests service getters.
+   *
    * @covers ::__construct
    * @covers ::getCssGenerator
    * @covers ::getFileManager
@@ -104,6 +135,48 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
   }
 
   /**
+   * Tests getRenderingMode returns configured value.
+   *
+   * @covers ::getRenderingMode
+   */
+  public function testGetRenderingModeReturnsConfiguredValue(): void {
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->once())
+      ->method('get')
+      ->with('rendering_mode')
+      ->willReturn('static');
+
+    $this->configFactory->expects($this->once())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
+
+    $this->assertSame('static', $this->serviceProvider->getRenderingMode());
+  }
+
+  /**
+   * Tests getRenderingMode returns default when not configured.
+   *
+   * @covers ::getRenderingMode
+   */
+  public function testGetRenderingModeReturnsDefaultWhenNotConfigured(): void {
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->expects($this->once())
+      ->method('get')
+      ->with('rendering_mode')
+      ->willReturn(NULL);
+
+    $this->configFactory->expects($this->once())
+      ->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
+
+    $this->assertSame('inline', $this->serviceProvider->getRenderingMode());
+  }
+
+  /**
+   * Tests switchToStaticMode with known classes.
+   *
    * @covers ::switchToStaticMode
    */
   public function testSwitchToStaticModeWithKnownClasses(): void {
@@ -144,7 +217,7 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
     $this->fileManager
       ->expects($this->once())
       ->method('ensureStaticCssFile')
-      ->willReturn(true);
+      ->willReturn(TRUE);
 
     $result = $this->serviceProvider->switchToStaticMode();
 
@@ -153,6 +226,8 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
   }
 
   /**
+   * Tests switchToStaticMode without classes.
+   *
    * @covers ::switchToStaticMode
    */
   public function testSwitchToStaticModeWithoutClasses(): void {
@@ -180,7 +255,7 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
       ->with($this->stringContains('Utilikit Static CSS'));
 
     $this->fileManager
-      ->expects($this->never())
+      ->expects($this->once())
       ->method('ensureStaticCssFile');
 
     $result = $this->serviceProvider->switchToStaticMode();
@@ -190,6 +265,8 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
   }
 
   /**
+   * Tests switchToInlineMode.
+   *
    * @covers ::switchToInlineMode
    */
   public function testSwitchToInlineMode(): void {
@@ -218,6 +295,8 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
   }
 
   /**
+   * Tests updateCssAndFile with valid classes.
+   *
    * @covers ::updateCssAndFile
    */
   public function testUpdateCssAndFileWithValidClasses(): void {
@@ -251,7 +330,7 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
     $this->fileManager
       ->expects($this->once())
       ->method('ensureStaticCssFile')
-      ->willReturn(true);
+      ->willReturn(TRUE);
 
     $this->stateManager
       ->expects($this->once())
@@ -267,6 +346,8 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
   }
 
   /**
+   * Tests updateCssAndFile with empty input.
+   *
    * @covers ::updateCssAndFile
    */
   public function testUpdateCssAndFileWithEmptyInputReturnsFalse(): void {
@@ -278,6 +359,8 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
   }
 
   /**
+   * Tests regenerateStaticCss with no known classes.
+   *
    * @covers ::regenerateStaticCss
    */
   public function testRegenerateStaticCssWithNoKnownClasses(): void {
@@ -295,6 +378,8 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
   }
 
   /**
+   * Tests regenerateStaticCss with known classes.
+   *
    * @covers ::regenerateStaticCss
    */
   public function testRegenerateStaticCssWithKnownClasses(): void {
@@ -319,7 +404,7 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
     $this->fileManager
       ->expects($this->once())
       ->method('ensureStaticCssFile')
-      ->willReturn(true);
+      ->willReturn(TRUE);
 
     $this->stateManager
       ->expects($this->once())
@@ -327,7 +412,8 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
 
     $this->cacheManager
       ->expects($this->once())
-      ->method('clearCssCaches');
+      ->method('clearCachesWithStrategy')
+      ->with(['strategy' => 'conservative']);
 
     $this->assertTrue($this->serviceProvider->regenerateStaticCss());
   }

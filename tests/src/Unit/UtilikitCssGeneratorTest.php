@@ -15,6 +15,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
 /**
+ * Tests for the UtilikitCssGenerator service.
+ *
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitCssGenerator
  *
  * Aligned with the current UtilikitCssGenerator implementation.
@@ -75,7 +77,8 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
     $this->contentScanner = $this->createMock(UtilikitContentScanner::class);
     $this->logger = $this->createMock(LoggerInterface::class);
 
-    // UtilikitCssGenerator expects to read utilikit.settings for active breakpoints.
+    // UtilikitCssGenerator expects to read utilikit.settings for active
+    // breakpoints.
     $this->configFactory
       ->method('get')
       ->with('utilikit.settings')
@@ -101,13 +104,15 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
   }
 
   /**
+   * Tests generateCssFromClasses filters invalid and duplicate values.
+   *
    * @covers ::generateCssFromClasses
    */
   public function testGenerateCssFromClassesFiltersInvalidAndDuplicateValues(): void {
     $classes = [
       'uk-m--10',
       '',
-      null,
+      NULL,
       'not-utilikit',
       'uk-m--10',
     ];
@@ -120,7 +125,7 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
 
     $this->cache
       ->method('get')
-      ->willReturn(false);
+      ->willReturn(FALSE);
 
     $this->cache
       ->expects($this->once())
@@ -130,7 +135,7 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
         $this->isType('string'),
         $this->anything(),
         $this->callback(static function (array $tags): bool {
-          return in_array(UtilikitConstants::CACHE_TAG_CSS, $tags, true);
+          return in_array(UtilikitConstants::CACHE_TAG_CSS, $tags, TRUE);
         })
       );
 
@@ -145,6 +150,8 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
   }
 
   /**
+   * Tests generateCssFromClasses uses cache when available.
+   *
    * @covers ::generateCssFromClasses
    */
   public function testGenerateCssFromClassesUsesCacheWhenAvailable(): void {
@@ -156,13 +163,13 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
 
     $this->contentScanner
       ->method('isValidUtilityClass')
-      ->willReturn(true);
+      ->willReturn(TRUE);
 
     $this->cache
       ->expects($this->exactly(2))
       ->method('get')
       ->with($cid)
-      ->willReturnOnConsecutiveCalls(false, $cacheHit);
+      ->willReturnOnConsecutiveCalls(FALSE, $cacheHit);
 
     $this->cache
       ->expects($this->once())
@@ -172,7 +179,7 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
         $this->isType('string'),
         $this->anything(),
         $this->callback(static function (array $tags): bool {
-          return in_array(UtilikitConstants::CACHE_TAG_CSS, $tags, true);
+          return in_array(UtilikitConstants::CACHE_TAG_CSS, $tags, TRUE);
         })
       );
 
@@ -185,6 +192,8 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
   }
 
   /**
+   * Tests generateCssFromClasses throws when class count exceeds limit.
+   *
    * @covers ::generateCssFromClasses
    */
   public function testGenerateCssFromClassesThrowsWhenClassCountExceedsLimit(): void {
@@ -197,7 +206,7 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
 
     $this->contentScanner
       ->method('isValidUtilityClass')
-      ->willReturn(true);
+      ->willReturn(TRUE);
 
     $this->logger
       ->expects($this->once())
