@@ -93,7 +93,7 @@ class UtilikitRulesTest extends UnitTestCase {
    * @return array <int, mixed>
    *   The data sets used for testing providerValidUtilityClasses().
    */
-  public function providerValidUtilityClasses(): array {
+  public static function providerValidUtilityClasses(): array {
     return [
       ['pd', '20', ['property' => 'padding', 'value' => '20px']],
       ['pd', '10-20', ['property' => 'padding', 'value' => '10px 20px']],
@@ -142,7 +142,7 @@ class UtilikitRulesTest extends UnitTestCase {
    * @return array<int, string>
    *   The data sets used for testing parseValue().
    */
-  public function providerParseValue(): array {
+  public static function providerParseValue(): array {
     return [
       // Numeric values.
       ['20', 'size', '20px'],
