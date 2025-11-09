@@ -77,7 +77,7 @@ class UtilikitContentScannerTest extends UnitTestCase {
    * @return array<string, array>
    *   html: string, expected: array<string>
    */
-  public function providerValidHtml(): array {
+  public static function providerValidHtml(): array {
     return [
       'single utility class' => [
         'html' => '<div class="utilikit uk-pd--20">Content</div>',

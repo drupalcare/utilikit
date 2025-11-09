@@ -61,7 +61,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
   /**
    * Data provider for createJsonResponse tests.
    */
-  public function providerJsonResponse() {
+  public static function providerJsonResponse(): array {
     return [
       'basic success' => [
         'success',
@@ -280,7 +280,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
   /**
    * Data provider for status code tests.
    */
-  public function providerStatusCodes() {
+  public static function providerStatusCodes(): array {
     return [
       'OK' => [200],
       'Created' => [201],
