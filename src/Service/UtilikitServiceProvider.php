@@ -72,6 +72,13 @@ class UtilikitServiceProvider {
   protected ?UtilikitTestCssGenerator $testCssGenerator;
 
   /**
+   * The configuration factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected \Drupal\Core\Config\ConfigFactoryInterface $configFactory;
+
+  /**
    * Constructs a new UtilikitServiceProvider.
    *
    * @param \Drupal\utilikit\Service\UtilikitCssGenerator $cssGenerator
@@ -86,8 +93,10 @@ class UtilikitServiceProvider {
    *   The cache manager service for cache operations and invalidation.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service for recording operations and errors.
-   * @param \Drupal\utilikit_test\Service\UtilikitTestCssGenerator $testCssGenerator
-   *   The test gernarator service for creating all possible css classes.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The configuration factory service.
+   * @param \Drupal\utilikit\Service\UtilikitTestCssGenerator|null $testCssGenerator
+   *   The test generator service for creating all possible CSS classes.
    */
   public function __construct(
     UtilikitCssGenerator $cssGenerator,
@@ -96,6 +105,7 @@ class UtilikitServiceProvider {
     UtilikitStateManager $stateManager,
     UtilikitCacheManagerInterface $cacheManager,
     LoggerInterface $logger,
+    \Drupal\Core\Config\ConfigFactoryInterface $configFactory,
     ?UtilikitTestCssGenerator $testCssGenerator = NULL,
   ) {
     $this->cssGenerator = $cssGenerator;
@@ -104,6 +114,7 @@ class UtilikitServiceProvider {
     $this->stateManager = $stateManager;
     $this->cacheManager = $cacheManager;
     $this->logger = $logger;
+    $this->configFactory = $configFactory;
     $this->testCssGenerator = $testCssGenerator;
   }
 
@@ -161,11 +172,12 @@ class UtilikitServiceProvider {
    * Gets the current rendering mode from configuration.
    *
    * @return string
-   *   The rendering mode: either 'inline' or 'static'. Defaults to 'inline'
+   *   The rendering mode: 'inline', 'static', or 'head'. Defaults to 'inline'
    *   if not configured.
    */
   public function getRenderingMode(): string {
-    return $this->cssGenerator->configFactory->get('utilikit.settings')->get('rendering_mode') ?? 'inline';
+    $config = $this->configFactory->get('utilikit.settings');
+    return $config->get('rendering_mode') ?? 'inline';
   }
 
   /**

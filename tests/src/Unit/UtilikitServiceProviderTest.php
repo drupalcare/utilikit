@@ -5,80 +5,60 @@ declare(strict_types=1);
 namespace Drupal\Tests\utilikit\Unit;
 
 use Drupal\Tests\UnitTestCase;
+use Drupal\utilikit\Service\UtilikitCacheManagerInterface;
+use Drupal\utilikit\Service\UtilikitContentScanner;
+use Drupal\utilikit\Service\UtilikitCssGenerator;
+use Drupal\utilikit\Service\UtilikitFileManager;
 use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Service\UtilikitStateManager;
-use Drupal\utilikit\Service\UtilikitCssParser;
-use Drupal\utilikit\Service\UtilikitFileManager;
-use Drupal\utilikit\Service\UtilikitCacheManager;
-use Drupal\utilikit\Service\UtilikitClassNameValidator;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Config\ImmutableConfig;
+use Drupal\utilikit\Service\UtilikitTestCssGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
 /**
- * Tests the UtilikitServiceProvider service.
- *
- * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitServiceProvider
  */
-class UtilikitServiceProviderTest extends UnitTestCase {
+final class UtilikitServiceProviderTest extends UnitTestCase {
 
   /**
-   * The service provider under test.
-   *
    * @var \Drupal\utilikit\Service\UtilikitServiceProvider
    */
   protected UtilikitServiceProvider $serviceProvider;
 
   /**
-   * Mock state manager.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitStateManager&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitCssGenerator|\PHPUnit\Framework\MockObject\MockObject
    */
-  protected UtilikitStateManager&MockObject $stateManager;
+  protected UtilikitCssGenerator&MockObject $cssGenerator;
 
   /**
-   * Mock CSS parser.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitCssParser&\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected UtilikitCssParser&MockObject $cssParser;
-
-  /**
-   * Mock file manager.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitFileManager&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitFileManager|\PHPUnit\Framework\MockObject\MockObject
    */
   protected UtilikitFileManager&MockObject $fileManager;
 
   /**
-   * Mock cache manager.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitCacheManager&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitContentScanner|\PHPUnit\Framework\MockObject\MockObject
    */
-  protected UtilikitCacheManager&MockObject $cacheManager;
+  protected UtilikitContentScanner&MockObject $contentScanner;
 
   /**
-   * Mock class validator.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitClassNameValidator&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitStateManager|\PHPUnit\Framework\MockObject\MockObject
    */
-  protected UtilikitClassNameValidator&MockObject $classValidator;
+  protected UtilikitStateManager&MockObject $stateManager;
 
   /**
-   * Mock config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitCacheManagerInterface|\PHPUnit\Framework\MockObject\MockObject
    */
-  protected ConfigFactoryInterface&MockObject $configFactory;
+  protected UtilikitCacheManagerInterface&MockObject $cacheManager;
 
   /**
-   * Mock logger.
-   *
-   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected LoggerInterface&MockObject $logger;
+
+  /**
+   * @var \Drupal\utilikit\Service\UtilikitTestCssGenerator|\PHPUnit\Framework\MockObject\MockObject|null
+   */
+  protected ?UtilikitTestCssGenerator $testCssGenerator = null;
 
   /**
    * {@inheritdoc}
@@ -86,324 +66,270 @@ class UtilikitServiceProviderTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->stateManager = $this->createMock(UtilikitStateManager::class);
-    $this->cssParser = $this->createMock(UtilikitCssParser::class);
+    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
     $this->fileManager = $this->createMock(UtilikitFileManager::class);
-    $this->cacheManager = $this->createMock(UtilikitCacheManager::class);
-    $this->classValidator = $this->createMock(UtilikitClassNameValidator::class);
-    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $this->contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
+    $this->cacheManager = $this->createMock(UtilikitCacheManagerInterface::class);
     $this->logger = $this->createMock(LoggerInterface::class);
-
-    // Setup default config.
-    $config = $this->createMock(ImmutableConfig::class);
-    $config->expects($this->any())
-      ->method('get')
-      ->willReturnMap([
-        ['class_limit', 1000],
-        ['storage_mode', 'file'],
-        ['security_level', 'strict'],
-      ]);
-
-    $this->configFactory->expects($this->any())
-      ->method('get')
-      ->with('utilikit.settings')
-      ->willReturn($config);
+    $this->testCssGenerator = $this->createMock(UtilikitTestCssGenerator::class);
 
     $this->serviceProvider = new UtilikitServiceProvider(
-      $this->stateManager,
-      $this->cssParser,
+      $this->cssGenerator,
       $this->fileManager,
+      $this->contentScanner,
+      $this->stateManager,
       $this->cacheManager,
-      $this->classValidator,
-      $this->configFactory,
-      $this->logger
+      $this->logger,
+      $this->testCssGenerator,
     );
   }
 
   /**
-   * Tests processNewClasses with valid classes.
-   *
-   * @covers ::processNewClasses
+   * @covers ::__construct
+   * @covers ::getCssGenerator
+   * @covers ::getFileManager
+   * @covers ::getContentScanner
+   * @covers ::getStateManager
+   * @covers ::getCacheManager
+   * @covers ::getTestCssGenerator
    */
-  public function testProcessNewClassesValid(): void {
-    $classes = ['uk-pd--20', 'uk-mg--10'];
-    $expectedCss = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-mg--10' => 'margin: 10px;',
+  public function testGettersReturnInjectedServices(): void {
+    $this->assertSame($this->cssGenerator, $this->serviceProvider->getCssGenerator());
+    $this->assertSame($this->fileManager, $this->serviceProvider->getFileManager());
+    $this->assertSame($this->contentScanner, $this->serviceProvider->getContentScanner());
+    $this->assertSame($this->stateManager, $this->serviceProvider->getStateManager());
+    $this->assertSame($this->cacheManager, $this->serviceProvider->getCacheManager());
+    $this->assertSame($this->testCssGenerator, $this->serviceProvider->getTestCssGenerator());
+  }
+
+  /**
+   * @covers ::switchToStaticMode
+   */
+  public function testSwitchToStaticModeWithKnownClasses(): void {
+    $scanResult = [
+      'classes' => ['uk-m--10'],
+      'scanned_count' => 10,
     ];
 
-    // Setup mocks.
-    $this->classValidator->expects($this->exactly(2))
-      ->method('isValid')
-      ->willReturn(TRUE);
+    $this->stateManager
+      ->expects($this->once())
+      ->method('clearUtilikitData');
 
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn([]);
+    $this->fileManager
+      ->expects($this->once())
+      ->method('cleanupStaticFiles');
 
-    $this->cssParser->expects($this->exactly(2))
-      ->method('parseClass')
-      ->willReturnCallback(function ($class) use ($expectedCss) {
-        return $expectedCss['.' . $class] ?? NULL;
-      });
+    $this->contentScanner
+      ->expects($this->once())
+      ->method('scanAllContent')
+      ->willReturn($scanResult);
 
-    $this->stateManager->expects($this->once())
-      ->method('addClasses')
-      ->with($expectedCss);
+    $this->stateManager
+      ->expects($this->once())
+      ->method('setKnownClasses')
+      ->with($scanResult['classes']);
 
-    $this->fileManager->expects($this->once())
-      ->method('saveCssFile')
-      ->with($this->anything());
+    $this->cssGenerator
+      ->expects($this->once())
+      ->method('generateCssFromClasses')
+      ->with($scanResult['classes'])
+      ->willReturn('/* utilikit css */');
 
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
+    $this->stateManager
+      ->expects($this->once())
+      ->method('setGeneratedCss')
+      ->with('/* utilikit css */');
 
-    $result = $this->serviceProvider->processNewClasses($classes);
+    $this->fileManager
+      ->expects($this->once())
+      ->method('ensureStaticCssFile')
+      ->willReturn(true);
 
-    $this->assertArrayHasKey('added', $result);
-    $this->assertArrayHasKey('duplicates', $result);
-    $this->assertArrayHasKey('errors', $result);
-    $this->assertCount(2, $result['added']);
+    $result = $this->serviceProvider->switchToStaticMode();
+
+    $this->assertSame(1, $result['classes_count']);
+    $this->assertSame(10, $result['scanned_count']);
   }
 
   /**
-   * Tests processNewClasses with invalid classes.
-   *
-   * @covers ::processNewClasses
+   * @covers ::switchToStaticMode
    */
-  public function testProcessNewClassesInvalid(): void {
-    $classes = ['invalid-class', 'uk-valid--10'];
-
-    $this->classValidator->expects($this->exactly(2))
-      ->method('isValid')
-      ->willReturnOnConsecutiveCalls(FALSE, TRUE);
-
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn([]);
-
-    $this->cssParser->expects($this->once())
-      ->method('parseClass')
-      ->with('uk-valid--10')
-      ->willReturn('padding: 10px;');
-
-    $result = $this->serviceProvider->processNewClasses($classes);
-
-    $this->assertCount(1, $result['errors']);
-    $this->assertCount(1, $result['added']);
-  }
-
-  /**
-   * Tests processNewClasses with duplicate classes.
-   *
-   * @covers ::processNewClasses
-   */
-  public function testProcessNewClassesDuplicates(): void {
-    $classes = ['uk-pd--20', 'uk-mg--10'];
-    $existingClasses = [
-      '.uk-pd--20' => 'padding: 20px;',
+  public function testSwitchToStaticModeWithoutClasses(): void {
+    $scanResult = [
+      'classes' => [],
+      'scanned_count' => 5,
     ];
 
-    $this->classValidator->expects($this->exactly(2))
-      ->method('isValid')
-      ->willReturn(TRUE);
+    $this->stateManager
+      ->expects($this->once())
+      ->method('clearUtilikitData');
 
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($existingClasses);
+    $this->fileManager
+      ->expects($this->once())
+      ->method('cleanupStaticFiles');
 
-    $this->cssParser->expects($this->once())
-      ->method('parseClass')
-      ->with('uk-mg--10')
-      ->willReturn('margin: 10px;');
+    $this->contentScanner
+      ->expects($this->once())
+      ->method('scanAllContent')
+      ->willReturn($scanResult);
 
-    $result = $this->serviceProvider->processNewClasses($classes);
+    $this->stateManager
+      ->expects($this->once())
+      ->method('setGeneratedCss')
+      ->with($this->stringContains('Utilikit Static CSS'));
 
-    $this->assertCount(1, $result['duplicates']);
-    $this->assertCount(1, $result['added']);
+    $this->fileManager
+      ->expects($this->never())
+      ->method('ensureStaticCssFile');
+
+    $result = $this->serviceProvider->switchToStaticMode();
+
+    $this->assertSame(0, $result['classes_count']);
+    $this->assertSame(5, $result['scanned_count']);
   }
 
   /**
-   * Tests processNewClasses with class limit exceeded.
-   *
-   * @covers ::processNewClasses
+   * @covers ::switchToInlineMode
    */
-  public function testProcessNewClassesLimitExceeded(): void {
-    // Create array with 999 existing classes.
-    $existingClasses = [];
-    for ($i = 1; $i <= 999; $i++) {
-      $existingClasses['.uk-test--' . $i] = 'test: ' . $i . 'px;';
-    }
+  public function testSwitchToInlineMode(): void {
+    $known = ['uk-m--10', 'uk-p--4'];
 
-    $classes = ['uk-new--1', 'uk-new--2'];
+    $this->fileManager
+      ->expects($this->once())
+      ->method('cleanupStaticFiles');
 
-    $this->classValidator->expects($this->any())
-      ->method('isValid')
-      ->willReturn(TRUE);
+    $this->stateManager
+      ->expects($this->once())
+      ->method('updateCssTimestamp');
 
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($existingClasses);
+    $this->cacheManager
+      ->expects($this->once())
+      ->method('clearAllCaches');
 
-    $this->logger->expects($this->once())
-      ->method('warning')
-      ->with($this->stringContains('Class limit reached'));
+    $this->stateManager
+      ->expects($this->once())
+      ->method('getKnownClasses')
+      ->willReturn($known);
 
-    $result = $this->serviceProvider->processNewClasses($classes);
+    $count = $this->serviceProvider->switchToInlineMode();
 
-    $this->assertArrayHasKey('errors', $result);
-    $this->assertStringContains('limit', $result['errors'][0]);
+    $this->assertSame(count($known), $count);
   }
 
   /**
-   * Tests removeClasses method.
-   *
-   * @covers ::removeClasses
+   * @covers ::updateCssAndFile
    */
-  public function testRemoveClasses(): void {
-    $classes = ['uk-pd--20', 'uk-mg--10'];
-    $existingClasses = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-mg--10' => 'margin: 10px;',
-      '.uk-test--5' => 'test: 5px;',
-    ];
+  public function testUpdateCssAndFileWithValidClasses(): void {
+    $input = ['uk-m--10', 'uk-p--4'];
+    $valid = ['uk-m--10', 'uk-p--4'];
+    $all = ['uk-m--10', 'uk-p--4', 'uk-gap--2'];
 
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($existingClasses);
+    $this->contentScanner
+      ->expects($this->once())
+      ->method('validateUtilityClasses')
+      ->with($input)
+      ->willReturn($valid);
 
-    $this->stateManager->expects($this->once())
-      ->method('removeClasses')
-      ->with(['.uk-pd--20', '.uk-mg--10']);
+    $this->stateManager
+      ->expects($this->once())
+      ->method('addKnownClasses')
+      ->with($valid)
+      ->willReturn($all);
 
-    $this->fileManager->expects($this->once())
-      ->method('saveCssFile')
-      ->with($this->anything());
+    $this->cssGenerator
+      ->expects($this->once())
+      ->method('generateCssFromClasses')
+      ->with($all)
+      ->willReturn('/* css */');
 
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
+    $this->stateManager
+      ->expects($this->once())
+      ->method('setGeneratedCss')
+      ->with('/* css */');
 
-    $result = $this->serviceProvider->removeClasses($classes);
+    $this->fileManager
+      ->expects($this->once())
+      ->method('ensureStaticCssFile')
+      ->willReturn(true);
 
-    $this->assertArrayHasKey('removed', $result);
-    $this->assertArrayHasKey('notFound', $result);
-    $this->assertCount(2, $result['removed']);
-  }
+    $this->stateManager
+      ->expects($this->once())
+      ->method('updateCssTimestamp');
 
-  /**
-   * Tests getClassInfo method.
-   *
-   * @covers ::getClassInfo
-   */
-  public function testGetClassInfo(): void {
-    $existingClasses = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-mg--10' => 'margin: 10px;',
-    ];
+    $this->cacheManager
+      ->expects($this->once())
+      ->method('clearCssCaches');
 
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($existingClasses);
+    $result = $this->serviceProvider->updateCssAndFile($input);
 
-    $info = $this->serviceProvider->getClassInfo('uk-pd--20');
-
-    $this->assertArrayHasKey('exists', $info);
-    $this->assertArrayHasKey('css', $info);
-    $this->assertTrue($info['exists']);
-    $this->assertEquals('padding: 20px;', $info['css']);
-  }
-
-  /**
-   * Tests optimizeCss method.
-   *
-   * @covers ::optimizeCss
-   */
-  public function testOptimizeCss(): void {
-    $this->fileManager->expects($this->once())
-      ->method('optimizeCssFile')
-      ->willReturn(TRUE);
-
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
-
-    $result = $this->serviceProvider->optimizeCss();
     $this->assertTrue($result);
   }
 
   /**
-   * Tests error handling in processNewClasses.
-   *
-   * @covers ::processNewClasses
+   * @covers ::updateCssAndFile
    */
-  public function testProcessNewClassesErrorHandling(): void {
-    $classes = ['uk-pd--20'];
+  public function testUpdateCssAndFileWithEmptyInputReturnsFalse(): void {
+    $this->contentScanner
+      ->expects($this->never())
+      ->method('validateUtilityClasses');
 
-    $this->classValidator->expects($this->once())
-      ->method('isValid')
-      ->willReturn(TRUE);
+    $this->assertFalse($this->serviceProvider->updateCssAndFile([]));
+  }
 
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
+  /**
+   * @covers ::regenerateStaticCss
+   */
+  public function testRegenerateStaticCssWithNoKnownClasses(): void {
+    $this->stateManager
+      ->expects($this->once())
+      ->method('getKnownClasses')
       ->willReturn([]);
 
-    $this->cssParser->expects($this->once())
-      ->method('parseClass')
-      ->willThrowException(new \Exception('Parse error'));
+    $this->logger
+      ->expects($this->once())
+      ->method('info')
+      ->with($this->stringContains('No known classes'));
 
-    $this->logger->expects($this->once())
-      ->method('error')
-      ->with($this->stringContains('Error parsing class'));
-
-    $result = $this->serviceProvider->processNewClasses($classes);
-
-    $this->assertCount(1, $result['errors']);
+    $this->assertFalse($this->serviceProvider->regenerateStaticCss());
   }
 
   /**
-   * Tests generateReport method.
-   *
-   * @covers ::generateReport
+   * @covers ::regenerateStaticCss
    */
-  public function testGenerateReport(): void {
-    $existingClasses = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-mg--10' => 'margin: 10px;',
-    ];
+  public function testRegenerateStaticCssWithKnownClasses(): void {
+    $known = ['uk-m--10'];
 
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($existingClasses);
+    $this->stateManager
+      ->expects($this->once())
+      ->method('getKnownClasses')
+      ->willReturn($known);
 
-    $this->stateManager->expects($this->once())
-      ->method('getStatistics')
-      ->willReturn([
-        'total_classes' => 2,
-        'last_updated' => time(),
-      ]);
+    $this->cssGenerator
+      ->expects($this->once())
+      ->method('generateCssFromClasses')
+      ->with($known)
+      ->willReturn('/* regenerated css */');
 
-    $report = $this->serviceProvider->generateReport();
+    $this->stateManager
+      ->expects($this->once())
+      ->method('setGeneratedCss')
+      ->with('/* regenerated css */');
 
-    $this->assertArrayHasKey('total_classes', $report);
-    $this->assertArrayHasKey('statistics', $report);
-    $this->assertArrayHasKey('config', $report);
-    $this->assertEquals(2, $report['total_classes']);
-  }
+    $this->fileManager
+      ->expects($this->once())
+      ->method('ensureStaticCssFile')
+      ->willReturn(true);
 
-  /**
-   * Tests validateConfiguration method.
-   *
-   * @covers ::validateConfiguration
-   */
-  public function testValidateConfiguration(): void {
-    $this->fileManager->expects($this->once())
-      ->method('ensureDirectoryExists')
-      ->willReturn(TRUE);
+    $this->stateManager
+      ->expects($this->once())
+      ->method('updateCssTimestamp');
 
-    $result = $this->serviceProvider->validateConfiguration();
+    $this->cacheManager
+      ->expects($this->once())
+      ->method('clearCssCaches');
 
-    $this->assertArrayHasKey('valid', $result);
-    $this->assertArrayHasKey('errors', $result);
-    $this->assertTrue($result['valid']);
+    $this->assertTrue($this->serviceProvider->regenerateStaticCss());
   }
 
 }

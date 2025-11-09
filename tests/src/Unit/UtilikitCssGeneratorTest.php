@@ -4,55 +4,62 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
-use Drupal\Tests\UnitTestCase;
-use Drupal\utilikit\Service\UtilikitCssGenerator;
-use Drupal\utilikit\Service\UtilikitCssParser;
-use Drupal\utilikit\Service\UtilikitStateManager;
+use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Tests\UnitTestCase;
+use Drupal\utilikit\Service\UtilikitConstants;
+use Drupal\utilikit\Service\UtilikitContentScanner;
+use Drupal\utilikit\Service\UtilikitCssGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
 /**
- * Tests the UtilikitCssGenerator service.
- *
- * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitCssGenerator
+ *
+ * Aligned with the current UtilikitCssGenerator implementation.
  */
-class UtilikitCssGeneratorTest extends UnitTestCase {
+final class UtilikitCssGeneratorTest extends UnitTestCase {
 
   /**
-   * The CSS generator service under test.
+   * The CSS generator under test.
    *
    * @var \Drupal\utilikit\Service\UtilikitCssGenerator
    */
   protected UtilikitCssGenerator $cssGenerator;
 
   /**
-   * Mock CSS parser.
+   * The config factory mock.
    *
-   * @var \Drupal\utilikit\Service\UtilikitCssParser&\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected UtilikitCssParser&MockObject $cssParser;
-
-  /**
-   * Mock state manager.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitStateManager&\PHPUnit\Framework\MockObject\MockObject
-   */
-  protected UtilikitStateManager&MockObject $stateManager;
-
-  /**
-   * Mock config factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Config\ConfigFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected ConfigFactoryInterface&MockObject $configFactory;
 
   /**
-   * Mock logger.
+   * The settings config mock.
    *
-   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Config\ImmutableConfig|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected ImmutableConfig&MockObject $settingsConfig;
+
+  /**
+   * The cache backend mock.
+   *
+   * @var \Drupal\Core\Cache\CacheBackendInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected CacheBackendInterface&MockObject $cache;
+
+  /**
+   * The content scanner mock.
+   *
+   * @var \Drupal\utilikit\Service\UtilikitContentScanner|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected UtilikitContentScanner&MockObject $contentScanner;
+
+  /**
+   * The logger mock.
+   *
+   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected LoggerInterface&MockObject $logger;
 
@@ -62,423 +69,147 @@ class UtilikitCssGeneratorTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->cssParser = $this->createMock(UtilikitCssParser::class);
-    $this->stateManager = $this->createMock(UtilikitStateManager::class);
     $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $this->settingsConfig = $this->createMock(ImmutableConfig::class);
+    $this->cache = $this->createMock(CacheBackendInterface::class);
+    $this->contentScanner = $this->createMock(UtilikitContentScanner::class);
     $this->logger = $this->createMock(LoggerInterface::class);
 
-    // Setup default config.
-    $config = $this->createMock(ImmutableConfig::class);
-    $config->expects($this->any())
-      ->method('get')
-      ->willReturnMap([
-        ['css_optimization', TRUE],
-        ['css_minify', TRUE],
-        ['css_comments', FALSE],
-        ['media_queries', []],
-        ['css_prefix', ''],
-      ]);
-
-    $this->configFactory->expects($this->any())
+    // UtilikitCssGenerator expects to read utilikit.settings for active breakpoints.
+    $this->configFactory
       ->method('get')
       ->with('utilikit.settings')
-      ->willReturn($config);
+      ->willReturn($this->settingsConfig);
+
+    $this->settingsConfig
+      ->method('get')
+      ->with('active_breakpoints')
+      ->willReturn([
+        'sm' => TRUE,
+        'md' => TRUE,
+        'lg' => TRUE,
+        'xl' => TRUE,
+        'xxl' => TRUE,
+      ]);
 
     $this->cssGenerator = new UtilikitCssGenerator(
-      $this->cssParser,
-      $this->stateManager,
       $this->configFactory,
-      $this->logger
+      $this->cache,
+      $this->contentScanner,
+      $this->logger,
     );
   }
 
   /**
-   * Tests generateCss with simple classes.
-   *
-   * @covers ::generateCss
+   * @covers ::generateCssFromClasses
    */
-  public function testGenerateCssSimple(): void {
+  public function testGenerateCssFromClassesFiltersInvalidAndDuplicateValues(): void {
     $classes = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-mg--10' => 'margin: 10px;',
+      'uk-m--10',
+      '',
+      null,
+      'not-utilikit',
+      'uk-m--10',
     ];
 
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($classes);
+    $this->contentScanner
+      ->method('isValidUtilityClass')
+      ->willReturnCallback(static function (string $class): bool {
+        return substr($class, 0, 3) === 'uk-';
+      });
 
-    $css = $this->cssGenerator->generateCss();
-
-    $this->assertStringContainsString('.uk-pd--20', $css);
-    $this->assertStringContainsString('padding: 20px;', $css);
-    $this->assertStringContainsString('.uk-mg--10', $css);
-    $this->assertStringContainsString('margin: 10px;', $css);
-  }
-
-  /**
-   * Tests generateCss with minification enabled.
-   *
-   * @covers ::generateCss
-   * @covers ::minifyCss
-   */
-  public function testGenerateCssMinified(): void {
-    $classes = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-mg--10' => 'margin: 10px;',
-    ];
-
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($classes);
-
-    $css = $this->cssGenerator->generateCss();
-
-    // Minified CSS should not contain extra spaces or newlines.
-    $this->assertStringNotContainsString('  ', $css);
-    $this->assertStringContainsString('.uk-pd--20{padding:20px}', $css);
-    $this->assertStringContainsString('.uk-mg--10{margin:10px}', $css);
-  }
-
-  /**
-   * Tests generateCss with comments enabled.
-   *
-   * @covers ::generateCss
-   */
-  public function testGenerateCssWithComments(): void {
-    // Setup config with comments enabled.
-    $config = $this->createMock(ImmutableConfig::class);
-    $config->expects($this->any())
+    $this->cache
       ->method('get')
-      ->willReturnMap([
-        ['css_optimization', TRUE],
-        ['css_minify', FALSE],
-        ['css_comments', TRUE],
-        ['media_queries', []],
-        ['css_prefix', ''],
-      ]);
+      ->willReturn(false);
 
-    $this->configFactory->expects($this->any())
-      ->method('get')
-      ->with('utilikit.settings')
-      ->willReturn($config);
-
-    $classes = [
-      '.uk-pd--20' => 'padding: 20px;',
-    ];
-
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($classes);
-
-    $css = $this->cssGenerator->generateCss();
-
-    $this->assertStringContainsString('/* Generated by UtiliKit', $css);
-    $this->assertStringContainsString('/* Class: uk-pd--20 */', $css);
-  }
-
-  /**
-   * Tests generateCss with media queries.
-   *
-   * @covers ::generateCss
-   * @covers ::applyMediaQueries
-   */
-  public function testGenerateCssWithMediaQueries(): void {
-    // Setup config with media queries.
-    $config = $this->createMock(ImmutableConfig::class);
-    $config->expects($this->any())
-      ->method('get')
-      ->willReturnMap([
-        ['css_optimization', TRUE],
-        ['css_minify', FALSE],
-        ['css_comments', FALSE],
-        ['media_queries', [
-          'sm' => '(min-width: 640px)',
-          'md' => '(min-width: 768px)',
-          'lg' => '(min-width: 1024px)',
-        ],
-        ],
-        ['css_prefix', ''],
-      ]);
-
-    $this->configFactory->expects($this->any())
-      ->method('get')
-      ->with('utilikit.settings')
-      ->willReturn($config);
-
-    $classes = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-pd-sm--20' => 'padding: 20px;',
-      '.uk-pd-md--20' => 'padding: 20px;',
-      '.uk-pd-lg--20' => 'padding: 20px;',
-    ];
-
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($classes);
-
-    $css = $this->cssGenerator->generateCss();
-
-    $this->assertStringContainsString('.uk-pd--20', $css);
-    $this->assertStringContainsString('@media (min-width: 640px)', $css);
-    $this->assertStringContainsString('@media (min-width: 768px)', $css);
-    $this->assertStringContainsString('@media (min-width: 1024px)', $css);
-  }
-
-  /**
-   * Tests generateCss with CSS prefix.
-   *
-   * @covers ::generateCss
-   */
-  public function testGenerateCssWithPrefix(): void {
-    // Setup config with CSS prefix.
-    $config = $this->createMock(ImmutableConfig::class);
-    $config->expects($this->any())
-      ->method('get')
-      ->willReturnMap([
-        ['css_optimization', TRUE],
-        ['css_minify', FALSE],
-        ['css_comments', FALSE],
-        ['media_queries', []],
-        ['css_prefix', '.utilikit-wrapper'],
-      ]);
-
-    $this->configFactory->expects($this->any())
-      ->method('get')
-      ->with('utilikit.settings')
-      ->willReturn($config);
-
-    $classes = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-mg--10' => 'margin: 10px;',
-    ];
-
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($classes);
-
-    $css = $this->cssGenerator->generateCss();
-
-    $this->assertStringContainsString('.utilikit-wrapper .uk-pd--20', $css);
-    $this->assertStringContainsString('.utilikit-wrapper .uk-mg--10', $css);
-  }
-
-  /**
-   * Tests generateForClasses method.
-   *
-   * @covers ::generateForClasses
-   */
-  public function testGenerateForClasses(): void {
-    $classes = ['uk-pd--20', 'uk-mg--10', 'uk-text--center'];
-
-    $this->cssParser->expects($this->exactly(3))
-      ->method('parseClass')
-      ->willReturnOnConsecutiveCalls(
-        'padding: 20px;',
-        'margin: 10px;',
-        'text-align: center;'
+    $this->cache
+      ->expects($this->once())
+      ->method('set')
+      ->with(
+        $this->isType('string'),
+        $this->isType('string'),
+        $this->anything(),
+        $this->callback(static function (array $tags): bool {
+          return in_array(UtilikitConstants::CACHE_TAG_CSS, $tags, true);
+        })
       );
 
-    $css = $this->cssGenerator->generateForClasses($classes);
-
-    $this->assertStringContainsString('.uk-pd--20', $css);
-    $this->assertStringContainsString('padding: 20px;', $css);
-    $this->assertStringContainsString('.uk-mg--10', $css);
-    $this->assertStringContainsString('margin: 10px;', $css);
-    $this->assertStringContainsString('.uk-text--center', $css);
-    $this->assertStringContainsString('text-align: center;', $css);
-  }
-
-  /**
-   * Tests generateForClasses with invalid classes.
-   *
-   * @covers ::generateForClasses
-   */
-  public function testGenerateForClassesWithInvalid(): void {
-    $classes = ['uk-pd--20', 'invalid-class'];
-
-    $this->cssParser->expects($this->exactly(2))
-      ->method('parseClass')
-      ->willReturnOnConsecutiveCalls(
-        'padding: 20px;',
-        NULL
-      );
-
-    $this->logger->expects($this->once())
-      ->method('warning')
-      ->with($this->stringContains('Failed to parse class'));
-
-    $css = $this->cssGenerator->generateForClasses($classes);
-
-    $this->assertStringContainsString('.uk-pd--20', $css);
-    $this->assertStringNotContainsString('invalid-class', $css);
-  }
-
-  /**
-   * Tests optimizeCss method.
-   *
-   * @covers ::optimizeCss
-   */
-  public function testOptimizeCss(): void {
-    $input = "
-      .uk-pd--20 {
-        padding: 20px;
-      }
-
-      .uk-mg--10 {
-        margin: 10px;
-      }
-
-      /* Comment */
-      .uk-text--center {
-        text-align: center;
-      }
-    ";
-
-    $optimized = $this->cssGenerator->optimizeCss($input);
-
-    // Should remove extra whitespace and comments.
-    $this->assertStringNotContainsString('/* Comment */', $optimized);
-    $this->assertStringNotContainsString("\n\n", $optimized);
-    $this->assertStringContainsString('.uk-pd--20', $optimized);
-    $this->assertStringContainsString('.uk-mg--10', $optimized);
-    $this->assertStringContainsString('.uk-text--center', $optimized);
-  }
-
-  /**
-   * Tests groupRelatedClasses method.
-   *
-   * @covers ::groupRelatedClasses
-   */
-  public function testGroupRelatedClasses(): void {
-    $classes = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-pd--10' => 'padding: 10px;',
-      '.uk-mg--20' => 'margin: 20px;',
-      '.uk-mg--10' => 'margin: 10px;',
-      '.uk-text--center' => 'text-align: center;',
-      '.uk-text--left' => 'text-align: left;',
-    ];
-
-    $grouped = $this->cssGenerator->groupRelatedClasses($classes);
-
-    $this->assertArrayHasKey('pd', $grouped);
-    $this->assertArrayHasKey('mg', $grouped);
-    $this->assertArrayHasKey('text', $grouped);
-    $this->assertCount(2, $grouped['pd']);
-    $this->assertCount(2, $grouped['mg']);
-    $this->assertCount(2, $grouped['text']);
-  }
-
-  /**
-   * Tests generateWithOptions method.
-   *
-   * @covers ::generateWithOptions
-   */
-  public function testGenerateWithOptions(): void {
-    $classes = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-mg--10' => 'margin: 10px;',
-    ];
-
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($classes);
-
-    $options = [
-      'minify' => FALSE,
-      'comments' => TRUE,
-      'optimize' => FALSE,
-      'prefix' => '.custom-wrapper',
-    ];
-
-    $css = $this->cssGenerator->generateWithOptions($options);
-
-    $this->assertStringContainsString('/* Generated by UtiliKit', $css);
-    $this->assertStringContainsString('.custom-wrapper .uk-pd--20', $css);
-    $this->assertStringContainsString('padding: 20px;', $css);
-    // Not minified.
-    $this->assertStringNotContainsString('{padding:20px}', $css);
-  }
-
-  /**
-   * Tests empty class handling.
-   *
-   * @covers ::generateCss
-   */
-  public function testGenerateCssEmpty(): void {
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn([]);
-
-    $css = $this->cssGenerator->generateCss();
+    $css = $this->cssGenerator->generateCssFromClasses($classes);
 
     $this->assertIsString($css);
-    $this->assertEmpty(trim($css));
+    $this->assertNotSame('', $css);
+    // Valid utility class should appear as a selector.
+    $this->assertStringContainsString('.uk-m--10', $css);
+    // Non-utilikit class should not become a selector.
+    $this->assertStringNotContainsString('not-utilikit', $css);
   }
 
   /**
-   * Tests error handling in generation.
-   *
-   * @covers ::generateCss
+   * @covers ::generateCssFromClasses
    */
-  public function testGenerateCssErrorHandling(): void {
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willThrowException(new \Exception('Database error'));
+  public function testGenerateCssFromClassesUsesCacheWhenAvailable(): void {
+    $classes = ['uk-m--10'];
+    sort($classes);
+    $cid = 'utilikit:css:' . md5(serialize($classes));
 
-    $this->logger->expects($this->once())
+    $cacheHit = (object) ['data' => '/* cached css */'];
+
+    $this->contentScanner
+      ->method('isValidUtilityClass')
+      ->willReturn(true);
+
+    $this->cache
+      ->expects($this->exactly(2))
+      ->method('get')
+      ->with($cid)
+      ->willReturnOnConsecutiveCalls(false, $cacheHit);
+
+    $this->cache
+      ->expects($this->once())
+      ->method('set')
+      ->with(
+        $cid,
+        $this->isType('string'),
+        $this->anything(),
+        $this->callback(static function (array $tags): bool {
+          return in_array(UtilikitConstants::CACHE_TAG_CSS, $tags, true);
+        })
+      );
+
+    $first = $this->cssGenerator->generateCssFromClasses($classes);
+    $this->assertIsString($first);
+    $this->assertNotSame('', $first);
+
+    $second = $this->cssGenerator->generateCssFromClasses($classes);
+    $this->assertSame('/* cached css */', $second);
+  }
+
+  /**
+   * @covers ::generateCssFromClasses
+   */
+  public function testGenerateCssFromClassesThrowsWhenClassCountExceedsLimit(): void {
+    $classes = [];
+    $limit = UtilikitConstants::MAX_CLASSES_WARNING_THRESHOLD + 1;
+
+    for ($i = 0; $i < $limit; $i++) {
+      $classes[] = 'uk-m--' . $i;
+    }
+
+    $this->contentScanner
+      ->method('isValidUtilityClass')
+      ->willReturn(true);
+
+    $this->logger
+      ->expects($this->once())
       ->method('error')
-      ->with($this->stringContains('Error generating CSS'));
+      ->with(
+        $this->stringContains('Class count exceeds hard limit'),
+        $this->arrayHasKey('@count')
+      );
 
-    $css = $this->cssGenerator->generateCss();
+    $this->expectException(\RuntimeException::class);
 
-    $this->assertIsString($css);
-    $this->assertEmpty($css);
-  }
-
-  /**
-   * Tests CSS validation.
-   *
-   * @covers ::validateCss
-   */
-  public function testValidateCss(): void {
-    // Valid CSS.
-    $validCss = '.uk-pd--20 { padding: 20px; } .uk-mg--10 { margin: 10px; }';
-    $this->assertTrue($this->cssGenerator->validateCss($validCss));
-
-    // Invalid CSS.
-    $invalidCss = '.uk-pd--20 { padding: 20px';
-    $this->assertFalse($this->cssGenerator->validateCss($invalidCss));
-
-    // Empty CSS.
-    $this->assertTrue($this->cssGenerator->validateCss(''));
-  }
-
-  /**
-   * Tests CSS statistics generation.
-   *
-   * @covers ::getStatistics
-   */
-  public function testGetStatistics(): void {
-    $classes = [
-      '.uk-pd--20' => 'padding: 20px;',
-      '.uk-pd--10' => 'padding: 10px;',
-      '.uk-mg--20' => 'margin: 20px;',
-      '.uk-text--center' => 'text-align: center;',
-    ];
-
-    $this->stateManager->expects($this->once())
-      ->method('getStoredClasses')
-      ->willReturn($classes);
-
-    $stats = $this->cssGenerator->getStatistics();
-
-    $this->assertArrayHasKey('total_classes', $stats);
-    $this->assertArrayHasKey('css_size', $stats);
-    $this->assertArrayHasKey('minified_size', $stats);
-    $this->assertArrayHasKey('compression_ratio', $stats);
-    $this->assertArrayHasKey('property_breakdown', $stats);
-    $this->assertEquals(4, $stats['total_classes']);
+    $this->cssGenerator->generateCssFromClasses($classes);
   }
 
 }

@@ -101,13 +101,15 @@ services:
   utilikit.service_provider:
     class: Drupal\utilikit\Service\UtilikitServiceProvider
     arguments:
-      - '@utilikit.css_generator'        # For CSS generation operations
-      - '@utilikit.file_manager'         # For static file operations
-      - '@utilikit.content_scanner'      # For utility class discovery
-      - '@utilikit.state_manager'        # For persistent data management
-      - '@utilikit.cache_manager'        # For cache operations
-      - '@logger.channel.utilikit'       # For logging operations and errors
-      - '@?utilikit.test_css_generator'  # Optional: Test CSS generator (if available)
+      - '@utilikit.css_generator'
+      - '@utilikit.file_manager'
+      - '@utilikit.content_scanner'
+      - '@utilikit.state_manager'
+      - '@utilikit.cache_manager'
+      - '@logger.channel.utilikit'
+      - '@config.factory'
+      - '@?utilikit.test_css_generator'
+
 
   # General utility service
   # Provides common utility functions and configuration access for
