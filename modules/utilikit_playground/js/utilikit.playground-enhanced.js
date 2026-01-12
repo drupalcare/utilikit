@@ -177,7 +177,7 @@
    */
   Drupal.behaviors.utilikitPlaygroundEnhanced = {
     attach: function(context, settings) {
-      once('utilikitPlaygroundEnhanced', '.utilikit-playground-wrapper', context).forEach(wrapper => {
+      once('utilikit-playground-enhanced', '.utilikit-playground-wrapper', context).forEach(wrapper => {
         // Initialize all enhancements
         initPresetExamples(wrapper);
         initClassBuilder(wrapper);

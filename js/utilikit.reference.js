@@ -66,7 +66,7 @@
       }
 
       // Initialize all reference page features with error handling
-      once('utilikitReference', '.utilikit-reference-page', context).forEach(function (element) {
+      once('utilikit-reference', '.utilikit-reference-page', context).forEach(function (element) {
         try {
           initializeCopyButtons(element);
           initializeInteractiveExample(element);

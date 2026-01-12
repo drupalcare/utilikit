@@ -101,7 +101,7 @@
      *   Drupal settings object containing UtiliKit configuration.
      */
     async attach(context, settings) {
-      once('utilikitTestRunner', '#utilikit-test-suite', context).forEach(async (container) => {
+      once('utilikit-test-runner', '#utilikit-test-suite', context).forEach(async (container) => {
         // Prefer `settings` (the behavior param) over the global.
         if (settings?.utilikit?.renderingMode === 'static') {
           const testRunner = new UtilikitTestRunner(container);

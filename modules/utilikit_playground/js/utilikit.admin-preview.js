@@ -49,7 +49,7 @@
         }
       }
 
-      once('utilikitPlayground', '#utilikit-preview-form', context).forEach(() => {
+      once('utilikit-playground-form', '#utilikit-preview-form', context).forEach(() => {
         const form = document.getElementById('utilikit-preview-form');
 
         /**

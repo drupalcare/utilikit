@@ -544,7 +544,7 @@
    */
   Drupal.behaviors.utilikitPlaygroundAutocomplete = {
     attach: function(context, settings) {
-      once('utilikitPlaygroundAutocomplete', '.utilikit-playground-wrapper', context).forEach(wrapper => {
+      once('utilikit-playground-autocomplete', '.utilikit-playground-wrapper', context).forEach(wrapper => {
         initAutocomplete(wrapper);
       });
     }

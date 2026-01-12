@@ -90,7 +90,7 @@
       }
 
       // Use once() API to ensure debug panel is created only once
-      once('utilikitDebugHelper', 'body', context).forEach(() => {
+      once('utilikit-debug-helper', 'body', context).forEach(() => {
         // Create comprehensive debug panel with styling and controls
         const debugPanel = document.createElement('div');
         debugPanel.id = 'utilikit-debug-panel';
