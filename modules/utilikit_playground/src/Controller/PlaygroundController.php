@@ -91,10 +91,11 @@ class PlaygroundController extends ControllerBase {
         ],
       ],
       '#cache' => [
-      // Cache for 1 hour during development.
-        'max-age' => 3600,
-        'contexts' => ['url.path'],
-        'tags' => ['utilikit_playground', 'utilikit_settings'],
+        // Admin-only interactive page - use max-age 0 to prevent caching issues.
+        // Playground content is dynamic and permission-protected.
+        'max-age' => 0,
+        'contexts' => ['user.permissions', 'url.path'],
+        'tags' => ['utilikit_playground', 'config:utilikit.settings'],
       ],
     ];
   }

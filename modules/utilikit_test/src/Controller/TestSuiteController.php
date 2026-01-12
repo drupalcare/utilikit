@@ -123,10 +123,11 @@ class TestSuiteController extends ControllerBase {
       '#test_groups' => $groupedTests,
       '#statistics' => $statistics,
       '#cache' => [
-    // Cache for 1 hour during development.
-        'max-age' => 3600,
-        'contexts' => ['url.path'],
-        'tags' => ['utilikit_test_suite', 'utilikit_settings'],
+        // Admin-only test suite - use max-age 0 since tests are dynamically generated
+        // and should reflect current UtiliKit configuration state.
+        'max-age' => 0,
+        'contexts' => ['user.permissions', 'url.path'],
+        'tags' => ['utilikit_test_suite', 'config:utilikit.settings'],
       ],
     ];
   }

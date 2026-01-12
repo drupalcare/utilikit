@@ -209,6 +209,19 @@ utilikit.debug:
 # - Accessibility features integrated throughout user interface libraries
 
 # =============================================================================
+# STATIC MODE GENERATED CSS LIBRARY
+# =============================================================================
+
+# Dynamic CSS file for static rendering mode
+# File path is replaced dynamically via hook_library_info_alter()
+# Weight 999 ensures utility classes load LAST, overriding any other styles
+utilikit.static.css:
+  css:
+    theme:
+      # Placeholder - actual file added via hook_library_info_alter()
+      css/utilikit-static-placeholder.css: { weight: 999 }
+
+# =============================================================================
 # CUSTOM LIBRARY FOR SETTINGTS FORM
 # =============================================================================
 utilikit-settings:

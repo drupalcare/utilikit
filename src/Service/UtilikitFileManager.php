@@ -291,9 +291,9 @@ class UtilikitFileManager {
   /**
    * Gets the URL for the static CSS file with cache busting parameters.
    *
-   * Generates a public URL for the static CSS file with cache-busting
-   * parameters based on CSS content hash and timestamp. Returns NULL
-   * if the file doesn't exist.
+   * Generates a relative URL for the static CSS file with a cache-busting
+   * query string based on the CSS content hash. Uses 6 characters to match
+   * Drupal's standard cache busting format.
    *
    * @return string|null
    *   The cache-busted URL to the static CSS file, or NULL if file doesn't
@@ -303,17 +303,17 @@ class UtilikitFileManager {
     $css_file_uri = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
     $css_real_path = $this->fileSystem->realpath($css_file_uri);
 
-    if ($css_real_path && file_exists($css_real_path)) {
-      $static_css = $this->stateManager->getGeneratedCss();
-      $css_hash = substr(md5($static_css), 0, 8);
-
-      $timestamp = $this->stateManager->getCssTimestamp();
-
-      $base_url = $this->fileUrlGenerator->generateAbsoluteString($css_file_uri);
-      return $base_url . '?v=' . $css_hash . '&t=' . $timestamp;
+    if (!$css_real_path || !file_exists($css_real_path)) {
+      return NULL;
     }
 
-    return NULL;
+    // Read file content for hash (more reliable than state which may be stale).
+    $css_content = file_get_contents($css_real_path);
+    // Use 6 chars to match Drupal's cache busting format.
+    $css_hash = substr(md5($css_content), 0, 6);
+
+    // Use generateString() for relative URL (not generateAbsoluteString).
+    return $this->fileUrlGenerator->generateString($css_file_uri) . '?' . $css_hash;
   }
 
 }

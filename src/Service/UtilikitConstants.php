@@ -111,6 +111,14 @@ class UtilikitConstants {
    */
   public const CACHE_TAG_LIBRARY_INFO = 'library_info';
 
+  /**
+   * Cache tag prefix for theme-based cache invalidation.
+   *
+   * Used to invalidate caches when the active theme changes, as generated
+   * CSS may depend on theme-specific settings or configurations.
+   */
+  public const CACHE_TAG_THEME = 'utilikit:theme';
+
   // ======================================================================= */
   // RESPONSIVE BREAKPOINTS
   // ======================================================================= */

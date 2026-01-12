@@ -221,6 +221,7 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
       UtilikitConstants::CACHE_TAG_STATIC_MODE,
       UtilikitConstants::CACHE_TAG_HEAD_MODE,
       UtilikitConstants::CACHE_TAG_RENDERED,
+      UtilikitConstants::CACHE_TAG_THEME,
     ];
 
     $allTags = array_merge($defaultTags, $tags);

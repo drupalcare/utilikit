@@ -167,24 +167,16 @@ function utilikit_page_attachments(array &$attachments): void {
   ];
 
   if ($rendering_mode === 'static') {
-    $css_url = \Drupal::service('utilikit.file_manager')->getStaticCssUrl();
+    // Ensure the static CSS file exists.
+    $fileManager = \Drupal::service('utilikit.file_manager');
+    $fileManager->ensureStaticCssFile();
 
+    // Attach the static mode JS library.
     $attachments['#attached']['library'][] = 'utilikit/utilikit.static';
 
-    $attachments['#attached']['html_head'][] = [
-      [
-        '#type' => 'html_tag',
-        '#tag' => 'link',
-        '#attributes' => [
-          'href' => $css_url,
-          'rel' => 'stylesheet',
-          'id' => 'utilikit-static-css',
-          'media' => 'all',
-        ],
-        '#weight' => -100,
-      ],
-      'utilikit_static_css',
-    ];
+    // Attach the generated CSS via library (weight 999 ensures it loads last).
+    // The actual file URL is injected via hook_library_info_alter().
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.static.css';
   }
   elseif ($rendering_mode === 'head') {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.static';
@@ -221,11 +213,22 @@ function utilikit_page_attachments(array &$attachments): void {
     $attachments['#attached']['drupalSettings']['utilikit']['cspNonce'] = $nonce;
   }
 
+  // Add cache metadata based on rendering mode.
   $attachments['#cache']['tags'][] = UtilikitConstants::CACHE_TAG_CONFIG;
   $attachments['#cache']['tags'][] = UtilikitConstants::CACHE_TAG_CSS;
   $attachments['#cache']['contexts'][] = 'user.permissions';
   $attachments['#cache']['contexts'][] = 'route';
   $attachments['#cache']['tags'][] = 'utilikit:mode:' . $rendering_mode;
+
+  // Inline mode: must not leak into page cache since output varies dynamically.
+  // Set max-age to 0 to prevent caching of user-specific/dynamic content.
+  if ($rendering_mode === 'inline') {
+    $attachments['#cache']['max-age'] = 0;
+  }
+  else {
+    // Static/head mode: add theme cache tag since generated CSS may depend on theme.
+    $attachments['#cache']['tags'][] = UtilikitConstants::CACHE_TAG_THEME;
+  }
 }
 
 /**
@@ -449,4 +452,87 @@ function utilikit_should_scan_entity(EntityInterface $entity) {
   \Drupal::moduleHandler()->alter('utilikit_cleanup_exclude_entity', $exclude, $entity);
 
   return !$exclude;
+}
+
+/**
+ * Implements hook_library_info_alter().
+ *
+ * Replaces the placeholder CSS file in the static-css library with the
+ * actual generated CSS file URL. This enables dynamic CSS file attachment
+ * while maintaining proper Drupal library integration and cache handling.
+ */
+function utilikit_library_info_alter(array &$libraries, string $extension): void {
+  if ($extension !== 'utilikit') {
+    return;
+  }
+
+  // Only alter for static mode.
+  $config = \Drupal::config('utilikit.settings');
+  $rendering_mode = $config->get('rendering_mode') ?? 'inline';
+
+  if ($rendering_mode !== 'static') {
+    return;
+  }
+
+  // Get the generated CSS file URL.
+  $fileManager = \Drupal::service('utilikit.file_manager');
+  $css_url = $fileManager->getStaticCssUrl();
+
+  if (!$css_url) {
+    return;
+  }
+
+  // Replace placeholder with actual generated file.
+  if (isset($libraries['utilikit.static.css']['css']['theme'])) {
+    unset($libraries['utilikit.static.css']['css']['theme']['css/utilikit-static-placeholder.css']);
+    $libraries['utilikit.static.css']['css']['theme'][$css_url] = [
+      'weight' => 999,
+      'preprocess' => TRUE,
+    ];
+  }
+}
+
+/**
+ * Implements hook_css_alter().
+ *
+ * Ensures the UtiliKit static CSS file has proper weight and group settings
+ * so it loads last and overrides any other styles on the page.
+ */
+function utilikit_css_alter(array &$css): void {
+  // Only alter for static mode.
+  $config = \Drupal::config('utilikit.settings');
+  $rendering_mode = $config->get('rendering_mode') ?? 'inline';
+
+  if ($rendering_mode !== 'static') {
+    return;
+  }
+
+  // Find and update UtiliKit static CSS entry.
+  foreach ($css as $key => $item) {
+    if (isset($item['data']) && str_contains($item['data'], 'utilikit') && str_contains($item['data'], 'generated.css')) {
+      $css[$key]['group'] = CSS_AGGREGATE_THEME;
+      $css[$key]['weight'] = 999;
+      break;
+    }
+  }
+}
+
+/**
+ * Implements hook_cache_flush().
+ *
+ * Regenerates the static CSS file during cache rebuilds to ensure
+ * the CSS is always current after cache operations.
+ */
+function utilikit_cache_flush(): void {
+  $config = \Drupal::config('utilikit.settings');
+  $rendering_mode = $config->get('rendering_mode') ?? 'inline';
+
+  // Only regenerate for static and head modes.
+  if (!in_array($rendering_mode, ['static', 'head'], TRUE)) {
+    return;
+  }
+
+  if (\Drupal::hasService('utilikit.service_provider')) {
+    \Drupal::service('utilikit.service_provider')->regenerateStaticCss();
+  }
 }

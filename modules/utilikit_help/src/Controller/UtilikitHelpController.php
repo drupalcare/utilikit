@@ -93,10 +93,11 @@ class UtilikitHelpController extends ControllerBase {
         ],
       ],
       '#cache' => [
-        // Cache for 1 hour.
+        // Static documentation can be cached, but include user.permissions context
+        // since page access is permission-protected.
         'max-age' => 3600,
-        'contexts' => ['url.path'],
-        'tags' => ['utilikit_help', 'utilikit_settings'],
+        'contexts' => ['user.permissions', 'url.path'],
+        'tags' => ['utilikit_help', 'config:utilikit.settings'],
       ],
     ];
   }

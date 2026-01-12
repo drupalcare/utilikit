@@ -119,6 +119,10 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
         $result = $this->serviceProvider->updateCssAndFile($validClasses);
 
         if ($result) {
+          // Explicitly invalidate CSS caches after successful queue processing
+          // to ensure pages reflect the newly generated CSS.
+          $this->serviceProvider->getCacheManager()->clearCssCaches();
+
           $this->logger->info('Processed queued CSS update with @count new classes', [
             '@count' => count($newClasses),
           ]);

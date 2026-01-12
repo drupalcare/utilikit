@@ -94,6 +94,13 @@ class ExamplesController extends ControllerBase {
   public function render(): array {
     return [
       '#theme' => 'utilikit_examples',
+      '#cache' => [
+        // Admin-only examples page - use max-age 0 to prevent caching issues.
+        // Content is permission-protected and may contain interactive elements.
+        'max-age' => 0,
+        'contexts' => ['user.permissions', 'url.path'],
+        'tags' => ['utilikit_examples', 'config:utilikit.settings'],
+      ],
     ];
   }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\utilikit\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\utilikit\Service\UtilikitRules;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -124,6 +125,14 @@ class UtilikitReferenceController extends ControllerBase {
         '#attributes' => ['class' => ['utilikit-admin-reference']],
       ];
     }
+
+    // Add cache metadata for admin-facing reference page.
+    // Use max-age 0 since this is admin-only, dynamic, and non-performance-critical.
+    $build['#cache'] = [
+      'contexts' => ['user.permissions'],
+      'tags' => [UtilikitConstants::CACHE_TAG_CONFIG],
+      'max-age' => 0,
+    ];
 
     return $build;
   }
