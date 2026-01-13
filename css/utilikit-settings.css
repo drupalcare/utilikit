@@ -53,6 +53,12 @@ form.utilikit-settings-form .form-wrapper .form-checkboxes {
     gap: 16px 32px;
   }
 
+  #edit-scope > .details-wrapper {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px 32px;
+  }
+
+  #edit-scope > .details-wrapper > :last-child,
   #edit-developer > .details-wrapper #edit-static-css-info,
   #edit-triggers > .details-wrapper > *:first-child,
   #edit-performance > .details-wrapper > *:first-child {
