@@ -940,12 +940,13 @@ class UtilikitSettingsForm extends ConfigFormBase {
     }
 
     // Reset ALL configuration to defaults.
-    $config = $this->config('utilikit.settings');
+    $config = $this->configFactory()->getEditable('utilikit.settings');
     // Delete entire config.
     $config->delete();
 
     // Re-create config with essential settings enabled.
-    $this->config('utilikit.settings')
+    // Use configFactory()->getEditable() to ensure we get a fresh object.
+    $this->configFactory()->getEditable('utilikit.settings')
       ->set('rendering_mode', 'inline')
       ->set('scope_global', TRUE)
       ->set('disable_admin', TRUE)
