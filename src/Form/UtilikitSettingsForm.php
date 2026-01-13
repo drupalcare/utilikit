@@ -944,6 +944,14 @@ class UtilikitSettingsForm extends ConfigFormBase {
     // Delete entire config.
     $config->delete();
 
+    // Re-create config with essential settings enabled.
+    $this->config('utilikit.settings')
+      ->set('rendering_mode', 'inline')
+      ->set('scope_global', TRUE)
+      ->set('disable_admin', TRUE)
+      ->set('enable_transitions', TRUE)
+      ->save();
+
     // Clear all relevant Drupal caches.
     $this->serviceProvider->getCacheManager()->clearAllCaches();
 
