@@ -70,8 +70,10 @@ phpcs:
   before_script:
     - apt-get update && apt-get install -y git unzip
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-    - composer global require drupal/coder dealerdirect/phpcodesniffer-composer-installer --no-progress
+    - mkdir -p "$HOME/.composer"
+    - composer global require --no-progress drupal/coder:^8.3 dealerdirect/phpcodesniffer-composer-installer:^1.0
     - export PATH="$HOME/.composer/vendor/bin:$PATH"
+    - phpcs -i
   script:
     - phpcs --standard=Drupal,DrupalPractice --extensions=php,module,install,inc src/ modules/ || true
   allow_failure: true
