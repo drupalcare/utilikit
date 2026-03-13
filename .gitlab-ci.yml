@@ -12,6 +12,7 @@ variables:
   COMPOSER_ALLOW_SUPERUSER: "1"
   COMPOSER_NO_INTERACTION: "1"
   COMPOSER_MEMORY_LIMIT: "-1"
+  DRUPAL_DIR: "${CI_PROJECT_DIR}/drupal"
 
 stages:
   - build
@@ -29,20 +30,18 @@ build:
     - docker-php-ext-install gd pdo_sqlite zip
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
   script:
-    - composer create-project drupal/recommended-project:${DRUPAL_VERSION} /tmp/drupal --no-install --no-progress
-    - cd /tmp/drupal
-    - mkdir -p web/modules/contrib/utilikit
-    - rsync -a --exclude='.git' --exclude='vendor' $CI_PROJECT_DIR/ web/modules/contrib/utilikit/
-    - composer install --no-progress
-    - composer require --dev phpunit/phpunit:^11 --no-progress
+    - composer create-project drupal/recommended-project:${DRUPAL_VERSION} ${DRUPAL_DIR} --no-progress
+    - mkdir -p ${DRUPAL_DIR}/web/modules/contrib/utilikit
+    # Copy module files (excluding .git and the drupal build dir)
+    - find . -maxdepth 1 -not -name '.' -not -name '.git' -not -name 'drupal' -exec cp -r {} ${DRUPAL_DIR}/web/modules/contrib/utilikit/ \;
   artifacts:
     paths:
-      - /tmp/drupal/
+      - drupal/
     expire_in: 1 hour
   cache:
     key: composer-${CI_COMMIT_REF_SLUG}
     paths:
-      - /tmp/drupal/vendor/
+      - drupal/vendor/
 
 # ---------------------------------------------------------------------------
 # Lint: Drupal coding standards (advisory)
@@ -71,7 +70,6 @@ phpcs:
   before_script:
     - apt-get update && apt-get install -y sqlite3 libsqlite3-dev libpng-dev libzip-dev
     - docker-php-ext-install gd pdo_sqlite zip
-    - cd /tmp/drupal
 
 # ---------------------------------------------------------------------------
 # Unit tests (no database required)
@@ -79,7 +77,7 @@ phpcs:
 unit_tests:
   extends: .test_base
   script:
-    - cd /tmp/drupal
+    - cd ${DRUPAL_DIR}
     - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --testsuite unit --no-progress
 
 # ---------------------------------------------------------------------------
@@ -88,8 +86,7 @@ unit_tests:
 kernel_tests:
   extends: .test_base
   script:
-    - cd /tmp/drupal
-    - export SIMPLETEST_DB="$SIMPLETEST_DB"
+    - cd ${DRUPAL_DIR}
     - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --testsuite kernel --no-progress
 
 # ---------------------------------------------------------------------------
@@ -98,9 +95,7 @@ kernel_tests:
 functional_tests:
   extends: .test_base
   script:
-    - cd /tmp/drupal
-    - export SIMPLETEST_DB="$SIMPLETEST_DB"
-    - export SIMPLETEST_BASE_URL="$SIMPLETEST_BASE_URL"
+    - cd ${DRUPAL_DIR}
     - mkdir -p web/sites/simpletest/browser_output
     - php -S localhost:8888 -t web &>/dev/null &
     - sleep 2
