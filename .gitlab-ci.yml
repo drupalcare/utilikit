@@ -30,18 +30,35 @@ build:
     - docker-php-ext-install gd pdo_sqlite zip
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
   script:
-    - composer create-project drupal/recommended-project:${DRUPAL_VERSION} ${DRUPAL_DIR} --no-progress
-    - mkdir -p ${DRUPAL_DIR}/web/modules/contrib/utilikit
-    # Copy module files (excluding .git and the drupal build dir)
-    - find . -maxdepth 1 -not -name '.' -not -name '.git' -not -name 'drupal' -exec cp -r {} ${DRUPAL_DIR}/web/modules/contrib/utilikit/ \;
+    # Create Drupal project with dev dependencies (includes PHPUnit)
+    - composer create-project drupal/recommended-project:${DRUPAL_VERSION} ${DRUPAL_DIR} --no-progress --dev
+    - cd ${DRUPAL_DIR}
+    # Install PHPUnit and testing dependencies
+    - composer require --dev phpunit/phpunit --no-progress --with-all-dependencies
+    # Copy the module into the Drupal project
+    - mkdir -p web/modules/contrib/utilikit
+    - cp -r ${CI_PROJECT_DIR}/src web/modules/contrib/utilikit/
+    - cp -r ${CI_PROJECT_DIR}/tests web/modules/contrib/utilikit/
+    - cp -r ${CI_PROJECT_DIR}/modules web/modules/contrib/utilikit/
+    - cp -r ${CI_PROJECT_DIR}/config web/modules/contrib/utilikit/
+    - cp -r ${CI_PROJECT_DIR}/js web/modules/contrib/utilikit/
+    - cp -r ${CI_PROJECT_DIR}/css web/modules/contrib/utilikit/
+    - cp -r ${CI_PROJECT_DIR}/templates web/modules/contrib/utilikit/ 2>/dev/null || true
+    - cp ${CI_PROJECT_DIR}/utilikit.info.yml web/modules/contrib/utilikit/
+    - cp ${CI_PROJECT_DIR}/utilikit.module web/modules/contrib/utilikit/
+    - cp ${CI_PROJECT_DIR}/utilikit.services.yml web/modules/contrib/utilikit/
+    - cp ${CI_PROJECT_DIR}/utilikit.routing.yml web/modules/contrib/utilikit/
+    - cp ${CI_PROJECT_DIR}/utilikit.permissions.yml web/modules/contrib/utilikit/
+    - cp ${CI_PROJECT_DIR}/utilikit.libraries.yml web/modules/contrib/utilikit/
+    - cp ${CI_PROJECT_DIR}/utilikit.install web/modules/contrib/utilikit/ 2>/dev/null || true
+    - cp ${CI_PROJECT_DIR}/utilikit.links.menu.yml web/modules/contrib/utilikit/ 2>/dev/null || true
+    - cp ${CI_PROJECT_DIR}/phpunit.xml web/modules/contrib/utilikit/
+    # Verify phpunit exists
+    - ./vendor/bin/phpunit --version
   artifacts:
     paths:
       - drupal/
     expire_in: 1 hour
-  cache:
-    key: composer-${CI_COMMIT_REF_SLUG}
-    paths:
-      - drupal/vendor/
 
 # ---------------------------------------------------------------------------
 # Lint: Drupal coding standards (advisory)
@@ -65,7 +82,7 @@ phpcs:
 .test_base:
   stage: test
   image: php:8.3-cli
-  dependencies:
+  needs:
     - build
   before_script:
     - apt-get update && apt-get install -y sqlite3 libsqlite3-dev libpng-dev libzip-dev
