@@ -33,8 +33,8 @@ build:
     # Create Drupal project with dev dependencies (includes PHPUnit)
     - composer create-project drupal/recommended-project:${DRUPAL_VERSION} ${DRUPAL_DIR} --no-progress --dev
     - cd ${DRUPAL_DIR}
-    # Install PHPUnit and testing dependencies
-    - composer require --dev phpunit/phpunit --no-progress --with-all-dependencies
+    # Install Drupal testing dependencies (includes PHPUnit, Behat/Mink, etc.)
+    - composer require --dev drupal/core-dev --no-progress --with-all-dependencies
     # Copy the module into the Drupal project
     - mkdir -p web/modules/contrib/utilikit
     - cp -r ${CI_PROJECT_DIR}/src web/modules/contrib/utilikit/
