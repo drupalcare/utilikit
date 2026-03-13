@@ -95,7 +95,7 @@ unit_tests:
   extends: .test_base
   script:
     - cd ${DRUPAL_DIR}
-    - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --testsuite unit --no-progress
+    - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --bootstrap web/core/tests/bootstrap.php --testsuite unit --no-progress
 
 # ---------------------------------------------------------------------------
 # Kernel tests (SQLite database)
@@ -104,7 +104,7 @@ kernel_tests:
   extends: .test_base
   script:
     - cd ${DRUPAL_DIR}
-    - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --testsuite kernel --no-progress
+    - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --bootstrap web/core/tests/bootstrap.php --testsuite kernel --no-progress
 
 # ---------------------------------------------------------------------------
 # Functional tests (SQLite + web server)
@@ -116,5 +116,5 @@ functional_tests:
     - mkdir -p web/sites/simpletest/browser_output
     - php -S localhost:8888 -t web &>/dev/null &
     - sleep 2
-    - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --testsuite functional --no-progress
+    - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --bootstrap web/core/tests/bootstrap.php --testsuite functional --no-progress
   allow_failure: true
