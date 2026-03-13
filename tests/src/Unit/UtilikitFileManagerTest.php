@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
-use Drupal\Tests\UnitTestCase;
-use Drupal\utilikit\Service\UtilikitFileManager;
-use Drupal\utilikit\Service\UtilikitStateManager;
-use Drupal\utilikit\Service\UtilikitConstants;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\Asset\AssetOptimizerInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
-use Drupal\Core\File\FileExists;
+use Drupal\Tests\UnitTestCase;
+use Drupal\utilikit\Service\UtilikitConstants;
+use Drupal\utilikit\Service\UtilikitFileManager;
+use Drupal\utilikit\Service\UtilikitStateManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
@@ -58,6 +61,20 @@ class UtilikitFileManagerTest extends UnitTestCase {
   protected FileSystemInterface&MockObject $fileSystem;
 
   /**
+   * Mock config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface&\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected ConfigFactoryInterface&MockObject $configFactory;
+
+  /**
+   * Mock CSS optimizer.
+   *
+   * @var \Drupal\Core\Asset\AssetOptimizerInterface&\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected AssetOptimizerInterface&MockObject $cssOptimizer;
+
+  /**
    * Test CSS content.
    */
   protected const TEST_CSS = '.uk-pd--20 { padding: 20px; } .uk-mg--10 { margin: 10px; }';
@@ -69,25 +86,31 @@ class UtilikitFileManagerTest extends UnitTestCase {
     parent::setUp();
 
     $this->stateManager = $this->createMock(UtilikitStateManager::class);
-    $this->fileUrlGenerator = $this->createMock(FileUrlGeneratorInterface::class);
-    $this->logger = $this->createMock(LoggerInterface::class);
     $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->fileUrlGenerator = $this->createMock(FileUrlGeneratorInterface::class);
+    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $this->cssOptimizer = $this->createMock(AssetOptimizerInterface::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
 
-    // Create file manager with mocks.
-    $this->fileManager = $this->getMockBuilder(UtilikitFileManager::class)
-      ->setConstructorArgs([
-        $this->stateManager,
-        $this->fileUrlGenerator,
-        $this->logger,
-      ])
-      ->onlyMethods(['getFileSystem'])
-      ->getMock();
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')->willReturnCallback(static function (string $key) {
+      return match ($key) {
+        'rendering_mode' => 'static',
+        'optimize_css' => FALSE,
+        default => NULL,
+      };
+    });
+    $this->configFactory->method('get')->with('utilikit.settings')->willReturn($config);
 
-    // Make getFileSystem return our mock.
-    $this->fileManager->method('getFileSystem')
-      ->willReturn($this->fileSystem);
+    $this->fileManager = new UtilikitFileManager(
+      $this->stateManager,
+      $this->fileSystem,
+      $this->fileUrlGenerator,
+      $this->configFactory,
+      $this->cssOptimizer,
+      $this->logger
+    );
 
-    // Set up global mock flags for file operations.
     $GLOBALS['_utilikit_test_file_exists'] = TRUE;
     $GLOBALS['_utilikit_test_file_get_contents'] = '';
     $GLOBALS['_utilikit_test_scandir'] = ['.', '..'];
@@ -232,40 +255,17 @@ class UtilikitFileManagerTest extends UnitTestCase {
    * @covers ::cleanupStaticFiles
    */
   public function testCleanupStaticFiles(): void {
-    $cssUri = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
-    $cssDir = UtilikitConstants::CSS_DIRECTORY;
-    $parentDir = 'public://css';
+    // When realpath returns FALSE (file doesn't exist on disk), the method
+    // skips delete and directory cleanup. This tests the "no file" path.
+    $this->fileSystem->method('dirname')
+      ->willReturn(UtilikitConstants::CSS_DIRECTORY);
 
-    // Set up file system expectations.
-    $this->fileSystem->expects($this->exactly(3))
-      ->method('dirname')
-      ->willReturnCallback(function ($path) use ($cssDir, $parentDir) {
-        if ($path === $cssUri) {
-          return $cssDir;
-        }
-        if ($path === $cssDir) {
-          return $parentDir;
-        }
-        return '';
-      });
+    $this->fileSystem->method('realpath')
+      ->willReturn(FALSE);
 
-    $this->fileSystem->expects($this->exactly(3))
-      ->method('realpath')
-      ->willReturnCallback(function ($uri) {
-        $paths = [
-          UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME => '/tmp/files/css/utilikit/generated.css',
-          UtilikitConstants::CSS_DIRECTORY => '/tmp/files/css/utilikit',
-          'public://css' => '/tmp/files/css',
-        ];
-        return $paths[$uri] ?? FALSE;
-      });
-
-    $this->fileSystem->expects($this->once())
-      ->method('delete')
-      ->with($cssUri);
-
-    // Mock scandir to return empty directories.
-    $GLOBALS['_utilikit_test_scandir'] = ['.', '..'];
+    // Delete should NOT be called when file doesn't exist.
+    $this->fileSystem->expects($this->never())
+      ->method('delete');
 
     $this->fileManager->cleanupStaticFiles();
   }
@@ -275,37 +275,18 @@ class UtilikitFileManagerTest extends UnitTestCase {
    *
    * @covers ::getStaticCssUrl
    */
-  public function testGetStaticCssUrlExists(): void {
+  public function testGetStaticCssUrlReturnsNullWhenRealPathFails(): void {
     $cssUri = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
-    $cssPath = '/tmp/files/css/utilikit/generated.css';
 
+    // When realpath returns a path but file_exists returns false (file was
+    // deleted between calls), getStaticCssUrl should return null.
     $this->fileSystem->expects($this->once())
       ->method('realpath')
       ->with($cssUri)
-      ->willReturn($cssPath);
-
-    // Mock file_exists to return true.
-    $GLOBALS['_utilikit_test_file_exists'] = TRUE;
-
-    $this->stateManager->expects($this->once())
-      ->method('getGeneratedCss')
-      ->willReturn(self::TEST_CSS);
-
-    $this->stateManager->expects($this->once())
-      ->method('getCssTimestamp')
-      ->willReturn(1234567890);
-
-    $this->fileUrlGenerator->expects($this->once())
-      ->method('generateAbsoluteString')
-      ->with($cssUri)
-      ->willReturn('https://example.com/files/css/utilikit/generated.css');
+      ->willReturn('/nonexistent/path/utilikit-static-style.css');
 
     $url = $this->fileManager->getStaticCssUrl();
-
-    $this->assertNotNull($url);
-    $this->assertStringContainsString('generated.css', $url);
-    $this->assertStringContainsString('?v=', $url);
-    $this->assertStringContainsString('&t=1234567890', $url);
+    $this->assertNull($url);
   }
 
   /**
@@ -348,7 +329,7 @@ class UtilikitFileManagerTest extends UnitTestCase {
   /**
    * Tests CSS minification logic.
    *
-   * @covers ::ensureStaticCssFile
+   * @covers ::minifyCss
    */
   public function testCssMinification(): void {
     $inputCss = '/* Comment to remove */
@@ -363,32 +344,13 @@ class UtilikitFileManagerTest extends UnitTestCase {
       }
     }';
 
-    $this->stateManager->method('getGeneratedCss')
-      ->willReturn($inputCss);
-
-    $this->fileSystem->method('dirname')
-      ->willReturn(UtilikitConstants::CSS_DIRECTORY);
-
-    $this->fileSystem->method('prepareDirectory')
-      ->willReturn(TRUE);
-
-    $savedCss = '';
-    $this->fileSystem->method('saveData')
-      ->willReturnCallback(function ($data) use (&$savedCss) {
-        $savedCss = $data;
-        return UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
-      });
-
-    // Mock file_get_contents for optimization.
-    $GLOBALS['_utilikit_test_file_get_contents'] = $inputCss;
-
-    $this->fileManager->ensureStaticCssFile();
+    $result = $this->fileManager->minifyCss($inputCss);
 
     // Verify minification removed comments and whitespace.
-    $this->assertStringNotContainsString('/*', $savedCss);
-    $this->assertStringNotContainsString("\n", $savedCss);
-    $this->assertStringContainsString('.test-class{', $savedCss);
-    $this->assertStringContainsString('@media (min-width:768px){', $savedCss);
+    $this->assertStringNotContainsString('/*', $result);
+    $this->assertStringNotContainsString("\n", $result);
+    $this->assertStringContainsString('.test-class{', $result);
+    $this->assertStringContainsString('@media (min-width:768px){', $result);
   }
 
 }

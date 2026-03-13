@@ -269,19 +269,20 @@ class TestGenerator {
     // Directional tests (sides)
     if ($hasSides) {
       foreach ($this->testValues['directions'] as $dir) {
-        $dirName = ['t' => 'Top', 'r' => 'Right', 'b' => 'Bottom', 'l' => 'Left'][$dir];
+        $dirName = ['t' => 'BlockStart', 'r' => 'InlineEnd', 'b' => 'BlockEnd', 'l' => 'InlineStart'][$dir];
+        $dirLabel = ['t' => 'Block-start', 'r' => 'Inline-end', 'b' => 'Block-end', 'l' => 'Inline-start'][$dir];
 
         // For border properties, we need the specific directional property.
         if ($prefix === 'bw') {
           $cssProp = 'border' . $dirName . 'Width';
         }
         elseif ($prefix === 'br') {
-          // Border radius has different property names.
+          // Border radius uses logical corner names.
           $radiusPropMap = [
-            't' => ['borderTopLeftRadius', 'borderTopRightRadius'],
-            'r' => ['borderTopRightRadius', 'borderBottomRightRadius'],
-            'b' => ['borderBottomLeftRadius', 'borderBottomRightRadius'],
-            'l' => ['borderTopLeftRadius', 'borderBottomLeftRadius'],
+            't' => ['borderStartStartRadius', 'borderStartEndRadius'],
+            'r' => ['borderStartEndRadius', 'borderEndEndRadius'],
+            'b' => ['borderEndEndRadius', 'borderEndStartRadius'],
+            'l' => ['borderStartStartRadius', 'borderEndStartRadius'],
           ];
           // For testing, we'll check just the first property.
           $cssProp = $radiusPropMap[$dir][0];
@@ -296,7 +297,7 @@ class TestGenerator {
           $cssProp,
           "16px",
           'directional',
-          "Directional $dirName"
+          "Directional $dirLabel"
         );
 
         // Auto directional.
@@ -306,7 +307,7 @@ class TestGenerator {
             $cssProp,
             "auto",
             'directional-auto',
-            "Directional $dirName auto"
+            "Directional $dirLabel auto"
           );
         }
       }
@@ -542,6 +543,26 @@ class TestGenerator {
       }
     }
 
+    // Side-specific keyword tests (e.g., uk-bs--b-dashed).
+    if (!empty($rule['sides'])) {
+      $sideMap = ['t' => 'Top', 'r' => 'Right', 'b' => 'Bottom', 'l' => 'Left'];
+      // Test first two keywords per side to keep test count manageable.
+      $sideKeywords = array_slice($keywords, 0, 2);
+      foreach ($sideKeywords as $keyword) {
+        foreach ($sideMap as $dir => $dirName) {
+          // e.g. borderStyle + Top → borderTopStyle.
+          $sidedProp = preg_replace('/^(border)(.+)$/', '$1' . $dirName . '$2', $cssProperty);
+          $tests[] = $this->createTestCase(
+            "uk-$prefix--$dir-$keyword",
+            $sidedProp,
+            $keyword,
+            'directional-keyword',
+            "Directional keyword $dirName: $keyword"
+          );
+        }
+      }
+    }
+
     return $tests;
   }
 
@@ -599,6 +620,37 @@ class TestGenerator {
       'color-short',
       "3-digit hex color"
     );
+
+    // Pseudo-state suffix tests (bg and tc only).
+    // In inline mode the suffix is stripped and the base color applies.
+    // In static/head mode the CSS selector gets :hover/:focus/:active.
+    if (in_array($prefix, ['bg', 'tc'], TRUE)) {
+      $stateLabels = ['h' => 'hover', 'f' => 'focus', 'a' => 'active'];
+      $testColor = '007bff';
+
+      foreach ($stateLabels as $suffix => $label) {
+        // Color with pseudo-state.
+        $tests[] = $this->createTestCase(
+          "uk-$prefix--$testColor-$suffix",
+          $cssProperty,
+          "#$testColor",
+          'color',
+          "Color with $label state"
+        );
+      }
+
+      // Alpha + pseudo-state combo.
+      $r = hexdec(substr($testColor, 0, 2));
+      $g = hexdec(substr($testColor, 2, 2));
+      $b = hexdec(substr($testColor, 4, 2));
+      $tests[] = $this->createTestCase(
+        "uk-$prefix--$testColor-50-h",
+        $cssProperty,
+        "rgba($r, $g, $b, 0.5)",
+        'color-alpha',
+        "Color with 50% alpha + hover state"
+      );
+    }
 
     return $tests;
   }

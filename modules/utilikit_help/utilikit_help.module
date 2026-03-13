@@ -40,46 +40,9 @@ function utilikit_help_theme($existing, $type, $theme, $path): array {
  * Implements hook_page_attachments().
  */
 function utilikit_help_page_attachments(array &$attachments): void {
-  $route_name = \Drupal::routeMatch()->getRouteName();
-
-  // Only attach on help pages.
-  if ($route_name !== 'utilikit_help.documentation') {
+  if (\Drupal::routeMatch()->getRouteName() !== 'utilikit_help.documentation') {
     return;
   }
 
-  // Get main module settings.
-  $config = \Drupal::config('utilikit.settings');
-
-  // Force inline mode for help examples.
-  $attachments['#attached']['drupalSettings']['utilikit'] = [
-    'devMode' => (bool) $config->get('dev_mode'),
-    'showPageErrors' => (bool) $config->get('show_page_errors'),
-    'enableTransitions' => (bool) $config->get('enable_transitions'),
-    'debounce' => (int) ($config->get('debounce') ?? 50),
-    'logLevel' => $config->get('log_level') ?? 'warnings',
-    'adminPreview' => (bool) $config->get('admin_preview'),
-    'activeBreakpoints' => ['sm', 'md', 'lg', 'xl', 'xxl'],
-    // ALWAYS inline for help examples.
-    'renderingMode' => 'inline',
-    'csrfToken' => \Drupal::csrfToken()->get('utilikit-update-css'),
-    'breakpoints' => [
-      'sm' => 576,
-      'md' => 768,
-      'lg' => 992,
-      'xl' => 1200,
-      'xxl' => 1400,
-    ],
-  ];
-
-  // Always attach inline engine for help page.
-  $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
-  $attachments['#attached']['library'][] = 'utilikit_help/help';
-
-  if ($config->get('show_page_errors')) {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine.message';
-  }
-
-  if ($config->get('dev_mode')) {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
-  }
+  _utilikit_attach_inline_settings($attachments, 'utilikit_help/help');
 }

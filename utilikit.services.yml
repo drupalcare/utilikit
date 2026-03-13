@@ -18,14 +18,9 @@ services:
   # CORE FOUNDATION SERVICES
   # =============================================================================
 
-  # Constants and configuration service
-  # Provides centralized access to module constants, defaults, and static values
-  utilikit.constants:
-    class: Drupal\utilikit\Service\UtilikitConstants
-
   # CSS rules service
-  # Defines and manages utility class patterns, CSS property mappings,
-  # responsive breakpoints, and validation rules for utility class generation
+  # Defines utility class patterns, CSS property mappings, and validation rules.
+  # Injected into content_scanner for class validation.
   utilikit.rules:
     class: Drupal\utilikit\Service\UtilikitRules
 
@@ -46,6 +41,7 @@ services:
   utilikit.content_scanner:
     class: Drupal\utilikit\Service\UtilikitContentScanner
     arguments:
+      - '@config.factory'  # For module configuration
       - '@entity_type.manager'  # For entity loading and type management
       - '@logger.channel.utilikit'  # For logging scan operations and errors
       - '@utilikit.rules'  # For utility class validation
@@ -83,14 +79,15 @@ services:
   utilikit.cache_manager:
     class: Drupal\utilikit\Service\UtilikitCacheManager
     arguments:
-      - '@cache.render'  # For render cache invalidation
-      - '@cache_tags.invalidator'  # For targeted cache tag invalidation
-      - '@state'  # For cache-related state management
-      - '@theme.registry'  # For theme system cache clearing
+      - '@cache.render'
+      - '@cache_tags.invalidator'
+      - '@utilikit.state_manager'
+      - '@theme.registry'
       - '@asset.css.collection_optimizer'  # For CSS asset optimization
       - '@asset.js.collection_optimizer'  # For JS asset optimization
       - '@?cache.page'  # Optional: Page cache (if available)
       - '@?cache.dynamic_page_cache'  # Optional: Dynamic page cache (if available)
+      - '@logger.channel.utilikit'  # For logging cache operations
 
   # =============================================================================
   # MAIN ORCHESTRATION SERVICES
@@ -122,19 +119,6 @@ services:
   # USER INTERFACE CONTROLLERS
   # =============================================================================
 
-  # AJAX controller service
-  # Handles AJAX requests for real-time CSS updates, provides lock management
-  # for concurrent operations, and manages queue processing for deferred tasks
-  utilikit.ajax_controller:
-    class: Drupal\utilikit\Controller\UtilikitAjaxController
-    arguments:
-      - '@utilikit.service_provider'  # For main service coordination
-      - '@lock'                       # For concurrent operation protection
-      - '@queue'                      # For deferred task processing
-      - '@renderer'                   # For AJAX response rendering
-      - '@logger.channel.utilikit'    # For operation logging (ADD THIS LINE)
-      - '@datetime.time'
-
   # =============================================================================
   # LOGGING AND MONITORING
   # =============================================================================
@@ -157,9 +141,10 @@ services:
     class: Drupal\utilikit\Service\UtilikitTestCssGenerator
     arguments:
       - '@utilikit.css_generator'  # For CSS generation
-      - '@utilikit.file_manager'  # For file operations
+      - '@utilikit.file_manager'  # For file operations and minification
       - '@file_system'  # For direct file system access
       - '@file_url_generator'  # For URL generation
+      - '@config.factory'  # For reading optimize_css setting
       - '@?utilikit_test.test_generator'  # Optional: Test class generator (if test module enabled)
 
 # =============================================================================

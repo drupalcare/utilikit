@@ -38,7 +38,7 @@
 
 #utilikit-update-button:hover .utilikit-update-arrow {
   transform: rotate(90deg);
-  margin-right: 8px;
+  margin-inline-end: 8px;
 }
 
 #utilikit-update-button.utilikit-success:hover .utilikit-update-arrow {
@@ -118,7 +118,7 @@ body.toolbar-vertical.toolbar-tray-open #utilikit-update-button {
   border-radius: 50%;
   border-top-color: white;
   animation: spin 0.8s linear infinite;
-  margin-right: 5px;
+  margin-inline-end: 5px;
 }
 
 @keyframes spin {

@@ -71,6 +71,52 @@ function _utilikit_helper_render_readme(): string {
 }
 
 /**
+ * Builds the drupalSettings array for UtiliKit sub-module pages.
+ *
+ * Centralizes the common drupalSettings configuration that all sub-modules
+ * (help, examples, playground, test) need when forcing inline mode. This
+ * eliminates duplication of settings, breakpoints, and library attachment
+ * logic across sub-module .module files.
+ *
+ * @param array &$attachments
+ *   The page attachments array, passed by reference.
+ * @param string $submodule_library
+ *   The sub-module's own library to attach (e.g., 'utilikit_help/help').
+ */
+function _utilikit_attach_inline_settings(array &$attachments, string $submodule_library): void {
+  $config = \Drupal::config('utilikit.settings');
+
+  // Developer tools (devMode, adminPreview, showPageErrors, logLevel) are
+  // restricted to the admin user (uid 1) only.
+  $isAdmin = (int) \Drupal::currentUser()->id() === 1;
+
+  $attachments['#attached']['drupalSettings']['utilikit'] = [
+    'devMode' => $isAdmin && (bool) $config->get('dev_mode'),
+    'showPageErrors' => $isAdmin && (bool) $config->get('show_page_errors'),
+    'enableTransitions' => (bool) $config->get('enable_transitions'),
+    'debounce' => (int) ($config->get('debounce') ?? 50),
+    'logLevel' => $isAdmin ? ($config->get('log_level') ?? 'warnings') : 'off',
+    'adminPreview' => $isAdmin && (bool) $config->get('admin_preview'),
+    'activeBreakpoints' => array_keys(UtilikitConstants::DEFAULT_BREAKPOINTS),
+    'renderingMode' => 'inline',
+    'csrfToken' => \Drupal::csrfToken()->get('utilikit/update-css'),
+    'breakpoints' => UtilikitConstants::BREAKPOINT_VALUES,
+  ];
+
+  // Always attach inline engine for sub-module pages.
+  $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
+  $attachments['#attached']['library'][] = $submodule_library;
+
+  if ($isAdmin && $config->get('show_page_errors')) {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine.message';
+  }
+
+  if ($isAdmin && $config->get('dev_mode')) {
+    $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
+  }
+}
+
+/**
  * Implements hook_page_attachments().
  *
  * Attaches UtiliKit libraries, settings, and CSS to pages based on the
@@ -90,7 +136,7 @@ function utilikit_page_attachments(array &$attachments): void {
     return;
   }
 
-  $config = \Drupal::service('utilikit.service')->getSettings();
+  $config = \Drupal::config('utilikit.settings');
 
   $settings = [
     'scope_global' => (bool) $config->get('scope_global'),
@@ -142,7 +188,7 @@ function utilikit_page_attachments(array &$attachments): void {
             '#tag' => 'style',
             '#value' => $css,
             '#attributes' => ['id' => 'utilikit-head-mode'],
-            '#weight' => -100,
+            '#weight' => 900,
           ],
           'utilikit_head_css',
         ];
@@ -152,16 +198,20 @@ function utilikit_page_attachments(array &$attachments): void {
 
   $stateManager = \Drupal::service('utilikit.state_manager');
 
+  // Developer tools (devMode, adminPreview, showPageErrors, logLevel) are
+  // restricted to the admin user (uid 1) only.
+  $isAdmin = (int) \Drupal::currentUser()->id() === 1;
+
   $attachments['#attached']['drupalSettings']['utilikit'] = [
-    'devMode' => (bool) $config->get('dev_mode'),
-    'showPageErrors' => (bool) $config->get('show_page_errors'),
+    'devMode' => $isAdmin && (bool) $config->get('dev_mode'),
+    'showPageErrors' => $isAdmin && (bool) $config->get('show_page_errors'),
     'enableTransitions' => (bool) $config->get('enable_transitions'),
     'debounce' => (int) ($config->get('debounce') ?? 50),
-    'logLevel' => $config->get('log_level') ?? 'warnings',
-    'adminPreview' => (bool) $config->get('admin_preview'),
+    'logLevel' => $isAdmin ? ($config->get('log_level') ?? 'warnings') : 'off',
+    'adminPreview' => $isAdmin && (bool) $config->get('admin_preview'),
     'activeBreakpoints' => $activeBreakpoints,
     'renderingMode' => $rendering_mode,
-    'csrfToken' => \Drupal::csrfToken()->get('utilikit-update-css'),
+    'csrfToken' => \Drupal::csrfToken()->get('utilikit/update-css'),
     'cssTimestamp' => $stateManager->getCssTimestamp(),
     'breakpoints' => UtilikitConstants::BREAKPOINT_VALUES,
   ];
@@ -185,11 +235,11 @@ function utilikit_page_attachments(array &$attachments): void {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
   }
 
-  if ($config->get('show_page_errors')) {
+  if ($isAdmin && $config->get('show_page_errors')) {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.engine.message';
   }
 
-  if ($config->get('dev_mode')) {
+  if ($isAdmin && $config->get('dev_mode')) {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
   }
 
@@ -226,7 +276,7 @@ function utilikit_page_attachments(array &$attachments): void {
     $attachments['#cache']['max-age'] = 0;
   }
   else {
-    // Static/head mode: add theme cache tag since generated CSS may depend on theme.
+    // Static/head: theme tag so CSS varies by theme.
     $attachments['#cache']['tags'][] = UtilikitConstants::CACHE_TAG_THEME;
   }
 }
@@ -243,7 +293,7 @@ function utilikit_page_attachments(array &$attachments): void {
  * updates gracefully. If a lock cannot be acquired, the update is queued
  * for later processing to avoid blocking entity saves.
  */
-function utilikit_entity_presave($entity): void {
+function utilikit_entity_presave(EntityInterface $entity): void {
   $config = \Drupal::config('utilikit.settings');
   $entity_type = $entity->getEntityTypeId();
 
@@ -292,13 +342,13 @@ function utilikit_entity_presave($entity): void {
     }
 
     try {
-      utilikit_update_classes($classes);
+      utilikit_update_classes($classes, TRUE);
     } finally {
       $lock->release(UtilikitConstants::LOCK_CSS_UPDATE);
     }
   }
   else {
-    utilikit_update_classes($classes);
+    utilikit_update_classes($classes, TRUE);
   }
 }
 
@@ -439,7 +489,7 @@ function utilikit_utilikit_cleanup_entity_types_alter(&$entity_types) {
  * @return bool
  *   TRUE if the entity should be scanned, FALSE if it should be excluded.
  */
-function utilikit_should_scan_entity(EntityInterface $entity) {
+function utilikit_should_scan_entity(EntityInterface $entity): bool {
   if (str_starts_with($entity->getEntityTypeId(), 'utilikit_test')) {
     return FALSE;
   }
@@ -509,7 +559,7 @@ function utilikit_css_alter(array &$css): void {
 
   // Find and update UtiliKit static CSS entry.
   foreach ($css as $key => $item) {
-    if (isset($item['data']) && str_contains($item['data'], 'utilikit') && str_contains($item['data'], 'generated.css')) {
+    if (isset($item['data']) && str_contains($item['data'], 'utilikit') && str_contains($item['data'], 'utilikit-static-style.css')) {
       $css[$key]['group'] = CSS_AGGREGATE_THEME;
       $css[$key]['weight'] = 999;
       break;

@@ -46,53 +46,15 @@ function utilikit_playground_theme($existing, $type, $theme, $path): array {
 /**
  * Implements hook_page_attachments().
  *
- * Attaches UtiliKit libraries and configuration to playground pages.
- * Forces inline rendering mode for immediate visual feedback and
- * configures development-friendly settings for the playground
- * environment.
- * The page attachments array to modify. Passed by reference to allow
- * direct modification of libraries, settings, and other attachments.
+ * Forces inline rendering mode for playground pages for immediate
+ * visual feedback during utility class experimentation.
+ *
+ * @see _utilikit_attach_inline_settings()
  */
 function utilikit_playground_page_attachments(array &$attachments): void {
-  $route_name = \Drupal::routeMatch()->getRouteName();
-
-  // Only attach on playground pages.
-  if ($route_name !== 'utilikit_playground.page') {
+  if (\Drupal::routeMatch()->getRouteName() !== 'utilikit_playground.page') {
     return;
   }
 
-  // Get main module settings for dev mode, transitions, etc.
-  $config = \Drupal::config('utilikit.settings');
-
-  // Force inline mode for playground.
-  $attachments['#attached']['drupalSettings']['utilikit'] = [
-    'devMode' => (bool) $config->get('dev_mode'),
-    'showPageErrors' => (bool) $config->get('show_page_errors'),
-    'enableTransitions' => (bool) $config->get('enable_transitions'),
-    'debounce' => (int) ($config->get('debounce') ?? 50),
-    'logLevel' => $config->get('log_level') ?? 'warnings',
-    'adminPreview' => (bool) $config->get('admin_preview'),
-    'activeBreakpoints' => ['sm', 'md', 'lg', 'xl', 'xxl'],
-  // ALWAYS inline for playground.
-    'renderingMode' => 'inline',
-    'csrfToken' => \Drupal::csrfToken()->get('utilikit-update-css'),
-    'breakpoints' => [
-      'sm' => 576,
-      'md' => 768,
-      'lg' => 992,
-      'xl' => 1200,
-      'xxl' => 1400,
-    ],
-  ];
-
-  // Always attach inline engine.
-  $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
-
-  if ($config->get('show_page_errors')) {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine.message';
-  }
-
-  if ($config->get('dev_mode')) {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
-  }
+  _utilikit_attach_inline_settings($attachments, 'utilikit_playground/playground');
 }

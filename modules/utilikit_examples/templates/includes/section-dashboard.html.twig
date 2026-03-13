@@ -1,0 +1,97 @@
+<!-- ================================================================== -->
+<!-- SECTION 1: ADMIN DASHBOARD                                         -->
+<!-- Full responsive dashboard with sidebar, stats, activity feed       -->
+<!-- Demonstrates: grid, flexbox, responsive display, colors, spacing   -->
+<!-- ================================================================== -->
+<div class="utilikit uk-pd--32-20 uk-sm-pd--40-24 uk-bg--f8fafc">
+  <div class="utilikit uk-xw--900 uk-mg--auto uk-mg--b-24">
+    <p class="utilikit uk-fs--14 uk-fw--600 uk-tc--3b82f6 uk-ls--0d05em uk-mg--b-8">DASHBOARD</p>
+    <h2 class="utilikit uk-fs--24 uk-sm-fs--28 uk-md-fs--32 uk-fw--700 uk-tc--1f2937 uk-mg--b-8">Admin Dashboard</h2>
+    <p class="utilikit uk-fs--15 uk-tc--64748b uk-lh--1d6">Complete admin interface with sidebar navigation, stat cards, activity feed, and quick actions. Sidebar hides on mobile, stats reflow from 1 to 4 columns.</p>
+  </div>
+</div>
+
+<div class="utilikit uk-bg--f8fafc uk-lh--1d6">
+  <!-- Header -->
+  <header class="utilikit uk-bg--ffffff uk-pd--16 uk-bw--b-1 uk-bs--solid uk-bc--e5e7eb uk-dp--flex uk-jc--space-between uk-ai--center">
+    <h1 class="utilikit uk-fs--24 uk-fw--700 uk-tc--1f2937">Dashboard</h1>
+    <div class="utilikit uk-dp--flex uk-gp--16 uk-ai--center">
+      <span class="utilikit uk-fs--14 uk-tc--6b7280">Welcome, Admin</span>
+      <div class="utilikit uk-wd--40 uk-ht--40 uk-bg--3b82f6 uk-br--50pr"></div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="utilikit uk-dp--flex uk-ht--100pr">
+    <!-- Sidebar - Hidden on mobile, visible on desktop -->
+    <aside class="utilikit uk-dp--none uk-lg-dp--block uk-wd--250 uk-bg--1f2937 uk-pd--20">
+      <nav class="utilikit uk-dp--flex uk-fd--column uk-gp--8">
+        <div class="utilikit uk-pd--12 uk-bg--3b82f6 uk-tc--ffffff uk-br--6 uk-fw--500">Dashboard</div>
+        <div class="utilikit uk-pd--12 uk-tc--e5e7eb uk-br--6">Analytics</div>
+        <div class="utilikit uk-pd--12 uk-tc--e5e7eb uk-br--6">Users</div>
+        <div class="utilikit uk-pd--12 uk-tc--e5e7eb uk-br--6">Settings</div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="utilikit uk-fg--1 uk-pd--20 uk-lg-pd--32">
+      <!-- Stats Grid -->
+      <div class="utilikit uk-dp--grid uk-gc--1fr uk-lh--1d6 uk-sm-gc--1fr-1fr uk-lg-gc--repeat-4-1fr uk-gp--16 uk-mg--b-32">
+        <div class="utilikit uk-bg--ffffff uk-pd--20 uk-br--8 uk-bw--1 uk-bs--solid uk-bc--e5e7eb">
+          <div class="utilikit uk-fs--14 uk-tc--6b7280 uk-fw--500 uk-mg--b-4">Total Users</div>
+          <div class="utilikit uk-fs--32 uk-fw--700 uk-tc--1f2937">1,234</div>
+          <div class="utilikit uk-fs--12 uk-tc--10b981">+12% from last month</div>
+        </div>
+        <div class="utilikit uk-bg--ffffff uk-pd--20 uk-br--8 uk-bw--1 uk-bs--solid uk-bc--e5e7eb">
+          <div class="utilikit uk-fs--14 uk-tc--6b7280 uk-fw--500 uk-mg--b-4">Revenue</div>
+          <div class="utilikit uk-fs--32 uk-fw--700 uk-tc--1f2937">$45.2K</div>
+          <div class="utilikit uk-fs--12 uk-tc--10b981">+23% from last month</div>
+        </div>
+        <div class="utilikit uk-bg--ffffff uk-pd--20 uk-br--8 uk-bw--1 uk-bs--solid uk-bc--e5e7eb">
+          <div class="utilikit uk-fs--14 uk-tc--6b7280 uk-fw--500 uk-mg--b-4">Orders</div>
+          <div class="utilikit uk-fs--32 uk-fw--700 uk-tc--1f2937">89</div>
+          <div class="utilikit uk-fs--12 uk-tc--ef4444">-5% from last month</div>
+        </div>
+        <div class="utilikit uk-bg--ffffff uk-pd--20 uk-br--8 uk-bw--1 uk-bs--solid uk-bc--e5e7eb">
+          <div class="utilikit uk-fs--14 uk-tc--6b7280 uk-fw--500 uk-mg--b-4">Conversion</div>
+          <div class="utilikit uk-fs--32 uk-fw--700 uk-tc--1f2937">2.4%</div>
+          <div class="utilikit uk-fs--12 uk-tc--6b7280">No change</div>
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="utilikit uk-dp--grid uk-gc--1fr uk-lg-gc--2fr-1fr uk-gp--24">
+        <!-- Main Panel -->
+        <div class="utilikit uk-bg--ffffff uk-pd--24 uk-br--8 uk-bw--1 uk-bs--solid uk-bc--e5e7eb">
+          <h2 class="utilikit uk-fs--20 uk-fw--600 uk-mg--b-16">Recent Activity</h2>
+          <div class="utilikit uk-dp--flex uk-fd--column uk-gp--12">
+            <div class="utilikit uk-dp--flex uk-gp--12 uk-ai--center uk-pd--12 uk-bg--f9fafb uk-br--6">
+              <div class="utilikit uk-wd--8 uk-ht--8 uk-bg--10b981 uk-br--50pr"></div>
+              <span class="utilikit uk-fg--1 uk-fs--14">New user registration</span>
+              <span class="utilikit uk-fs--12 uk-tc--6b7280">5 min ago</span>
+            </div>
+            <div class="utilikit uk-dp--flex uk-gp--12 uk-ai--center uk-pd--12 uk-bg--f9fafb uk-br--6">
+              <div class="utilikit uk-wd--8 uk-ht--8 uk-bg--3b82f6 uk-br--50pr"></div>
+              <span class="utilikit uk-fg--1 uk-fs--14">Payment received</span>
+              <span class="utilikit uk-fs--12 uk-tc--6b7280">2 hours ago</span>
+            </div>
+            <div class="utilikit uk-dp--flex uk-gp--12 uk-ai--center uk-pd--12 uk-bg--f9fafb uk-br--6">
+              <div class="utilikit uk-wd--8 uk-ht--8 uk-bg--f59e0b uk-br--50pr"></div>
+              <span class="utilikit uk-fg--1 uk-fs--14">System update completed</span>
+              <span class="utilikit uk-fs--12 uk-tc--6b7280">Yesterday</span>
+            </div>
+          </div>
+        </div>
+        <!-- Side Panel -->
+        <div class="utilikit uk-bg--ffffff uk-pd--24 uk-br--8 uk-bw--1 uk-bs--solid uk-bc--e5e7eb">
+          <h2 class="utilikit uk-fs--20 uk-fw--600 uk-mg--b-16">Quick Actions</h2>
+          <div class="utilikit uk-dp--flex uk-fd--column uk-gp--8">
+            <button class="utilikit uk-pd--12 uk-bg--3b82f6 uk-tc--ffffff uk-br--6 uk-fw--500 uk-ta--center uk-bw--0">Add User</button>
+            <button class="utilikit uk-pd--12 uk-bg--10b981 uk-tc--ffffff uk-br--6 uk-fw--500 uk-ta--center uk-bw--0">Generate Report</button>
+            <button class="utilikit uk-pd--12 uk-bg--6b7280 uk-tc--ffffff uk-br--6 uk-fw--500 uk-ta--center uk-bw--0">View Logs</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

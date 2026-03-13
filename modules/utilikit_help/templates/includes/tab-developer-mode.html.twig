@@ -1,0 +1,126 @@
+        <div class="tab-content" id="developer-mode" role="tabpanel">
+        <h2>🛠️ Developer Mode: Your X-Ray Vision</h2>
+        <p class="intro-text">
+        Developer Mode is like putting on <strong>special glasses that let you see the Matrix</strong>! 🕶️
+        Suddenly, you can see exactly what UtiliKit is doing behind the scenes.
+        </p>
+
+        <div class="dev-features">
+        <div class="dev-feature">
+        <div class="feature-icon">🔍</div>
+        <h3>Visual Debugging</h3>
+        <p>Ever played "Where's Waldo?" This is like that, but for CSS! UtiliKit draws <strong>blue outlines</strong> around all your elements so you can see exactly what's being styled.</p>
+        <div class="visual-demo">
+        <div class="demo-element utilikit uk-pd--16 uk-bg--f0f8ff">
+        <span>I'm wearing a blue outline! 📦</span>
+        </div>
+        <p class="demo-caption">👆 This element would have a blue dashed outline in dev mode</p>
+        </div>
+        </div>
+
+        <div class="dev-feature">
+        <div class="feature-icon">📊</div>
+        <h3>Console Logging</h3>
+        <p>Like having a <strong>chatty friend</strong> who tells you everything that's happening! Open your browser console (F12) to see:</p>
+        <div class="console-preview">
+        <div class="console-line">🛠️ UtiliKit: Settings loaded {devMode: true}</div>
+        <div class="console-line">🛠️ UtiliKit: Processing 5 elements</div>
+        <div class="console-line">🛠️ UtiliKit: Applied classes to element</div>
+        </div>
+        </div>
+
+        <div class="dev-feature">
+        <div class="feature-icon">🎛️</div>
+        <h3>Debug Control Panel</h3>
+        <p>A <strong>mission control center</strong> appears in the bottom-right corner!</p>
+        <div class="debug-panel-preview">
+        <div class="debug-panel-mock">
+        <strong>UtiliKit Debug</strong>
+        <button class="debug-btn">🔄 Force Refresh Styles</button>
+        <button class="debug-btn">🧹 Clear State & Refresh</button>
+        <button class="debug-btn">📋 Log State to Console</button>
+        <div class="debug-info">
+        <div>Breakpoint: <span>lg</span></div>
+        <div>Width: <span>1200px</span></div>
+        <div>Elements: <span>8</span></div>
+        </div>
+        </div>
+        </div>
+        </div>
+        </div>
+
+        <div class="testing-guide">
+        <h3>🧪 Testing Developer Mode (Your Science Experiment!)</h3>
+        <div class="test-steps">
+        <div class="test-step">
+        <span class="step-num">1️⃣</span>
+        <span>Go to <code>/admin/config/development/utilikit</code> → Enable "Developer mode"</span>
+        </div>
+        <div class="test-step">
+        <span class="step-num">2️⃣</span>
+        <span>Enable "Visual debugging" and "Display errors on page"</span>
+        </div>
+        <div class="test-step">
+        <span class="step-num">3️⃣</span>
+        <span>Set console logging to "Detailed" (be prepared for chatty logs!)</span>
+        </div>
+        <div class="test-step">
+        <span class="step-num">4️⃣</span>
+        <span>Open browser console (F12) and refresh the page</span>
+        </div>
+        <div class="test-step">
+        <span class="step-num">5️⃣</span>
+        <span>Look for blue outlines and the debug panel! 🎉</span>
+        </div>
+        </div>
+        </div>
+        <div class="dev-features">
+
+        <div class="dev-feature">
+        <div class="feature-icon">🔧</div>
+        <h3>Feature Details</h3>
+        <p>Each developer mode feature can be toggled independently. Here's what each one does:</p>
+
+        <h4>Visual Debugging</h4>
+        <p>Adds <strong>blue dashed outlines</strong> around every element with the <code>utilikit</code> class. In your browser DevTools you'll see <code>outline: 2px dashed rgba(0, 123, 255, 0.7)</code> applied via the <code>uk-admin</code> body class.</p>
+
+        <h4>Display Errors on Page</h4>
+        <p>Shows validation errors as <strong>Drupal status messages</strong> at the top of the page. Without this, errors only appear in the browser console. Test it by adding an invalid class like <code>uk-invalid--syntax</code>.</p>
+
+        <h4>Console Logging Levels</h4>
+        <ul class="benefits-list">
+        <li><strong>Off</strong> — No UtiliKit messages in the console</li>
+        <li><strong>Warnings only</strong> — Shows errors and invalid class warnings</li>
+        <li><strong>Detailed</strong> — Full processing logs: settings loaded, elements found, rules applied, breakpoints detected</li>
+        </ul>
+
+        <h4>Debug Control Panel Buttons</h4>
+        <ul class="benefits-list">
+        <li><strong>Force Refresh Styles</strong> — Re-applies all UtiliKit classes without reloading the page</li>
+        <li><strong>Clear State &amp; Refresh</strong> — Resets internal state and reloads</li>
+        <li><strong>Log State to Console</strong> — Dumps current settings, breakpoint, and element count</li>
+        </ul>
+        </div>
+
+        <div class="dev-feature">
+        <div class="feature-icon">🧪</div>
+        <h3>Quick Verification</h3>
+        <p>After enabling all features, create a test element to verify everything works together:</p>
+        <div class="code-example">
+        <div class="code-header">Test Element</div>
+        <pre><code>&lt;div class="utilikit uk-pd--20 uk-bg--007bff uk-tc--ffffff"&gt;Valid element&lt;/div&gt;
+&lt;div class="utilikit uk-invalid--test"&gt;Invalid element&lt;/div&gt;</code></pre>
+        </div>
+        <p>You should see all four indicators working at once:</p>
+        <ul class="benefits-list">
+        <li>📊 <strong>Console</strong> — Detailed processing logs</li>
+        <li>🔍 <strong>Visual</strong> — Blue outlines around both elements</li>
+        <li>⚠️ <strong>Page errors</strong> — Drupal warning about the invalid class</li>
+        <li>🎛️ <strong>Debug panel</strong> — Visible in the bottom-right corner</li>
+        </ul>
+        <p>If nothing appears, run <code>drush cr</code> to clear caches and make sure JavaScript is enabled.</p>
+        </div>
+
+        </div>
+
+        </div>

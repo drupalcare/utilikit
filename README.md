@@ -1,10 +1,10 @@
 # UtiliKit - Utility-First CSS Framework for Drupal
 
-UtiliKit is a comprehensive Drupal 11 contrib module that provides a powerful 
-utility-first CSS system directly integrated into your Drupal project. It 
-offers an efficient class generation engine for rapidly applying box model, 
-spacing, flexbox, grid, color, effects, positioning, and layout utilities using 
-a clean 2-letter prefix system.
+UtiliKit is a comprehensive Drupal 10/11 contrib module that provides a powerful
+utility-first CSS system directly integrated into your Drupal project. It offers
+a dynamic class generation engine for rapidly applying box model, spacing,
+flexbox, grid, color, effects, positioning, typography, transforms, and layout
+utilities using a clean 2-letter prefix system with unlimited value flexibility.
 
 ## Table of Contents
 
@@ -13,10 +13,15 @@ a clean 2-letter prefix system.
 - [Quick Start](#quick-start)
 - [Rendering Modes](#rendering-modes)
 - [Utility Class Reference](#utility-class-reference)
+- [Special Value Notations](#special-value-notations)
 - [Responsive Design](#responsive-design)
+- [CSS Specificity Control](#css-specificity-control)
 - [Developer Tools](#developer-tools)
+- [Drush Commands](#drush-commands)
 - [Configuration](#configuration)
+- [Sub-Modules](#sub-modules)
 - [Performance](#performance)
+- [Security](#security)
 - [Browser Support](#browser-support)
 - [Contributing](#contributing)
 - [License](#license)
@@ -24,35 +29,43 @@ a clean 2-letter prefix system.
 
 ## Features
 
-### Smart Rendering Modes
+### Unlimited Value Flexibility
+Unlike traditional CSS frameworks that restrict you to predefined classes,
+UtiliKit accepts **any numerical value with any unit**. Want `uk-pd--247px`,
+`uk-mg--3d75rem`, or `uk-wd--87vw`? UtiliKit generates these on-demand.
+
+### Triple Rendering Modes
 - **Inline Mode**: JavaScript applies styles dynamically (development-friendly)
-- **Static Mode**: Pre-generated CSS files (production-optimized)
+- **Static Mode**: Pre-generated CSS files served from disk (production-optimized)
+- **Head Mode**: CSS injected into the page `<head>` (cloud and container-friendly)
 
-### Comprehensive Utility System
-- Clean 2-letter prefix system for consistent rule expansion
-- Full coverage of CSS properties: box model, typography, colors, layout
-- Responsive breakpoint support with mobile-first approach
-- Transform and positioning utilities with decimal precision
-- CSS Grid and Flexbox utilities for modern layouts
+### 47 Utility Prefixes
+Complete coverage of CSS properties across box model, sizing, positioning,
+typography, colors, effects, layout, flexbox, grid, and transforms — all using
+a consistent 2-letter prefix system.
 
-### Developer Experience
+### CSS Specificity Control
+Optional `!important` flag on all utility classes (static/head modes) to ensure
+utility classes always override other styles. Matches Tailwind CSS behavior.
+
+### Logical CSS Properties
+UtiliKit uses modern logical CSS properties (`inlineSize`, `blockSize`,
+`insetBlockStart`, `insetInlineEnd`, etc.) for better internationalization
+and RTL support.
+
+### Comprehensive Developer Experience
 - **Playground**: Interactive testing environment with live preview
 - **Reference Documentation**: Complete class documentation with examples
 - **Update Button**: Instant CSS regeneration during development
 - **Debug Tools**: Comprehensive logging and performance monitoring
 
 ### Drupal Integration
-- Permission-based feature access
-- Entity save triggers for automatic CSS updates
-- Admin UI for configuration management
-- Compatible with Layout Builder and all themes
+- Permission-based access control (3 granular permissions)
+- Entity save triggers for automatic CSS updates (nodes, blocks, paragraphs)
+- Queue worker for asynchronous CSS processing during cron
+- 8 Drush commands for CLI management
+- Compatible with Layout Builder, Paragraphs, Views, and all themes
 - No external dependencies required
-
-### Performance Optimization
-- Only loads utilities that are actually used
-- Automatic class detection and scanning
-- Smart caching system with cache invalidation
-- Minimal runtime overhead in both modes
 
 ## Installation
 
@@ -71,14 +84,15 @@ drush en utilikit
 
 ### Post-Installation Setup
 
-1. Navigate to **Configuration > UtiliKit Settings** (`/admin/config/utilikit`)
-2. Configure rendering mode and scope settings
-3. Set up permissions for development tools if needed
-4. Test the installation using the Playground tool
+1. Navigate to **Configuration > UtiliKit Settings**
+   (`/admin/config/utilikit/settings`)
+2. Choose your rendering mode (Inline for development, Static for production,
+   Head for cloud/containers)
+3. Configure scope settings to define where UtiliKit operates
+4. Set up permissions for development tools and reference access
+5. Test the installation using the interactive Playground
 
 ## Quick Start
-
-
 
 ### Basic Usage
 
@@ -86,7 +100,7 @@ Add the `utilikit` base class to any element, then apply utility classes:
 
 ```html
 <!-- Padded container with background color -->
-<div class="utilikit uk-pd--16 uk-bg--primary uk-tc--white">
+<div class="utilikit uk-pd--16 uk-bg--007bff uk-tc--ffffff">
   Content with padding, background, and text color
 </div>
 
@@ -98,152 +112,253 @@ Add the `utilikit` base class to any element, then apply utility classes:
 
 <!-- CSS Grid layout -->
 <div class="utilikit uk-dp--grid uk-gc--repeat-3-1fr uk-gp--16">
-  <div class="utilikit uk-pd--12 uk-bg--secondary">Grid item 1</div>
-  <div class="utilikit uk-pd--12 uk-bg--secondary">Grid item 2</div>
-  <div class="utilikit uk-pd--12 uk-bg--secondary">Grid item 3</div>
+  <div class="utilikit uk-pd--12 uk-bg--f8f9fa">Grid item 1</div>
+  <div class="utilikit uk-pd--12 uk-bg--f8f9fa">Grid item 2</div>
+  <div class="utilikit uk-pd--12 uk-bg--f8f9fa">Grid item 3</div>
 </div>
 ```
 
+**Important**: Every element must have the `utilikit` base class for UtiliKit to
+process its utility classes.
+
 ### Class Naming Convention
 
-UtiliKit uses a consistent naming pattern: `uk-{breakpoint}-{prefix}--{value}`
+`uk-{breakpoint}-{prefix}--{value}`
 
 - `uk-`: UtiliKit namespace prefix
-- `{breakpoint}`: Optional responsive breakpoint (sm, md, lg, xl, xxl)
-- `{prefix}`: 2-letter property identifier
+- `{breakpoint}`: Optional responsive breakpoint (`sm`, `md`, `lg`, `xl`, `xxl`)
+- `{prefix}`: 2-letter property identifier (47 available)
 - `--`: Separator between prefix and value
-- `{value}`: CSS value (supports units, keywords, and special notation)
+- `{value}`: CSS value (supports units, keywords, decimals, and special notation)
 
 ## Rendering Modes
 
 ### Inline Mode (Development)
 
-- JavaScript processes classes dynamically
-- Immediate visual feedback
-- Ideal for development and prototyping
-- No CSS file generation required
+- JavaScript processes classes dynamically in the browser
+- Immediate visual feedback — no page refreshes needed
+- Ideal for development, prototyping, and content editing
+- Zero build process — no CSS file generation required
 - Real-time class validation and error reporting
 
 ### Static Mode (Production)
 
-- Pre-generates CSS files for optimal performance
-- Reduced runtime JavaScript overhead
-- Better for production environments
-- Supports CSS optimization and minification
-- Requires manual or automatic CSS updates
+- Pre-generates CSS files on the server for optimal performance
+- Minimal JavaScript footprint at runtime
+- Supports CSS minification via the optimize_css setting
+- Automatic updates when content is saved (configurable per entity type)
+- File-based caching with cache-busting URLs
+- Requires file system write permissions (`public://utilikit/`)
+
+### Head Mode (Cloud & Containers)
+
+- CSS injected directly into the page `<head>` on each request
+- No file system write permissions required
+- Perfect for read-only environments: Platform.sh, Pantheon, Acquia Cloud,
+  Kubernetes, and containerized deployments
+- Stores CSS in Drupal's State API for persistence
+- Same automatic content scanning as static mode
+- Supports CSS minification
 
 ## Utility Class Reference
 
-### Box Model Utilities
+### Box Model (4 prefixes)
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Padding | `uk-pd` | `uk-pd--16` | `uk-md-pd--20` | Supports all sides (t,r,b,l) and shorthand |
-| Margin | `uk-mg` | `uk-mg--auto` | `uk-lg-mg--24` | Supports auto value and all sides |
-| Border Width | `uk-bw` | `uk-bw--2` | `uk-sm-bw--1` | Individual sides supported |
-| Border Radius | `uk-br` | `uk-br--8` | `uk-xl-br--12` | Individual corners supported |
-| Border Style | `uk-bs` | `uk-bs--solid` | `uk-md-bs--dashed` | Keywords: solid, dashed, dotted |
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `pd` | padding | `uk-pd--16`, `uk-pd--t-15`, `uk-pd--x-30` | Directional: t/r/b/l, shorthand: x/y |
+| `mg` | margin | `uk-mg--16`, `uk-mg--b-auto`, `uk-mg--x-3d25em` | Supports `auto` keyword |
+| `bw` | border-width | `uk-bw--2`, `uk-bw--t-1` | Directional sides |
+| `br` | border-radius | `uk-br--8`, `uk-br--t-12` | Directional corners |
 
-### Sizing Utilities
+### Border Style & Color (2 prefixes)
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Width | `uk-wd` | `uk-wd--200` | `uk-md-wd--300` | Supports auto, %, px, rem, em |
-| Height | `uk-ht` | `uk-ht--100` | `uk-lg-ht--50vh` | Viewport units allowed |
-| Max Width | `uk-xw` | `uk-xw--400` | `uk-xl-xw--600` | Constraint utilities |
-| Min Width | `uk-nw` | `uk-nw--100` | `uk-sm-nw--150` | Minimum size constraints |
-| Max Height | `uk-xh` | `uk-xh--300` | `uk-md-xh--400` | Height constraints |
-| Min Height | `uk-nh` | `uk-nh--50` | `uk-lg-nh--75` | Minimum height |
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `bs` | border-style | `uk-bs--solid`, `uk-bs--b-dashed` | Keywords: solid, dashed, dotted, double, groove, ridge, inset, outset |
+| `bc` | border-color | `uk-bc--dee2e6`, `uk-bc--f00-50` | Hex colors with optional alpha |
 
-### Typography Utilities
+### Sizing (6 prefixes)
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Font Size | `uk-fs` | `uk-fs--16` | `uk-md-fs--18` | px, rem, em units |
-| Line Height | `uk-lh` | `uk-lh--1d5` | `uk-lg-lh--2` | Unitless or with units |
-| Font Weight | `uk-fw` | `uk-fw--700` | `uk-md-fw--400` | Numeric values |
-| Letter Spacing | `uk-ls` | `uk-ls--1` | `uk-sm-ls--2` | Spacing adjustments |
-| Text Align | `uk-ta` | `uk-ta--center` | `uk-md-ta--left` | Keywords: center, left, right |
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `wd` | inline-size (width) | `uk-wd--200`, `uk-wd--100pr` | Supports `auto`, px, %, rem, em, vw |
+| `ht` | block-size (height) | `uk-ht--100`, `uk-ht--50vh` | Supports `auto` |
+| `xw` | max-inline-size | `uk-xw--1200` | Supports `auto` |
+| `nw` | min-inline-size | `uk-nw--100` | Minimum width constraint |
+| `xh` | max-block-size | `uk-xh--300` | Height constraint |
+| `nh` | min-block-size | `uk-nh--50` | Minimum height |
 
-### Color Utilities
+### Typography (5 prefixes)
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Background Color | `uk-bg` | `uk-bg--primary` | `uk-md-bg--ff0000` | Named colors or hex values |
-| Text Color | `uk-tc` | `uk-tc--white` | `uk-lg-tc--333333` | Supports alpha transparency |
-| Border Color | `uk-bc` | `uk-bc--red` | `uk-sm-bc--00ff00-80` | Colors with optional alpha |
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `fs` | font-size | `uk-fs--18`, `uk-fs--2d5rem` | Any unit supported |
+| `lh` | line-height | `uk-lh--140`, `uk-lh--1d5` | Unitless or with units |
+| `fw` | font-weight | `uk-fw--400`, `uk-fw--700` | Integer values |
+| `ls` | letter-spacing | `uk-ls--2`, `uk-ls--0d1em` | Numeric flexible |
+| `ta` | text-align | `uk-ta--center`, `uk-ta--justify` | Keywords: left, center, right, justify |
 
-### Layout Utilities
+### Colors (3 prefixes)
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Display | `uk-dp` | `uk-dp--flex` | `uk-md-dp--grid` | All CSS display values |
-| Position | `uk-ps` | `uk-ps--relative` | `uk-lg-ps--absolute` | Positioning contexts |
-| Overflow | `uk-ov` | `uk-ov--hidden` | `uk-md-ov--scroll` | Overflow behaviors |
-| Gap | `uk-gp` | `uk-gp--16` | `uk-xl-gp--24` | Grid and flex gap |
-| Aspect Ratio | `uk-ar` | `uk-ar--16-9` | `uk-md-ar--4-3` | Ratio maintenance |
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `bg` | background-color | `uk-bg--007bff`, `uk-bg--ff0000-75` | 3/6-digit hex, optional alpha (0-100) |
+| `tc` | color | `uk-tc--ffffff`, `uk-tc--333` | Text color with alpha support |
+| `bc` | border-color | `uk-bc--dee2e6`, `uk-bc--f00-50` | Border color with alpha support |
 
-### Flexbox Utilities
+**Pseudo-State Suffixes (Static/Head modes):**
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Flex Direction | `uk-fd` | `uk-fd--column` | `uk-md-fd--row` | Direction control |
-| Justify Content | `uk-jc` | `uk-jc--center` | `uk-lg-jc--between` | Main axis alignment |
-| Align Items | `uk-ai` | `uk-ai--center` | `uk-sm-ai--start` | Cross axis alignment |
-| Flex Grow | `uk-fg` | `uk-fg--1` | `uk-md-fg--2` | Growth factors |
-| Flex Shrink | `uk-fk` | `uk-fk--0` | `uk-lg-fk--1` | Shrink factors |
-| Flex Basis | `uk-fb` | `uk-fb--200` | `uk-xl-fb--auto` | Basis sizing |
+All color prefixes (`bg`, `tc`, `bc`) support hover, focus, and active states
+by appending `-h`, `-f`, or `-a` to the color value:
 
-### Grid Utilities
+- `uk-bg--007bff-h` → `background-color: #007bff` on `:hover`
+- `uk-bg--ff0000-75-f` → `background-color: rgba(255,0,0,0.75)` on `:focus`
+- `uk-tc--ffffff-a` → `color: #ffffff` on `:active`
+- `uk-bc--dee2e6-h` → `border-color: #dee2e6` on `:hover`
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Grid Template Columns | `uk-gc` | `uk-gc--repeat-3-1fr` | `uk-md-gc--200px-1fr` | Complex grid definitions |
-| Grid Template Rows | `uk-gr` | `uk-gr--auto-1fr` | `uk-lg-gr--repeat-4-1fr` | Row templates |
-| Grid Column | `uk-gl` | `uk-gl--1-3` | `uk-md-gl--2-4` | Column span positioning |
-| Grid Row | `uk-gw` | `uk-gw--1-2` | `uk-sm-gw--2-3` | Row span positioning |
+Combine with alpha: `uk-bg--007bff-50-h` = 50% opacity blue on hover.
 
-### Transform Utilities
+### Layout & Display (4 prefixes)
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Rotate | `uk-rt` | `uk-rt--45` | `uk-md-rt--90` | Degree rotation |
-| Scale | `uk-sc` | `uk-sc--150` | `uk-lg-sc--200` | Scale transforms (percentage format)|
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `dp` | display | `uk-dp--flex`, `uk-dp--grid`, `uk-dp--none` | All CSS display values |
+| `ps` | position | `uk-ps--relative`, `uk-ps--sticky` | absolute, relative, fixed, sticky |
+| `ov` | overflow | `uk-ov--hidden`, `uk-ov--auto` | visible, hidden, scroll, auto |
+| `bz` | background-size | `uk-bz--cover`, `uk-bz--contain` | Keywords: cover, contain, auto |
 
-### Positioning Utilities
+### Positioning (4 prefixes)
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Top | `uk-tp` | `uk-tp--10` | `uk-md-tp--20` | Offset positioning |
-| Right | `uk-ri` | `uk-ri--15` | `uk-lg-ri--25` | Right positioning |
-| Bottom | `uk-bt` | `uk-bt--5` | `uk-sm-bt--10` | Bottom positioning |
-| Left | `uk-lt` | `uk-lt--12` | `uk-xl-lt--24` | Left positioning |
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `tp` | inset-block-start (top) | `uk-tp--10`, `uk-tp--0` | Numeric flexible |
+| `ri` | inset-inline-end (right) | `uk-ri--15` | Numeric flexible |
+| `bt` | inset-block-end (bottom) | `uk-bt--5` | Numeric flexible |
+| `lt` | inset-inline-start (left) | `uk-lt--12`, `uk-lt--auto` | Numeric flexible |
 
-### Effects Utilities
+### Spacing & Layout (2 prefixes)
 
-| Property | Prefix | Example | Responsive | Notes |
-|----------|--------|---------|------------|-------|
-| Opacity | `uk-op` | `uk-op--50` | `uk-md-op--75` | 0-100 scale (converts to 0-1) |
-| Z-Index | `uk-zi` | `uk-zi--10` | `uk-lg-zi--999` | Stacking context |
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `gp` | gap | `uk-gp--16`, `uk-gp--16-32` | Flex/Grid gap, row-column control |
+| `ar` | aspect-ratio | `uk-ar--16-9`, `uk-ar--1-1` | Format: width-height |
+
+### Flexbox (9 prefixes)
+
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `fd` | flex-direction | `uk-fd--column`, `uk-fd--row-reverse` | row, column, row-reverse, column-reverse |
+| `jc` | justify-content | `uk-jc--center`, `uk-jc--between` | flex-start, flex-end, center, space-between, space-around, space-evenly |
+| `ai` | align-items | `uk-ai--center`, `uk-ai--stretch` | flex-start, flex-end, center, stretch, baseline |
+| `ac` | align-content | `uk-ac--center`, `uk-ac--between` | Same keywords as justify-content |
+| `fx` | flex-wrap | `uk-fx--wrap`, `uk-fx--nowrap` | wrap, nowrap, wrap-reverse |
+| `fg` | flex-grow | `uk-fg--1`, `uk-fg--0` | Decimal values |
+| `fk` | flex-shrink | `uk-fk--0`, `uk-fk--1` | Decimal values |
+| `fb` | flex-basis | `uk-fb--200`, `uk-fb--auto` | Numeric flexible |
+| `or` | order | `uk-or--1`, `uk-or---1` | Integer values |
+
+### CSS Grid (4 prefixes)
+
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `gc` | grid-template-columns | `uk-gc--repeat-3-1fr`, `uk-gc--200px-1fr` | Complex patterns (see below) |
+| `gr` | grid-template-rows | `uk-gr--auto-1fr-auto` | Same syntax as gc |
+| `gl` | grid-column | `uk-gl--1-3`, `uk-gl--2-4` | Format: start-end → start / end |
+| `gw` | grid-row | `uk-gw--1-2` | Format: start-end → start / end |
+
+**Supported Grid Patterns:**
+- Simple values: `uk-gc--1fr-2fr-1fr`
+- Repeat: `uk-gc--repeat-3-1fr`, `uk-gc--repeat-auto-fit-250px`
+- Minmax: `uk-gc--minmax-100px-1fr`
+- Repeat + Minmax: `uk-gc--repeat-auto-fit-minmax-250px-1fr`
+- Fit-content: `uk-gc--fitc-200px` (alias for fit-content)
+- Mixed: `uk-gc--200px-1fr-fitc-300px`
+- Keywords: `min-content` (minc), `max-content` (maxc), `auto`
+
+### Transform (2 prefixes)
+
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `rt` | rotate | `uk-rt--45`, `uk-rt--180`, `uk-rt--1d5` | Degrees with decimal support |
+| `sc` | scale | `uk-sc--120`, `uk-sc--75` | Percentage-based (120 = 1.2x) |
+
+### Effects (2 prefixes)
+
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `op` | opacity | `uk-op--75`, `uk-op--25` | 0-100 scale → 0-1 decimal |
+| `zi` | z-index | `uk-zi--10`, `uk-zi--999` | Integer values |
+
+### Additional Utilities (4 prefixes)
+
+| Prefix | CSS Property | Example | Notes |
+|--------|-------------|---------|-------|
+| `cu` | cursor | `uk-cu--pointer`, `uk-cu--grab` | All CSS cursor keywords |
+| `fl` | float | `uk-fl--left`, `uk-fl--right` | left, right, none |
+| `cl` | clear | `uk-cl--both`, `uk-cl--left` | left, right, both, none |
+| `us` | user-select | `uk-us--none`, `uk-us--text` | none, text, all, auto |
+
+## Special Value Notations
+
+### Decimal Notation (`d`)
+
+Use `d` as a decimal point since `.` is not valid in CSS class names:
+
+- `uk-lh--1d5` → `line-height: 1.5`
+- `uk-mg--3d75rem` → `margin: 3.75rem`
+- `uk-rt--45d5` → `rotate: 45.5deg`
+
+### Percentage Notation (`pr`)
+
+Use `pr` suffix for percentage values since `%` is not valid in class names:
+
+- `uk-wd--100pr` → `width: 100%`
+- `uk-ht--50pr` → `height: 50%`
+- `uk-gc--minmax-50pr-2fr` → `minmax(50%, 2fr)`
+
+### Color Formats
+
+- **3-digit hex**: `uk-bg--f00` → `background-color: #f00`
+- **6-digit hex**: `uk-bg--ff0000` → `background-color: #ff0000`
+- **With alpha (0-100)**: `uk-bg--ff0000-50` → `background-color: rgba(255, 0, 0, 0.5)`
+- **Short hex with alpha**: `uk-bg--f00-25` → `background-color: rgba(255, 0, 0, 0.25)`
+- **Pseudo-state suffix** (static/head modes): append `-h` (hover), `-f` (focus),
+  or `-a` (active) — e.g., `uk-bg--007bff-h`, `uk-tc--ff0000-50-f`
+
+### Directional Sides
+
+Box model properties support directional suffixes:
+
+- `-t` (top), `-r` (right), `-b` (bottom), `-l` (left)
+- `-x` (horizontal: left + right), `-y` (vertical: top + bottom)
+- Example: `uk-pd--t-20` → `padding-top: 20px`
+- Example: `uk-mg--x-auto` → `margin-left: auto; margin-right: auto`
 
 ## Responsive Design
 
 ### Breakpoint System
 
-UtiliKit uses a mobile-first responsive approach with the following breakpoints:
+UtiliKit uses a mobile-first responsive approach:
 
-- `uk-sm`: ≥ 576px (Small devices and up)
-- `uk-md`: ≥ 768px (Medium devices and up)
-- `uk-lg`: ≥ 992px (Large devices and up)
-- `uk-xl`: ≥ 1200px (Extra large devices and up)
-- `uk-xxl`: ≥ 1400px (Extra extra large devices and up)
+| Breakpoint | Min Width | Example |
+|------------|-----------|---------|
+| (none) | 0px | `uk-pd--16` (all screens) |
+| `sm` | ≥ 576px | `uk-sm-pd--20` |
+| `md` | ≥ 768px | `uk-md-dp--flex` |
+| `lg` | ≥ 992px | `uk-lg-gc--repeat-3-1fr` |
+| `xl` | ≥ 1200px | `uk-xl-fs--24` |
+| `xxl` | ≥ 1400px | `uk-xxl-pd--40` |
+
+All 47 utility prefixes support responsive variants. Breakpoints can be
+individually enabled/disabled in settings to reduce CSS size.
 
 ### Responsive Usage Examples
 
 ```html
-<!-- Mobile-first responsive design -->
-<div class="utilikit uk-pd--8 uk-md-pd--16 uk-lg-pd--24">
-  Padding increases at larger breakpoints
+<!-- Responsive padding that grows with screen size -->
+<div class="utilikit uk-pd--12 uk-md-pd--24 uk-lg-pd--40">
+  Adaptive spacing for all devices
 </div>
 
 <!-- Hide/show at different breakpoints -->
@@ -251,121 +366,225 @@ UtiliKit uses a mobile-first responsive approach with the following breakpoints:
   Hidden on mobile, visible from medium screens up
 </div>
 
-<!-- Responsive layout changes -->
-<div class="utilikit uk-dp--block uk-lg-dp--flex uk-jc--between">
-  Stacked on mobile, flexbox layout on large screens
+<!-- Complex responsive layout -->
+<div class="utilikit uk-dp--block uk-sm-dp--flex uk-lg-dp--grid uk-lg-gc--repeat-3-1fr">
+  <!-- Mobile: stacked, Tablet: flex row, Desktop: 3-column grid -->
 </div>
 ```
+
+## CSS Specificity Control
+
+### Optional !important Flag
+
+In static and head modes, you can toggle `!important` on all utility classes:
+
+- **Enabled (default)**: All utility classes include `!important` to override
+  theme styles and inline styles
+- **Disabled**: Utility classes use normal specificity, allowing custom CSS to
+  override them
+- Changing this setting automatically regenerates all CSS
+- Matches Tailwind CSS recommended behavior
+
+Configure at **Configuration > UtiliKit Settings > Performance**.
 
 ## Developer Tools
 
 ### Playground
 
-Interactive testing environment accessible at 
-`/admin/config/utilikit/playground`
+Interactive testing environment at `/admin/config/utilikit/playground`:
 
-- **Basic Mode**: Test individual utility classes
-- **Advanced Mode**: Test complete HTML markup with UtiliKit classes
-- Live preview with instant feedback
-- Copy generated code for use in projects
-- Responsive testing across all breakpoints
+- Live preview environment with instant visual feedback
+- Preset examples for cards, heroes, forms, grids, and more
+- Visual class builder with categorized utility chips
+- Responsive testing with built-in viewport controls
+- Color palette with copy-to-clipboard hex values
+- Code export for clean HTML generation
 
 ### Reference Documentation
 
-Complete utility class reference at `/admin/config/utilikit/reference`
+Complete utility class reference at `/admin/config/utilikit/reference`:
 
-- Searchable class documentation
+- Searchable class documentation organized by category
 - Interactive examples with copy-to-clipboard
-- Organized by utility categories
-- Responsive preview capabilities
+- Live preview of utility classes
+- All 47 prefixes documented with examples
 
 ### Update Button
 
-Development tool for CSS regeneration in static mode
+Floating action button for CSS regeneration (static/head modes):
 
-- Appears automatically when UtiliKit elements are detected
-- One-click CSS file regeneration
+- Appears automatically when UtiliKit elements are detected on the page
+- One-click CSS file regeneration via AJAX
 - Real-time progress feedback
-- Automatic cache invalidation
+- Automatic cache invalidation after update
+- Requires `use utilikit update button` permission
+
+### Debug Mode
+
+Enable via developer settings (requires `administer utilikit` permission):
+
+- Comprehensive browser console logging (off/warnings/detailed)
+- Visual debugging with element outlines (admin_preview)
+- Validation error display on pages (show_page_errors)
+- Performance timing and operation profiling
+
+## Drush Commands
+
+```bash
+# Generate or regenerate static CSS file
+drush utilikit:generate           # aliases: uk-gen, utilikit-generate
+
+# Scan content for utility classes
+drush utilikit:scan               # aliases: uk-scan, utilikit-scan
+drush utilikit:scan --entity-types=node,paragraph --batch-size=100
+
+# Clear all CSS data and reset known classes
+drush utilikit:clear              # aliases: uk-clear, utilikit-clear
+
+# Switch rendering mode
+drush utilikit:mode static        # aliases: uk-mode, utilikit-mode
+drush utilikit:mode head
+drush utilikit:mode inline
+
+# Show status and configuration
+drush utilikit:status             # aliases: uk-status, utilikit-status
+
+# List all tracked utility classes
+drush utilikit:classes             # aliases: uk-classes, utilikit-classes
+drush utilikit:classes --limit=0 --filter=pd
+
+# Validate CSS generation
+drush utilikit:validate           # aliases: uk-validate, utilikit-validate
+
+# Clear UtiliKit-specific caches
+drush utilikit:cache-clear        # aliases: uk-cc, utilikit-cache-clear
+```
 
 ## Configuration
 
 ### Admin Settings
 
-Access configuration at **Configuration > UtiliKit Settings** 
-(`/admin/config/utilikit`)
+Access configuration at **Configuration > UtiliKit Settings**
+(`/admin/config/utilikit/settings`)
 
 #### Rendering Mode
-- **Inline Mode**: Dynamic JavaScript processing
-- **Static Mode**: Pre-generated CSS files
+- **Inline Mode**: Dynamic JavaScript processing (development)
+- **Static Mode**: Pre-generated CSS files (production)
+- **Head Mode**: CSS in page head (cloud/containers)
 
 #### Scope Settings
 - **Global**: Enable on all pages
 - **Content Types**: Limit to specific content types
-- **Admin Pages**: Control admin interface inclusion
+- **Admin Pages**: Exclude admin routes for performance
+- **Entity Types**: Configure which entity types to scan
 
 #### Performance Settings
 - **Active Breakpoints**: Enable/disable specific responsive breakpoints
-- **CSS Optimization**: Minify generated CSS in static mode
-- **Cache Management**: Control CSS cache behavior
+- **CSS Optimization**: Minify generated CSS (static/head modes)
+- **!important Flag**: Toggle CSS specificity control
+- **Transitions**: Enable smooth CSS transitions
+- **Debounce**: Resize event delay (0-500ms)
+- **Cache TTL**: CSS cache duration
 
-#### Developer Settings
+#### Auto-Update Triggers (Static/Head modes)
+- **Node Save**: Regenerate CSS when nodes are saved
+- **Block Save**: Regenerate CSS when custom blocks are saved
+- **Paragraph Save**: Regenerate CSS when paragraphs are saved
+
+#### Developer Settings (requires `administer utilikit` permission)
 - **Development Mode**: Enable detailed logging and debugging
 - **Admin Preview**: Visual debugging with element outlines
 - **Error Display**: Show validation errors on page
-- **Console Logging**: Configure browser console output levels
+- **Console Logging**: off, warnings, or detailed
+
+#### Advanced Settings
+- **Rate Limiting**: Requests per minute per IP (default: 60)
+- **Max Classes Per Request**: Limit for AJAX updates (default: 5000)
+- **Batch Size**: Content scanning batch size (default: 50)
+
+#### Experimental Features
+- Grid auto generation
+- Advanced CSS selectors
+- CSS custom properties
+- Media query optimization
 
 ### Permissions
 
-- **Access UtiliKit tools**: View playground and reference pages
-- **Administer UtiliKit**: Access settings and advanced tools
+| Permission | Description | Restrict Access |
+|-----------|-------------|-----------------|
+| `administer utilikit` | Full access to settings, developer tools, cache management | Yes |
+| `access utilikit reference` | View utility class reference and documentation | No |
+| `use utilikit update button` | Manual CSS regeneration button and AJAX updates | No |
 
-## Drush Commands
+## Sub-Modules
 
-# CSS Generation
-drush utilikit:generate     # or: uk-gen, utilikit-generate
+Enable sub-modules as needed for additional functionality:
 
-# Content Scanning  
-drush utilikit:scan         # or: uk-scan, utilikit-scan
+```bash
+drush en utilikit_examples utilikit_playground utilikit_help utilikit_test
+```
 
-# Clear Data
-drush utilikit:clear        # or: uk-clear, utilikit-clear
+### UtiliKit Examples (`utilikit_examples`)
 
-# Mode Switching
-drush utilikit:mode static  # or: uk-mode, utilikit-mode
+Real-world component examples at `/admin/config/utilikit/examples`:
+- Pre-built components: cards, headers, forms, navigation
+- Layout templates using UtiliKit classes
+- Copy-paste ready HTML markup
+- Best practice patterns
 
-# Status & Info
-drush utilikit:status       # or: uk-status, utilikit-status
-drush utilikit:classes      # or: uk-classes, utilikit-classes
+### UtiliKit Playground (`utilikit_playground`)
 
-# Maintenance
-drush utilikit:validate     # or: uk-validate, utilikit-validate
-drush utilikit:cache-clear  # or: uk-cc, utilikit-cache-clear
+Interactive testing environment at `/admin/config/utilikit/playground`:
+- Safe sandbox for experimenting with utility combinations
+- Visual class builder interface
+- Responsive preview across all breakpoints
+- Preset templates for common UI patterns
+- Code generation and export
+
+### UtiliKit Help (`utilikit_help`)
+
+Documentation system at `/admin/config/utilikit/help`:
+- Contextual in-admin help with step-by-step guides
+- Getting started tutorials
+- Troubleshooting tools
+- Quick reference for utility class syntax
+
+### UtiliKit Test (`utilikit_test`)
+
+Automated test suite at `/admin/config/utilikit/test`:
+- Comprehensive validation of all 47 utility prefixes
+- CSS output verification
+- Performance benchmarks
+- Regression testing
 
 ## Performance
 
 ### Optimization Features
 
-- **Selective Loading**: Only includes utilities that are actually used
-- **Automatic Detection**: Scans content for utility classes
-- **Smart Caching**: Intelligent cache management with invalidation
-- **Minimal Runtime**: Lightweight JavaScript with optimized execution
+- **Selective Loading**: Only includes utilities actually used on the page
+- **Automatic Detection**: Scans content entities for utility classes
+- **Smart Caching**: Multi-tier cache invalidation (render, page, CSS/JS assets)
+- **Queue Processing**: Background CSS processing via cron queue worker
+- **CSS Minification**: Optimized output in static/head modes
+- **Minimal Runtime**: Lightweight JavaScript in static/head modes
 
-### Performance Best Practices
+### Best Practices
 
-1. **Use Static Mode in Production**: Better performance with pre-generated CSS
-2. **Disable Unused Breakpoints**: Reduce CSS size by disabling unnecessary 
-breakpoints
-3. **Enable CSS Optimization**: Minify and optimize generated CSS files
-4. **Monitor Class Usage**: Use developer tools to track utility usage patterns
+1. Use **Static** or **Head Mode** in production
+2. Disable unused breakpoints to reduce CSS size
+3. Enable CSS optimization (minification)
+4. Enable `!important` for reliable specificity
+5. Configure auto-update triggers only for entity types that use UtiliKit
+6. Use `drush utilikit:generate` after bulk content changes
 
-### Performance Monitoring
+## Security
 
-When development mode is enabled:
-- Operation timing with microsecond precision
-- CSS generation performance tracking
-- DOM manipulation profiling
-- Memory usage monitoring
+- **Input Validation**: Multi-layer validation prevents CSS injection
+- **CSRF Protection**: All AJAX endpoints protected with cookie-based CSRF tokens
+- **Rate Limiting**: Built-in rate limiting (60 req/min per IP, 5000 classes/request)
+- **Permission-Based Access**: Granular role-based access control
+- **Sanitized Output**: All generated CSS is validated before output
+- **Content Security Policy**: Full CSP compliance
 
 ## Browser Support
 
@@ -375,14 +594,35 @@ UtiliKit supports all modern browsers:
 - **Firefox**: 85+
 - **Safari**: 14+
 - **Edge**: 88+
-- **Mobile Browsers**: iOS Safari 14+, Chrome Mobile 88+
+- **Mobile**: iOS Safari 14+, Chrome Mobile 88+
 
 ### Required JavaScript Features
 
-- ES6 Modules support
+- ES6 Modules
 - CSS.escape() API (with fallback)
-- Performance API (with graceful degradation)
+- Performance API (graceful degradation)
 - Fetch API for AJAX requests
+
+## Drupal Integration
+
+### Hooks Implemented
+
+- `hook_page_attachments()` — Attaches CSS/JS based on rendering mode
+- `hook_entity_presave()` — Triggers auto-update on content save
+- `hook_library_info_alter()` — Injects dynamic CSS file URL for static mode
+- `hook_css_alter()` — Adjusts CSS weight/group for proper cascade
+- `hook_cache_flush()` — Regenerates static CSS during cache rebuilds
+- `hook_theme()` — Defines update button template
+
+### Module Compatibility
+
+- Layout Builder
+- Paragraphs module
+- Views
+- Media module
+- CKEditor / WYSIWYG editors
+- Any Drupal theme
+- Multisite deployments
 
 ## Contributing
 
@@ -398,7 +638,7 @@ UtiliKit supports all modern browsers:
 - Follow Drupal coding standards for PHP
 - Use ESLint configuration for JavaScript
 - Maintain comprehensive JSDoc documentation
-- Include unit tests for new features
+- Include tests for new features
 
 ### Submitting Issues
 
@@ -406,13 +646,6 @@ UtiliKit supports all modern browsers:
 - Provide detailed reproduction steps
 - Include browser and Drupal version information
 - Attach relevant error logs or screenshots
-
-### Feature Requests
-
-Submit feature requests through the Drupal.org project page with:
-- Clear use case description
-- Expected behavior specification
-- Potential implementation approach
 
 ## License
 
@@ -428,21 +661,7 @@ This module is actively maintained by:
 - **Reference**: https://unitedstarsofamerica.com/utilikit/reference
 - **Demo**: https://unitedstarsofamerica.com/utilikit/examples
 
-### Support Channels
+### Support
 
 - **Issues**: https://www.drupal.org/project/issues/utilikit
 - **Documentation**: Module help pages and admin interface
-- **Community**: Drupal Slack #utilikit channel
-
-### Project Status
-
-- **Lifecycle**: Stable
-- **Drupal Compatibility**: ^10 || ^11
-- **Version**: 1.0.0
-- **Last Updated**: 2025
-
----
-
-For detailed examples, advanced usage patterns, and troubleshooting guides, 
-visit the complete documentation at the project homepage or use the built-in 
-help system within your Drupal admin interface.

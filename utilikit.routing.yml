@@ -44,9 +44,10 @@ utilikit.update_css:
     _controller: '\Drupal\utilikit\Controller\UtilikitAjaxController::updateCss'
     _title: 'Update CSS'
   requirements:
-    _permission: 'access content'
+    _permission: 'use utilikit update button'
+    _csrf_token: 'TRUE'
   options:
-    _auth: ['cookie']  # CSRF protection via session cookies
+    _auth: ['cookie']
     no_cache: TRUE     # Prevents caching for real-time updates
   # Used for:
   # - Automatic CSS updates when entities are saved
@@ -65,7 +66,6 @@ utilikit.render_button:
   requirements:
     _permission: 'use utilikit update button'
   options:
-    _auth: ['cookie']  # CSRF protection for authenticated requests
     no_cache: TRUE     # Dynamic content must bypass cache
   # Features:
   # - Shows current CSS generation status

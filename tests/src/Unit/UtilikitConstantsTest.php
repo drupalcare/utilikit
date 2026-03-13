@@ -104,8 +104,8 @@ class UtilikitConstantsTest extends UnitTestCase {
    * Tests file system path constants.
    */
   public function testFileSystemConstants() {
-    $this->assertEquals('public://css/utilikit', UtilikitConstants::CSS_DIRECTORY);
-    $this->assertEquals('generated.css', UtilikitConstants::CSS_FILENAME);
+    $this->assertEquals('public://utilikit', UtilikitConstants::CSS_DIRECTORY);
+    $this->assertEquals('utilikit-static-style.css', UtilikitConstants::CSS_FILENAME);
     $this->assertStringStartsWith('public://', UtilikitConstants::CSS_DIRECTORY);
     $this->assertStringEndsWith('.css', UtilikitConstants::CSS_FILENAME);
   }

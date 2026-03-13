@@ -1,0 +1,99 @@
+        <div class="tab-content" id="how-it-works" role="tabpanel">
+        <h2>🧠 How UtiliKit Works</h2>
+        <p class="intro-text">
+        Imagine UtiliKit as a <strong>smart robot assistant</strong> that watches your HTML and instantly creates the perfect CSS outfit for each element.
+        No waiting, no fuss – just pure styling magic!
+        </p>
+
+        <div class="how-it-works-steps">
+        <div class="work-step">
+        <div class="work-icon">👀</div>
+        <h3>Step 1: UtiliKit Watches</h3>
+        <p>Like a fashion consultant, UtiliKit scans your page looking for elements with utility classes. It's always alert, always ready!</p>
+        </div>
+
+        <div class="work-step">
+        <div class="work-icon">⚡</div>
+        <h3>Step 2: Lightning-Fast Processing</h3>
+        <p>Faster than you can say "CSS," UtiliKit translates your classes into beautiful styles. It's like having Google Translate for design!</p>
+        </div>
+
+        <div class="work-step">
+        <div class="work-icon">✨</div>
+        <h3>Step 3: Magic Happens</h3>
+        <p>Your elements transform instantly! No page refresh needed – it's like watching a caterpillar become a butterfly! 🦋</p>
+        </div>
+        </div>
+
+        <div class="modes-explanation">
+        <h3>🎭 Three Rendering Modes</h3>
+
+        <div class="mode-card">
+        <div class="mode-header inline-mode">
+        <h4>🎪 Inline Mode (The Party Mode)</h4>
+        <span class="mode-badge development">Perfect for Development</span>
+        </div>
+        <div class="mode-content">
+        <p><strong>Like a live DJ:</strong> Changes happen instantly as you type! Great for experimenting and building.</p>
+        <ul class="benefits-list">
+        <li>✨ Instant feedback (see changes immediately)</li>
+        <li>🔧 Perfect for debugging and testing</li>
+        <li>🎨 Developer-friendly with console logs</li>
+        <li>🔄 No file generation needed</li>
+        <li>⚠️ Pseudo-states (:hover, :focus, :active) not supported in this mode</li>
+        </ul>
+        </div>
+        </div>
+
+        <div class="mode-card">
+        <div class="mode-header static-mode">
+        <h4>🏎️ Static Mode (The Race Car Mode)</h4>
+        <span class="mode-badge production">Optimized for Production</span>
+        </div>
+        <div class="mode-content">
+        <p><strong>Like a Formula 1 car:</strong> Pre-built for maximum speed! Generates a CSS file that loads super fast.</p>
+        <ul class="benefits-list">
+        <li>⚡ Lightning-fast page loads</li>
+        <li>📁 Clean, cached CSS file at <code>public://utilikit/utilikit-static-style.css</code></li>
+        <li>🗜️ Minified and optimized (configurable)</li>
+        <li>🚀 Production-ready performance</li>
+        <li>🔄 Supports pseudo-states (:hover, :focus, :active)</li>
+        <li>📝 Auto-update on node/block/paragraph save (configurable)</li>
+        </ul>
+        </div>
+        </div>
+
+        <div class="mode-card">
+        <div class="mode-header head-mode">
+        <h4>🧠 Head Mode (The Smart Mode)</h4>
+        <span class="mode-badge">Server-Side Per-Request</span>
+        </div>
+        <div class="mode-content">
+        <p><strong>Like a personal tailor:</strong> The server scans each page's content and injects only the CSS that page actually needs — right into the <code>&lt;head&gt;</code> tag.</p>
+        <ul class="benefits-list">
+        <li>🎯 Zero unused CSS on any page</li>
+        <li>📦 No external CSS file to manage</li>
+        <li>⚡ No JavaScript processing needed</li>
+        <li>🔄 Supports pseudo-states (:hover, :focus, :active)</li>
+        </ul>
+        </div>
+        </div>
+
+        <div class="pattern-explanation">
+        <h4>Mode Comparison at a Glance</h4>
+        <div class="pattern-examples">
+        <div class="pattern-example">
+        <code>Inline</code> → <span>Client-side JS, instant feedback, no pseudo-states, no <code>!important</code></span>
+        </div>
+        <div class="pattern-example">
+        <code>Static</code> → <span>Pre-generated CSS file, best performance, supports pseudo-states and <code>!important</code></span>
+        </div>
+        <div class="pattern-example">
+        <code>Head</code> → <span>Server-injected per-request CSS, no file needed, supports pseudo-states and <code>!important</code></span>
+        </div>
+        </div>
+        <p style="margin-top: 15px;">Switch modes at <strong>/admin/config/development/utilikit</strong>. The <code>!important</code> flag and CSS minification are configurable in Static and Head modes.</p>
+        </div>
+
+        </div>
+        </div>

@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\utilikit\Service;
 
-use Drupal\utilikit_test\Service\TestGenerator;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
-use Drupal\Core\File\FileExists;
+use Drupal\utilikit_test\Service\TestGenerator;
 
 /**
  * Generates comprehensive test CSS files using all possible utility classes.
@@ -27,41 +28,6 @@ use Drupal\Core\File\FileExists;
 class UtilikitTestCssGenerator {
 
   /**
-   * The CSS generator service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitCssGenerator
-   */
-  protected UtilikitCssGenerator $cssGenerator;
-
-  /**
-   * The file manager service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitFileManager
-   */
-  protected UtilikitFileManager $fileManager;
-
-  /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected FileSystemInterface $fileSystem;
-
-  /**
-   * The file URL generator service.
-   *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
-   */
-  protected FileUrlGeneratorInterface $fileUrlGenerator;
-
-  /**
-   * The test generator service (optional dependency).
-   *
-   * @var \Drupal\utilikit_test\Service\TestGenerator|null
-   */
-  protected ?TestGenerator $testGenerator;
-
-  /**
    * Constructs a new UtilikitTestCssGenerator.
    *
    * @param \Drupal\utilikit\Service\UtilikitCssGenerator $cssGenerator
@@ -72,23 +38,20 @@ class UtilikitTestCssGenerator {
    *   The file system service for directory and file operations.
    * @param \Drupal\Core\File\FileUrlGeneratorInterface $fileUrlGenerator
    *   The file URL generator service for creating accessible URLs.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The configuration factory service.
    * @param \Drupal\utilikit_test\Service\TestGenerator|null $testGenerator
    *   The test generator service for enumerating utility classes. Will be
    *   NULL if the utilikit_test module is not enabled.
    */
   public function __construct(
-    UtilikitCssGenerator $cssGenerator,
-    UtilikitFileManager $fileManager,
-    FileSystemInterface $fileSystem,
-    FileUrlGeneratorInterface $fileUrlGenerator,
-    ?TestGenerator $testGenerator = NULL,
-  ) {
-    $this->cssGenerator = $cssGenerator;
-    $this->fileManager = $fileManager;
-    $this->fileSystem = $fileSystem;
-    $this->fileUrlGenerator = $fileUrlGenerator;
-    $this->testGenerator = $testGenerator;
-  }
+    protected readonly UtilikitCssGenerator $cssGenerator,
+    protected readonly UtilikitFileManager $fileManager,
+    protected readonly FileSystemInterface $fileSystem,
+    protected readonly FileUrlGeneratorInterface $fileUrlGenerator,
+    protected readonly ConfigFactoryInterface $configFactory,
+    protected readonly ?TestGenerator $testGenerator = NULL,
+  ) {}
 
   /**
    * Generates a complete test CSS file with all possible utility classes.
@@ -138,16 +101,22 @@ class UtilikitTestCssGenerator {
       ];
     }
 
-    // Use existing CSS generator.
+    // Generate CSS respecting current form settings (use_important,
+    // rendering_mode, active_breakpoints are all baked into the output
+    // by generateCssFromClasses via the config-aware cache key).
     $css = $this->cssGenerator->generateCssFromClasses($allClasses);
+
+    // Apply optimization if enabled in settings.
+    $config = $this->configFactory->get('utilikit.settings');
+    if ($config->get('optimize_css')) {
+      $css = $this->fileManager->minifyCss($css);
+    }
 
     // Save using the file system directly with proper preparation.
     try {
       $directory = UtilikitConstants::CSS_DIRECTORY;
-      $filename = 'utilikit-test-complete.css';
-      $filepath = $directory . '/' . $filename;
+      $filepath = $directory . '/utilikit-test-complete.css';
 
-      // Use injected file system service instead of \Drupal::service.
       if (!$this->fileSystem->prepareDirectory($directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)) {
         return [
           'success' => FALSE,
@@ -155,9 +124,7 @@ class UtilikitTestCssGenerator {
         ];
       }
 
-      // Save the file using FileExists::Replace like the rest of the module.
       $result = $this->fileSystem->saveData($css, $filepath, FileExists::Replace);
-
       if ($result === FALSE) {
         return [
           'success' => FALSE,
@@ -165,7 +132,6 @@ class UtilikitTestCssGenerator {
         ];
       }
 
-      // Generate URL using the injected service.
       $url = $this->fileUrlGenerator->generateAbsoluteString($filepath);
 
       return [
@@ -218,16 +184,15 @@ class UtilikitTestCssGenerator {
    */
   public function deleteTestCssFile(): bool {
     $directory = UtilikitConstants::CSS_DIRECTORY;
-    $filename = 'utilikit-test-complete.css';
-    $filepath = $directory . '/' . $filename;
+    $filepath = $directory . '/utilikit-test-complete.css';
 
-    // If file doesn't exist, consider it a success.
     if (!file_exists($filepath)) {
       return TRUE;
     }
 
     try {
-      return $this->fileSystem->delete($filepath);
+      $this->fileSystem->delete($filepath);
+      return TRUE;
     }
     catch (\Exception $e) {
       return FALSE;

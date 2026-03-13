@@ -80,21 +80,24 @@
   Drupal.utilikit.parseColorWithAlpha = function(suffix) {
     let match;
 
-    // Match 6-digit hex color with optional alpha percentage (0-100)
-    if ((match = suffix.match(/^([0-9a-fA-F]{6})(?:-(\d{1,3}))?$/))) {
+    // Match 6-digit hex color with optional alpha (0-100) and optional
+    // pseudo-state suffix (-h, -f, -a). In inline mode the pseudo-state
+    // is silently ignored; it only takes effect in static/head modes
+    // where the PHP generator appends :hover/:focus/:active to the selector.
+    if ((match = suffix.match(/^([0-9a-fA-F]{6})(?:-(\d{1,3}))?(?:-(h|f|a))?$/))) {
       const hex = match[1];
-      const alpha = match[2] !== undefined ? Math.min(parseInt(match[2], 10), 100) / 100 : 1;
+      const alpha = match[2] !== undefined && match[2] !== '' ? Math.min(parseInt(match[2], 10), 100) / 100 : 1;
       const r = parseInt(hex.substring(0, 2), 16);
       const g = parseInt(hex.substring(2, 4), 16);
       const b = parseInt(hex.substring(4, 6), 16);
       return alpha < 1 ? `rgba(${r}, ${g}, ${b}, ${alpha})` : `#${hex}`;
     }
 
-    // Match 3-digit hex color with optional alpha percentage (0-100)
-    if ((match = suffix.match(/^([0-9a-fA-F]{3})(?:-(\d{1,3}))?$/))) {
+    // Match 3-digit hex color with optional alpha and pseudo-state suffix
+    if ((match = suffix.match(/^([0-9a-fA-F]{3})(?:-(\d{1,3}))?(?:-(h|f|a))?$/))) {
       // Expand 3-digit hex to 6-digit by doubling each character
       const hex = match[1].split('').map(ch => ch + ch).join('');
-      const alpha = match[2] !== undefined ? Math.min(parseInt(match[2], 10), 100) / 100 : 1;
+      const alpha = match[2] !== undefined && match[2] !== '' ? Math.min(parseInt(match[2], 10), 100) / 100 : 1;
       const r = parseInt(hex.substring(0, 2), 16);
       const g = parseInt(hex.substring(2, 4), 16);
       const b = parseInt(hex.substring(4, 6), 16);
@@ -188,7 +191,8 @@
    * // Returns: "100px"
    */
   Drupal.utilikit.convertDecimalNotation = function(value) {
-    return value.replace(/d/g, '.');
+    // Only replace digit-d-digit (decimal notation) with digit.digit; do not replace every 'd'.
+    return value.replace(/(\d)d(\d)/g, '$1.$2');
   };
 
   /**

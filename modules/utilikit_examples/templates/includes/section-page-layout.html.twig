@@ -1,0 +1,55 @@
+<!-- ================================================================== -->
+<!-- SECTION 16: FULL PAGE LAYOUT                                       -->
+<!-- Header + sidebar + content + footer grid layout                    -->
+<!-- Demonstrates: grid-template-rows, grid-template-columns, grid-row  -->
+<!-- ================================================================== -->
+<div class="utilikit uk-pd--32-20 uk-sm-pd--40-24 uk-bg--ffffff">
+  <div class="utilikit uk-xw--900 uk-mg--auto uk-mg--b-24">
+    <p class="utilikit uk-fs--14 uk-fw--600 uk-tc--3b82f6 uk-ls--0d05em uk-mg--b-8">LAYOUT</p>
+    <h2 class="utilikit uk-fs--24 uk-sm-fs--28 uk-md-fs--32 uk-fw--700 uk-tc--1f2937 uk-mg--b-8">Full Page Grid Layout</h2>
+    <p class="utilikit uk-fs--15 uk-tc--64748b uk-lh--1d6">Complete page structure using CSS Grid with header, two sidebars, main content, and footer. The 3-column layout collapses to single column on mobile using grid-template-columns.</p>
+  </div>
+</div>
+
+<div class="utilikit uk-dp--grid uk-gc--1fr uk-gr--auto-1fr-auto uk-ht--500">
+  <header class="utilikit uk-gl--1-2 uk-pd--20 uk-bg--1a202c uk-tc--ffffff">
+    <div class="utilikit uk-dp--flex uk-jc--space-between uk-ai--center">
+      <h1 class="utilikit uk-fs--24 uk-fw--700">UtiliKit</h1>
+      <nav class="utilikit uk-dp--none uk-md-dp--flex uk-gp--24">
+        <a class="utilikit uk-tc--ffffff uk-op--80">Home</a>
+        <a class="utilikit uk-tc--ffffff uk-op--80">About</a>
+        <a class="utilikit uk-tc--ffffff uk-op--80">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="utilikit uk-gl--1-2 uk-dp--grid uk-gc--1fr uk-lg-gc--250px-1fr-300px uk-gp--0">
+    <aside class="utilikit uk-dp--none uk-lg-dp--block uk-pd--20 uk-bg--f8fafc">
+      <h2 class="utilikit uk-fs--18 uk-fw--700 uk-mg--b-16 uk-tc--1a202c">Navigation</h2>
+      <div class="utilikit uk-dp--flex uk-fd--column uk-gp--4">
+        <div class="utilikit uk-pd--8-0 uk-tc--64748b">Dashboard</div>
+        <div class="utilikit uk-pd--8-0 uk-tc--64748b">Projects</div>
+        <div class="utilikit uk-pd--8-0 uk-tc--64748b">Settings</div>
+      </div>
+    </aside>
+    <section class="utilikit uk-pd--20 uk-lg-pd--32 uk-bg--ffffff">
+      <h2 class="utilikit uk-fs--24 uk-lg-fs--32 uk-fw--700 uk-mg--b-16 uk-tc--1a202c">Main Content</h2>
+      <p class="utilikit uk-tc--64748b uk-lh--1d8 uk-mg--b-20">This is a responsive grid layout that adapts to different screen sizes. All columns stack below 992px.</p>
+      <div class="utilikit uk-pd--20 uk-bg--eff6ff uk-br--8">
+        <p class="utilikit uk-tc--1e40af uk-fw--600">This layout demonstrates UtiliKit's powerful grid system with grid-template-columns and grid-template-rows.</p>
+      </div>
+    </section>
+    <aside class="utilikit uk-dp--none uk-lg-dp--block uk-pd--20 uk-bg--f8fafc">
+      <h2 class="utilikit uk-fs--18 uk-fw--700 uk-mg--b-16 uk-tc--1a202c">Related</h2>
+      <div class="utilikit uk-dp--flex uk-fd--column uk-gp--12">
+        <a class="utilikit uk-tc--3b82f6">Documentation</a>
+        <a class="utilikit uk-tc--3b82f6">API Reference</a>
+        <a class="utilikit uk-tc--3b82f6">Examples</a>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="utilikit uk-gl--1-2 uk-pd--20 uk-bg--1a202c uk-tc--ffffff uk-ta--center">
+    <p class="utilikit uk-op--80 uk-tc--ffffff">Built entirely with UtiliKit utility classes. Zero custom CSS.</p>
+  </footer>
+</div>

@@ -412,8 +412,7 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
 
     $this->cacheManager
       ->expects($this->once())
-      ->method('clearCachesWithStrategy')
-      ->with(['strategy' => 'conservative']);
+      ->method('clearCssCaches');
 
     $this->assertTrue($this->serviceProvider->regenerateStaticCss());
   }

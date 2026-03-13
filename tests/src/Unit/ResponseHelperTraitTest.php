@@ -29,10 +29,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    // Create anonymous class using the trait.
-    $this->traitObject = new class() {
-      use ResponseHelperTrait;
-    };
+    $this->traitObject = new ResponseHelperTraitTestClass();
   }
 
   /**
@@ -42,7 +39,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
    * @dataProvider providerJsonResponse
    */
   public function testCreateJsonResponse($status, $message, $data, $statusCode, $expected) {
-    $response = $this->traitObject->createJsonResponse($status, $message, $data, $statusCode);
+    $response = $this->traitObject->createJsonResponsePublic($status, $message, $data, $statusCode);
 
     // Verify it's a JsonResponse.
     $this->assertInstanceOf(JsonResponse::class, $response);
@@ -118,7 +115,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
    */
   public function testCreateSuccessResponse() {
     // Test without data.
-    $response = $this->traitObject->createSuccessResponse('All good!');
+    $response = $this->traitObject->createSuccessResponsePublic('All good!');
 
     $this->assertInstanceOf(JsonResponse::class, $response);
     $this->assertEquals(200, $response->getStatusCode());
@@ -130,7 +127,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
     ], $content);
 
     // Test with data.
-    $response = $this->traitObject->createSuccessResponse('Data saved', [
+    $response = $this->traitObject->createSuccessResponsePublic('Data saved', [
       'id' => 123,
       'created' => '2025-01-01',
     ]);
@@ -151,7 +148,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
    */
   public function testCreateErrorResponse() {
     // Test with default status code.
-    $response = $this->traitObject->createErrorResponse('Failed to process');
+    $response = $this->traitObject->createErrorResponsePublic('Failed to process');
 
     $this->assertInstanceOf(JsonResponse::class, $response);
     $this->assertEquals(500, $response->getStatusCode());
@@ -163,11 +160,11 @@ class ResponseHelperTraitTest extends UnitTestCase {
     ], $content);
 
     // Test with custom status code.
-    $response = $this->traitObject->createErrorResponse('Not found', 404);
+    $response = $this->traitObject->createErrorResponsePublic('Not found', 404);
     $this->assertEquals(404, $response->getStatusCode());
 
     // Test with additional data.
-    $response = $this->traitObject->createErrorResponse('Validation failed', 400, [
+    $response = $this->traitObject->createErrorResponsePublic('Validation failed', 400, [
       'errors' => [
         'field1' => 'Required',
         'field2' => 'Invalid format',
@@ -192,7 +189,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
    */
   public function testCreateLockedResponse() {
     // Test with default retry time.
-    $response = $this->traitObject->createLockedResponse('Resource is locked');
+    $response = $this->traitObject->createLockedResponsePublic('Resource is locked');
 
     $this->assertInstanceOf(JsonResponse::class, $response);
     // Default is 200.
@@ -206,7 +203,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
     ], $content);
 
     // Test with custom retry time.
-    $response = $this->traitObject->createLockedResponse('Please wait', 5);
+    $response = $this->traitObject->createLockedResponsePublic('Please wait', 5);
 
     $content = json_decode($response->getContent(), TRUE);
     $this->assertEquals([
@@ -223,13 +220,11 @@ class ResponseHelperTraitTest extends UnitTestCase {
    */
   public function testResponseEncoding() {
     // Test with special characters.
-    $response = $this->traitObject->createSuccessResponse('UTF-8 test: café, 日本語');
+    $response = $this->traitObject->createSuccessResponsePublic('UTF-8 test: café, 日本語');
 
     $content = $response->getContent();
-    $this->assertStringContainsString('café', $content);
-    $this->assertStringContainsString('日本語', $content);
 
-    // Verify proper JSON encoding.
+    // Verify proper JSON encoding - characters may be unicode-escaped.
     $decoded = json_decode($content, TRUE);
     $this->assertEquals('UTF-8 test: café, 日本語', $decoded['message']);
   }
@@ -257,7 +252,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
       ],
     ];
 
-    $response = $this->traitObject->createSuccessResponse('Complex data', $complexData);
+    $response = $this->traitObject->createSuccessResponsePublic('Complex data', $complexData);
 
     $content = json_decode($response->getContent(), TRUE);
     $this->assertEquals('deep', $content['nested']['level1']['level2']['value']);
@@ -273,7 +268,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
    * @dataProvider providerStatusCodes
    */
   public function testHttpStatusCodes($statusCode) {
-    $response = $this->traitObject->createJsonResponse('test', 'Testing status', [], $statusCode);
+    $response = $this->traitObject->createJsonResponsePublic('test', 'Testing status', [], $statusCode);
     $this->assertEquals($statusCode, $response->getStatusCode());
   }
 
@@ -307,13 +302,13 @@ class ResponseHelperTraitTest extends UnitTestCase {
    */
   public function testEmptyDataHandling() {
     // Empty array.
-    $response = $this->traitObject->createSuccessResponse('Empty data', []);
+    $response = $this->traitObject->createSuccessResponsePublic('Empty data', []);
     $content = json_decode($response->getContent(), TRUE);
     // No numeric keys.
     $this->assertArrayNotHasKey('0', $content);
 
     // Null values in data.
-    $response = $this->traitObject->createSuccessResponse('With nulls', [
+    $response = $this->traitObject->createSuccessResponsePublic('With nulls', [
       'value1' => NULL,
       'value2' => '',
       'value3' => 0,
@@ -333,13 +328,13 @@ class ResponseHelperTraitTest extends UnitTestCase {
    * @covers ::createJsonResponse
    */
   public function testResponseHeaders() {
-    $response = $this->traitObject->createSuccessResponse('Test');
+    $response = $this->traitObject->createSuccessResponsePublic('Test');
 
     // Check Content-Type header.
-    $this->assertEquals('application/json', $response->headers->get('Content-Type'));
+    $this->assertStringContainsString('application/json', $response->headers->get('Content-Type'));
 
-    // Check that response is not cached by default.
-    $this->assertNull($response->headers->get('Cache-Control'));
+    // Symfony JsonResponse sets Cache-Control by default.
+    $this->assertNotNull($response->headers->get('Cache-Control'));
   }
 
   /**
@@ -347,9 +342,9 @@ class ResponseHelperTraitTest extends UnitTestCase {
    */
   public function testMethodReusability() {
     // Create multiple responses to ensure no state pollution.
-    $response1 = $this->traitObject->createSuccessResponse('First');
-    $response2 = $this->traitObject->createErrorResponse('Second', 400);
-    $response3 = $this->traitObject->createLockedResponse('Third', 10);
+    $response1 = $this->traitObject->createSuccessResponsePublic('First');
+    $response2 = $this->traitObject->createErrorResponsePublic('Second', 400);
+    $response3 = $this->traitObject->createLockedResponsePublic('Third', 10);
 
     // Verify each response is independent.
     $content1 = json_decode($response1->getContent(), TRUE);
@@ -371,17 +366,17 @@ class ResponseHelperTraitTest extends UnitTestCase {
   public function testEdgeCases() {
     // Very long message.
     $longMessage = str_repeat('This is a very long message. ', 1000);
-    $response = $this->traitObject->createSuccessResponse($longMessage);
+    $response = $this->traitObject->createSuccessResponsePublic($longMessage);
     $content = json_decode($response->getContent(), TRUE);
     $this->assertEquals($longMessage, $content['message']);
 
     // Empty message.
-    $response = $this->traitObject->createSuccessResponse('');
+    $response = $this->traitObject->createSuccessResponsePublic('');
     $content = json_decode($response->getContent(), TRUE);
     $this->assertEquals('', $content['message']);
 
     // Zero retry time.
-    $response = $this->traitObject->createLockedResponse('Locked', 0);
+    $response = $this->traitObject->createLockedResponsePublic('Locked', 0);
     $content = json_decode($response->getContent(), TRUE);
     $this->assertEquals(0, $content['retry_after']);
   }
@@ -398,7 +393,7 @@ class ResponseHelperTraitTest extends UnitTestCase {
       'quotes' => 'He said "Hello"',
     ];
 
-    $response = $this->traitObject->createSuccessResponse('Encoding test', $data);
+    $response = $this->traitObject->createSuccessResponsePublic('Encoding test', $data);
     $content = $response->getContent();
 
     // Symfony's JsonResponse uses specific encoding options
@@ -408,6 +403,43 @@ class ResponseHelperTraitTest extends UnitTestCase {
     $this->assertEquals($data['slashes'], $decoded['slashes']);
     $this->assertEquals($data['html'], $decoded['html']);
     $this->assertEquals($data['quotes'], $decoded['quotes']);
+  }
+
+}
+
+/**
+ * Test class that exposes ResponseHelperTrait protected methods for testing.
+ */
+class ResponseHelperTraitTestClass {
+
+  use ResponseHelperTrait;
+
+  /**
+   * Public wrapper for createJsonResponse.
+   */
+  public function createJsonResponsePublic(string $status, string $message, array $data = [], int $statusCode = 200) {
+    return $this->createJsonResponse($status, $message, $data, $statusCode);
+  }
+
+  /**
+   * Public wrapper for createSuccessResponse.
+   */
+  public function createSuccessResponsePublic(string $message, array $data = []) {
+    return $this->createSuccessResponse($message, $data);
+  }
+
+  /**
+   * Public wrapper for createErrorResponse.
+   */
+  public function createErrorResponsePublic(string $message, int $statusCode = 500, array $data = []) {
+    return $this->createErrorResponse($message, $statusCode, $data);
+  }
+
+  /**
+   * Public wrapper for createLockedResponse.
+   */
+  public function createLockedResponsePublic(string $message, int $retryAfter = 2) {
+    return $this->createLockedResponse($message, $retryAfter);
   }
 
 }

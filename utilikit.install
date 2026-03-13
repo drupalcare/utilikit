@@ -255,12 +255,13 @@ function utilikit_requirements($phase): array {
     if (!$real_path || !is_dir($real_path)) {
       // Directory doesn't exist.
       if ($rendering_mode === 'static') {
-        // ERROR in static mode - directory is required.
+        // WARNING in static mode - directory will be created automatically
+        // on the next page load or form save.
         $requirements['utilikit_directory'] = [
           'title' => t('UtiliKit CSS directory'),
           'value' => t('Directory does not exist'),
-          'severity' => REQUIREMENT_ERROR,
-          'description' => t('The UtiliKit CSS directory at %path does not exist. This is required for static mode. Please create it and ensure it is writable, or switch to inline/head mode.', [
+          'severity' => REQUIREMENT_WARNING,
+          'description' => t('The UtiliKit CSS directory at %path does not exist. It will be created automatically on the next page load. If the issue persists, check file permissions.', [
             '%path' => $directory,
           ]),
         ];

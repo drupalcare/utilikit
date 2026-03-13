@@ -1,0 +1,98 @@
+        <div class="tab-content" id="special-cases" role="tabpanel">
+        <h2>📋 Special Cases &amp; Limitations</h2>
+        <p class="intro-text">
+        Every tool has boundaries. Knowing what UtiliKit <strong>can't</strong> do is just as important as knowing what it can.
+        This section helps you avoid dead ends and pick the right approach the first time.
+        </p>
+
+        <div class="dev-features">
+
+        <div class="dev-feature">
+        <div class="feature-icon">📝</div>
+        <h3>Decimal Notation</h3>
+        <p>CSS class names can't contain dots, so UtiliKit uses <code>d</code> as the decimal separator.</p>
+        <div class="code-example">
+        <div class="code-header">✅ Correct</div>
+        <pre><code>uk-lh--1d5      → line-height: 1.5
+uk-fs--1d125rem → font-size: 1.125rem</code></pre>
+        </div>
+        <div class="code-example error">
+        <div class="code-header">❌ Will Not Work</div>
+        <pre><code>uk-lh--1.5      → dot notation is not supported</code></pre>
+        </div>
+        </div>
+
+        <div class="dev-feature">
+        <div class="feature-icon">🎨</div>
+        <h3>Color &amp; Value Restrictions</h3>
+        <ul class="benefits-list">
+        <li><strong>Hex only</strong> — Use 3-digit (<code>f00</code>) or 6-digit (<code>ff0000</code>) hex. No RGB, RGBA, HSL, or named colors.</li>
+        <li><strong>No CSS variables</strong> — <code>uk-bg--var(--my-color)</code> is not supported</li>
+        <li><strong>No calc()</strong> — <code>uk-wd--calc(100%-20px)</code> is not supported</li>
+        <li><strong>Optional opacity</strong> — Append <code>-50</code> for 50% opacity: <code>uk-bg--ff0000-50</code></li>
+        </ul>
+        </div>
+
+        <div class="dev-feature">
+        <div class="feature-icon">📏</div>
+        <h3>Unit Limitations</h3>
+        <ul class="benefits-list">
+        <li><strong>Supported units</strong> — <code>px</code> (default), <code>%</code> (pr), <code>em</code>, <code>rem</code>, <code>vh</code>, <code>vw</code></li>
+        <li><strong>Viewport units restricted</strong> — <code>vh</code> and <code>vw</code> only work with sizing (<code>wd</code>, <code>ht</code>, <code>xw</code>, <code>xh</code>, <code>nw</code>, <code>nh</code>) and font-size (<code>fs</code>)</li>
+        <li><strong>Not supported</strong> — <code>ch</code>, <code>ex</code>, <code>vmin</code>, <code>vmax</code>, <code>svh</code>, <code>dvh</code></li>
+        <li><strong>Shorthand max 4 values</strong> — <code>uk-pd--10-20-30-40</code> ✅ but not 5+. No mixing units in one shorthand.</li>
+        </ul>
+        </div>
+
+        <div class="dev-feature">
+        <div class="feature-icon">📐</div>
+        <h3>Grid Template Limitations</h3>
+        <p>Grid templates support <code>repeat()</code>, <code>minmax()</code>, and <code>fr</code> units, but some combinations are too complex for the parser:</p>
+        <ul class="benefits-list">
+        <li>Nested <code>repeat()</code> functions are not supported</li>
+        <li><code>fit-content()</code> with <code>auto-fit</code>/<code>auto-fill</code> is not supported</li>
+        <li>Incomplete functions like <code>uk-gc--repeat-3</code> (missing track value) will fail</li>
+        <li><code>auto</code> with <code>auto-fit</code>/<code>auto-fill</code> is not allowed by the CSS spec</li>
+        </ul>
+        </div>
+
+        <div class="dev-feature">
+        <div class="feature-icon">📱</div>
+        <h3>Responsive Breakpoints</h3>
+        <ul class="benefits-list">
+        <li><strong>One breakpoint per class</strong> — <code>uk-md-pd--20</code> ✅ but <code>uk-sm-md-pd--20</code> ❌</li>
+        <li><strong>No range queries</strong> — Can't target "between sm and lg" with a single class</li>
+        <li><strong>Fixed values</strong> — Breakpoints (576, 768, 992, 1200, 1400) are set in configuration, not in classes</li>
+        </ul>
+        </div>
+
+        <div class="dev-feature">
+        <div class="feature-icon">🔢</div>
+        <h3>Property-Specific Rules</h3>
+        <ul class="benefits-list">
+        <li><strong>Opacity</strong> — Integer 0-100 (converted to 0-1 internally)</li>
+        <li><strong>Z-index</strong> — Integer only, negatives allowed (<code>uk-zi---1</code>)</li>
+        <li><strong>Font weight</strong> — 100-900 in steps of 100</li>
+        <li><strong>Gap</strong> — Integer values only, no decimals</li>
+        <li><strong>Aspect ratio</strong> — Ratio format only: <code>uk-ar--16-9</code></li>
+        <li><strong>Scale</strong> — Percentage where 100 = 1x: <code>uk-sc--120</code> = 1.2x</li>
+        </ul>
+        </div>
+
+        <div class="dev-feature">
+        <div class="feature-icon">🚫</div>
+        <h3>Not Supported</h3>
+        <ul class="benefits-list">
+        <li><strong>Pseudo-elements</strong> — Can't target <code>::before</code> or <code>::after</code></li>
+        <li><strong>Pseudo-states</strong> — Only <code>bg</code> and <code>tc</code> support <code>-h</code> (hover), <code>-f</code> (focus), <code>-a</code> (active) in static/head modes. Not available in inline mode.</li>
+        <li><strong>Animations &amp; transitions</strong> — No built-in animation classes</li>
+        <li><strong>Gradients</strong> — No gradient background support</li>
+        <li><strong>Filters</strong> — No blur, brightness, contrast, etc.</li>
+        <li><strong>Logical properties</strong> — No inline-start, block-end, etc.</li>
+        <li><strong>Custom properties</strong> — Can't set CSS variables via classes</li>
+        </ul>
+        </div>
+
+        </div>
+
+        </div>

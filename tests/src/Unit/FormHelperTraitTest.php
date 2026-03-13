@@ -176,7 +176,7 @@ class FormHelperTraitTest extends UnitTestCase {
   /**
    * Tests createCheckbox helper method.
    *
-   * @covers ::createCheckbox
+   * @covers ::createCheckboxField
    */
   public function testCreateCheckbox() {
     $checkbox = $this->traitObject->createCheckboxPublic(
@@ -196,7 +196,7 @@ class FormHelperTraitTest extends UnitTestCase {
   /**
    * Tests createCheckbox with minimal parameters.
    *
-   * @covers ::createCheckbox
+   * @covers ::createCheckboxField
    */
   public function testCreateCheckboxMinimal() {
     $checkbox = $this->traitObject->createCheckboxPublic('Simple Checkbox');
@@ -211,7 +211,7 @@ class FormHelperTraitTest extends UnitTestCase {
   /**
    * Tests createTextfield helper method.
    *
-   * @covers ::createTextfield
+   * @covers ::createFormField
    */
   public function testCreateTextfield() {
     $textfield = $this->traitObject->createTextfieldPublic(
@@ -231,7 +231,7 @@ class FormHelperTraitTest extends UnitTestCase {
   /**
    * Tests createSelect helper method.
    *
-   * @covers ::createSelect
+   * @covers ::createSelectField
    */
   public function testCreateSelect() {
     $options = ['opt1' => 'Option 1', 'opt2' => 'Option 2'];
@@ -253,7 +253,7 @@ class FormHelperTraitTest extends UnitTestCase {
   /**
    * Tests createNumber helper method.
    *
-   * @covers ::createNumber
+   * @covers ::createNumberField
    */
   public function testCreateNumber() {
     $number = $this->traitObject->createNumberPublic(
@@ -330,31 +330,48 @@ class FormHelperTraitTestClass {
   }
 
   /**
-   * Public wrapper for createCheckbox method.
+   * Public wrapper for createCheckboxField method.
    */
   public function createCheckboxPublic(string $title, string $description = '', bool $defaultValue = FALSE, array $attributes = []): array {
-    return $this->createCheckbox($title, $description, $defaultValue, $attributes);
+    $options = !empty($attributes) ? ['attributes' => $attributes] : [];
+    return $this->createCheckboxField($title, $description, $defaultValue, $options);
   }
 
   /**
-   * Public wrapper for createTextfield method.
+   * Public wrapper for textfield via createFormField.
    */
   public function createTextfieldPublic(string $title, string $description = '', string $defaultValue = '', array $attributes = []): array {
-    return $this->createTextfield($title, $description, $defaultValue, $attributes);
+    $config = [
+      'title' => $title,
+      'description' => $description,
+      'default_value' => $defaultValue,
+    ];
+    if (!empty($attributes)) {
+      $config['attributes'] = $attributes;
+    }
+    return $this->createFormField('textfield', $config);
   }
 
   /**
-   * Public wrapper for createSelect method.
+   * Public wrapper for createSelectField method.
    */
   public function createSelectPublic(string $title, string $description, array $options, $defaultValue = NULL): array {
-    return $this->createSelect($title, $description, $options, $defaultValue);
+    return $this->createSelectField($title, $description, $options, (string) $defaultValue, []);
   }
 
   /**
-   * Public wrapper for createNumber method.
+   * Public wrapper for createNumberField method.
    */
   public function createNumberPublic(string $title, string $description, $defaultValue = NULL, ?int $min = NULL, ?int $max = NULL, ?int $step = NULL, string $suffix = ''): array {
-    return $this->createNumber($title, $description, $defaultValue, $min, $max, $step, $suffix);
+    $options = array_filter([
+      'min' => $min,
+      'max' => $max,
+      'step' => $step,
+      'field_suffix' => $suffix !== '' ? $suffix : NULL,
+    ], static function ($v) {
+      return $v !== NULL;
+    });
+    return $this->createNumberField($title, $description, (int) ($defaultValue ?? 0), $options);
   }
 
   /**

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace Drupal\utilikit\Controller;
 
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Controller\ControllerBase;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\utilikit\Service\UtilikitServiceProvider;
-use Drupal\utilikit\Service\UtilikitConstants;
-use Drupal\utilikit\Traits\ResponseHelperTrait;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\Core\Queue\QueueFactory;
 use Drupal\Core\Render\RendererInterface;
+use Drupal\utilikit\Service\UtilikitConstants;
+use Drupal\utilikit\Service\UtilikitServiceProvider;
+use Drupal\utilikit\Traits\ResponseHelperTrait;
 use Psr\Log\LoggerInterface;
-use Drupal\Component\Datetime\TimeInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 /**
  * Provides AJAX endpoints for UtiliKit CSS processing.
@@ -34,55 +34,13 @@ class UtilikitAjaxController extends ControllerBase {
   use ResponseHelperTrait;
 
   /**
-   * The UtiliKit service provider.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
-   */
-  protected UtilikitServiceProvider $serviceProvider;
-
-  /**
-   * The lock backend service.
-   *
-   * @var \Drupal\Core\Lock\LockBackendInterface
-   */
-  protected LockBackendInterface $lock;
-
-  /**
-   * The queue factory service.
-   *
-   * @var \Drupal\Core\Queue\QueueFactory
-   */
-  protected QueueFactory $queueFactory;
-
-  /**
-   * The renderer service.
-   *
-   * @var \Drupal\Core\Render\RendererInterface
-   */
-  protected RendererInterface $renderer;
-
-  /**
-   * The logger service.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
-   * The time service.
-   *
-   * @var \Drupal\Component\Datetime\TimeInterface
-   */
-  protected TimeInterface $time;
-
-  /**
    * Constructs a new UtilikitAjaxController object.
    *
    * @param \Drupal\utilikit\Service\UtilikitServiceProvider $serviceProvider
    *   The UtiliKit service provider for CSS operations.
    * @param \Drupal\Core\Lock\LockBackendInterface $lock
    *   The lock backend service for preventing concurrent operations.
-   * @param \Drupal\Core\Queue\QueueFactory $queue
+   * @param \Drupal\Core\Queue\QueueFactory $queueFactory
    *   The queue factory for handling deferred CSS processing.
    * @param \Drupal\Core\Render\RendererInterface $renderer
    *   The renderer service for generating HTML output.
@@ -92,32 +50,25 @@ class UtilikitAjaxController extends ControllerBase {
    *   The time service for timestamp operations.
    */
   public function __construct(
-    UtilikitServiceProvider $serviceProvider,
-    LockBackendInterface $lock,
-    QueueFactory $queue,
-    RendererInterface $renderer,
-    LoggerInterface $logger,
-    TimeInterface $time,
-  ) {
-    $this->serviceProvider = $serviceProvider;
-    $this->lock = $lock;
-    $this->queueFactory = $queue;
-    $this->renderer = $renderer;
-    $this->logger = $logger;
-    $this->time = $time;
-  }
+    protected readonly UtilikitServiceProvider $serviceProvider,
+    protected readonly LockBackendInterface $lock,
+    protected readonly QueueFactory $queueFactory,
+    protected readonly RendererInterface $renderer,
+    protected readonly LoggerInterface $logger,
+    protected readonly TimeInterface $time,
+  ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container) {
+  public static function create(ContainerInterface $container): static {
     return new static(
       $container->get('utilikit.service_provider'),
       $container->get('lock'),
       $container->get('queue'),
       $container->get('renderer'),
       $container->get('logger.channel.utilikit'),
-      $container->get('datetime.time')
+      $container->get('datetime.time'),
     );
   }
 
@@ -141,14 +92,15 @@ class UtilikitAjaxController extends ControllerBase {
     $ip = $request->getClientIp();
     $lock_name = 'utilikit_rate_limit:' . $ip;
 
-    // Try to acquire lock with short timeout (250ms)
-    if (!$this->lock->acquire($lock_name, 0.25)) {
-      // Lock contention - allow request rather than false-positive rate limit
-      // This favors UX over strict enforcement during high concurrency.
-      $this->logger->debug('Rate limit lock contention for IP @ip - allowing request', [
+    // Try to acquire lock. Wait up to 500ms for concurrent rate-check
+    // from same IP to finish, so we can properly read/increment the counter.
+    if (!$this->lock->acquire($lock_name, 0.5)) {
+      // Lock still held after waiting — reject the request to prevent
+      // rate limit bypass via intentional lock contention.
+      $this->logger->warning('Rate limit lock contention for IP @ip - rejecting request', [
         '@ip' => $ip,
       ]);
-      return TRUE;
+      return FALSE;
     }
 
     try {
@@ -278,7 +230,7 @@ class UtilikitAjaxController extends ControllerBase {
           'Inline mode active - styles applied dynamically.',
           [
             'mode' => 'inline',
-            'timestamp' => time(),
+            'timestamp' => $this->time->getRequestTime(),
           ]
         );
       }
@@ -291,6 +243,9 @@ class UtilikitAjaxController extends ControllerBase {
       if (!is_array($data['classes'])) {
         return $this->createErrorResponse('Classes must be an array.', 400);
       }
+
+      // Validate that all class entries are strings to prevent type confusion.
+      $data['classes'] = array_values(array_filter($data['classes'], 'is_string'));
 
       // Enforce class count limits to prevent resource exhaustion.
       $classCount = count($data['classes']);
@@ -320,7 +275,7 @@ class UtilikitAjaxController extends ControllerBase {
           [
             'mode' => 'static',
             'queued' => TRUE,
-            'timestamp' => time(),
+            'timestamp' => $this->time->getRequestTime(),
           ]
         );
       }
@@ -355,7 +310,7 @@ class UtilikitAjaxController extends ControllerBase {
               'mode' => 'head',
               'count' => count($validClasses ?? []),
               'css' => $css ?? '',
-              'timestamp' => time(),
+              'timestamp' => $this->time->getRequestTime(),
             ]
           );
         }
@@ -492,11 +447,18 @@ class UtilikitAjaxController extends ControllerBase {
    *   as a side effect for later background processing.
    */
   private function queueCssUpdate(array $classes): void {
+    // Validate classes before queuing to prevent invalid data from being
+    // processed later when lock context may differ.
+    $validClasses = $this->serviceProvider->getContentScanner()->validateUtilityClasses($classes);
+    if (empty($validClasses)) {
+      return;
+    }
+
     $queue = $this->queueFactory->get(UtilikitConstants::QUEUE_CSS_PROCESSOR);
 
     $queue->createItem([
-      'classes' => $classes,
-      'timestamp' => time(),
+      'classes' => $validClasses,
+      'timestamp' => $this->time->getRequestTime(),
     ]);
   }
 
@@ -510,7 +472,7 @@ class UtilikitAjaxController extends ControllerBase {
    * @return \Symfony\Component\HttpFoundation\Response
    *   The rendered button HTML or empty response if not authorized.
    */
-  public function renderButton() {
+  public function renderButton(): Response {
     // Verify user has permission to use update button.
     if (!$this->currentUser()->hasPermission('use utilikit update button')) {
       return new Response('', 403);

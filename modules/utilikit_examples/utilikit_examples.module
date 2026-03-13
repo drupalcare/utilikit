@@ -58,62 +58,15 @@ function utilikit_examples_theme($existing, $type, $theme, $path): array {
 /**
  * Implements hook_page_attachments().
  *
- * Attaches UtiliKit libraries and settings specifically for examples pages.
- * Forces inline rendering mode regardless of global settings to ensure
- * examples display consistently across different site configurations.
+ * Forces inline rendering mode for examples pages regardless of global
+ * settings to ensure consistent demonstration display.
  *
- * This hook ensures that:
- * - Examples always use inline mode for dynamic demonstration
- * - All necessary UtiliKit libraries are loaded
- * - Proper breakpoint and debugging settings are configured
- * - CSRF tokens are available for interactive features
- *
- * @see hook_page_attachments()
+ * @see _utilikit_attach_inline_settings()
  */
 function utilikit_examples_page_attachments(array &$attachments): void {
-  $route_name = \Drupal::routeMatch()->getRouteName();
-
-  // Only attach on examples pages.
-  if ($route_name !== 'utilikit_examples.page') {
+  if (\Drupal::routeMatch()->getRouteName() !== 'utilikit_examples.page') {
     return;
   }
 
-  // Get main module settings.
-  $config = \Drupal::config('utilikit.settings');
-
-  // Force inline mode for examples to ensure consistent demonstration
-  // regardless of global site configuration.
-  $attachments['#attached']['drupalSettings']['utilikit'] = [
-    'devMode' => (bool) $config->get('dev_mode'),
-    'showPageErrors' => (bool) $config->get('show_page_errors'),
-    'enableTransitions' => (bool) $config->get('enable_transitions'),
-    'debounce' => (int) ($config->get('debounce') ?? 50),
-    'logLevel' => $config->get('log_level') ?? 'warnings',
-    'adminPreview' => (bool) $config->get('admin_preview'),
-    'activeBreakpoints' => ['sm', 'md', 'lg', 'xl', 'xxl'],
-    // ALWAYS inline for examples - ensures dynamic demonstration works.
-    'renderingMode' => 'inline',
-    'csrfToken' => \Drupal::csrfToken()->get('utilikit-update-css'),
-    'breakpoints' => [
-      'sm' => 576,
-      'md' => 768,
-      'lg' => 992,
-      'xl' => 1200,
-      'xxl' => 1400,
-    ],
-  ];
-
-  // Always attach inline engine for dynamic class processing.
-  $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
-  $attachments['#attached']['library'][] = 'utilikit/utilikit.examples';
-
-  // Conditionally attach error reporting if enabled.
-  if ($config->get('show_page_errors')) {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine.message';
-  }
-
-  // Conditionally attach debugging tools if in development mode.
-  if ($config->get('dev_mode')) {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
-  }
+  _utilikit_attach_inline_settings($attachments, 'utilikit_examples/utilikit.examples');
 }

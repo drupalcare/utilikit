@@ -51,8 +51,26 @@
   Drupal.utilikit.applySidesRule = function(el, rule, prefix, suffix, utiliKitProperties, className) {
     if (!rule.sides) return false;
 
-    // First convert 'd' to '.' in the suffix
-    const normalizedSuffix = suffix.replace(/d/g, '.');
+    // Handle keyword sides (e.g., uk-bs--b-dashed → border-block-end-style: dashed).
+    if (rule.isKeyword) {
+      const keywordMatch = suffix.match(/^(t|r|b|l)-([\w-]+)$/);
+      if (keywordMatch) {
+        const side = keywordMatch[1];
+        const keyword = keywordMatch[2];
+        const sideMap = { t: 'BlockStart', r: 'InlineEnd', b: 'BlockEnd', l: 'InlineStart' };
+        // borderStyle + BlockEnd → borderBlockEndStyle (side goes before property suffix).
+        const baseProp = rule.css;
+        const prop = baseProp.replace(/^(border)(.*)$/, `$1${sideMap[side]}$2`);
+        el.style[prop] = keyword;
+        utiliKitProperties.add(prop);
+        return true;
+      }
+      // No side prefix — fall through to applyKeywordRule for all-sides handling.
+      return false;
+    }
+
+    // Convert decimal notation: digit-d-digit becomes digit.digit (e.g., 1d5 -> 1.5).
+    const normalizedSuffix = suffix.replace(/(\d)d(\d)/g, '$1.$2');
 
     const match = normalizedSuffix.match(/^(t|r|b|l)-(auto|\d+(?:\.\d+)?(?:px|pr|em|rem|vh|vw)?)$/);
     if (!match) return false;
@@ -76,25 +94,23 @@
     if (prefix === 'br') {
       if (value === 'auto') return false; // border-radius does not support auto
       const radiusMap = {
-        t: ['borderTopLeftRadius', 'borderTopRightRadius'],
-        r: ['borderTopRightRadius', 'borderBottomRightRadius'],
-        b: ['borderBottomLeftRadius', 'borderBottomRightRadius'],
-        l: ['borderTopLeftRadius', 'borderBottomLeftRadius'],
+        t: ['borderStartStartRadius', 'borderStartEndRadius'],
+        r: ['borderStartEndRadius', 'borderEndEndRadius'],
+        b: ['borderEndEndRadius', 'borderEndStartRadius'],
+        l: ['borderStartStartRadius', 'borderEndStartRadius'],
       };
       radiusMap[side].forEach((prop) => {
         el.style[prop] = value;
         utiliKitProperties.add(prop);
       });
     } else if (prefix === 'bw') {
-      // For border-width, apply to specific side
-      const prop = `border${side.toUpperCase()}Width`.replace(/^borderTWidth$/, 'borderTopWidth')
-        .replace(/^borderRWidth$/, 'borderRightWidth')
-        .replace(/^borderBWidth$/, 'borderBottomWidth')
-        .replace(/^borderLWidth$/, 'borderLeftWidth');
+      const sideMap = { t: 'borderBlockStartWidth', r: 'borderInlineEndWidth', b: 'borderBlockEndWidth', l: 'borderInlineStartWidth' };
+      const prop = sideMap[side];
       el.style[prop] = value;
       utiliKitProperties.add(prop);
     } else {
-      const prop = `${rule.css}${{ t: 'Top', r: 'Right', b: 'Bottom', l: 'Left' }[side]}`;
+      const logicalSideMap = { t: 'BlockStart', r: 'InlineEnd', b: 'BlockEnd', l: 'InlineStart' };
+      const prop = `${rule.css}${logicalSideMap[side]}`;
       el.style[prop] = value;
       utiliKitProperties.add(prop);
     }
@@ -133,8 +149,8 @@
     if (!['pd', 'mg', 'bw', 'br'].includes(prefix)) return false;
     if (suffix.match(/^(t|r|b|l)-/)) return false;
 
-    // First convert 'd' to '.' in the entire suffix
-    const normalizedSuffix = suffix.replace(/d/g, '.');
+    // Convert decimal notation: digit-d-digit becomes digit.digit (e.g., 1d5 -> 1.5).
+    const normalizedSuffix = suffix.replace(/(\d)d(\d)/g, '$1.$2');
 
     // Split by dashes to handle each value individually
     const parts = normalizedSuffix.split('-');
@@ -163,74 +179,75 @@
     if (values.length === 0 || values.length > 4) return false;
 
     // Continue with the rest of the function...
-    // Apply CSS shorthand logic
-    let top, right, bottom, left;
+    // Apply CSS shorthand logic using logical properties.
+    // blockStart = top, inlineEnd = right, blockEnd = bottom,
+    // inlineStart = left (in LTR writing mode).
+    let blockStart, inlineEnd, blockEnd, inlineStart;
 
     switch (values.length) {
       case 1:
         // uk-pd--20 → padding: 20px (all sides)
-        top = right = bottom = left = values[0];
+        blockStart = inlineEnd = blockEnd = inlineStart = values[0];
         break;
       case 2:
-        // uk-pd--12-24 → padding: 12px 24px (vertical horizontal)
-        top = bottom = values[0];
-        right = left = values[1];
+        // uk-pd--12-24 → padding: 12px 24px (block inline)
+        blockStart = blockEnd = values[0];
+        inlineEnd = inlineStart = values[1];
         break;
       case 3:
-        // uk-pd--12-24-36 → padding: 12px 24px 36px (top horizontal bottom)
-        top = values[0];
-        right = left = values[1];
-        bottom = values[2];
+        // uk-pd--12-24-36 → padding: 12px 24px 36px (block-start inline block-end)
+        blockStart = values[0];
+        inlineEnd = inlineStart = values[1];
+        blockEnd = values[2];
         break;
       case 4:
-        // uk-pd--12-24-36-48 → padding: 12px 24px 36px 48px (TRBL)
-        top = values[0];
-        right = values[1];
-        bottom = values[2];
-        left = values[3];
+        // uk-pd--12-24-36-48 → (block-start inline-end block-end inline-start)
+        blockStart = values[0];
+        inlineEnd = values[1];
+        blockEnd = values[2];
+        inlineStart = values[3];
         break;
       default:
         return false;
     }
 
-    // Apply to element based on prefix
+    // Apply to element based on prefix using logical properties.
     if (prefix === 'pd') {
-      el.style.paddingTop = top;
-      el.style.paddingRight = right;
-      el.style.paddingBottom = bottom;
-      el.style.paddingLeft = left;
-      utiliKitProperties.add('paddingTop');
-      utiliKitProperties.add('paddingRight');
-      utiliKitProperties.add('paddingBottom');
-      utiliKitProperties.add('paddingLeft');
+      el.style.paddingBlockStart = blockStart;
+      el.style.paddingInlineEnd = inlineEnd;
+      el.style.paddingBlockEnd = blockEnd;
+      el.style.paddingInlineStart = inlineStart;
+      utiliKitProperties.add('paddingBlockStart');
+      utiliKitProperties.add('paddingInlineEnd');
+      utiliKitProperties.add('paddingBlockEnd');
+      utiliKitProperties.add('paddingInlineStart');
     } else if (prefix === 'mg') {
-      el.style.marginTop = top;
-      el.style.marginRight = right;
-      el.style.marginBottom = bottom;
-      el.style.marginLeft = left;
-      utiliKitProperties.add('marginTop');
-      utiliKitProperties.add('marginRight');
-      utiliKitProperties.add('marginBottom');
-      utiliKitProperties.add('marginLeft');
+      el.style.marginBlockStart = blockStart;
+      el.style.marginInlineEnd = inlineEnd;
+      el.style.marginBlockEnd = blockEnd;
+      el.style.marginInlineStart = inlineStart;
+      utiliKitProperties.add('marginBlockStart');
+      utiliKitProperties.add('marginInlineEnd');
+      utiliKitProperties.add('marginBlockEnd');
+      utiliKitProperties.add('marginInlineStart');
     } else if (prefix === 'bw') {
-      el.style.borderTopWidth = top;
-      el.style.borderRightWidth = right;
-      el.style.borderBottomWidth = bottom;
-      el.style.borderLeftWidth = left;
-      utiliKitProperties.add('borderTopWidth');
-      utiliKitProperties.add('borderRightWidth');
-      utiliKitProperties.add('borderBottomWidth');
-      utiliKitProperties.add('borderLeftWidth');
+      el.style.borderBlockStartWidth = blockStart;
+      el.style.borderInlineEndWidth = inlineEnd;
+      el.style.borderBlockEndWidth = blockEnd;
+      el.style.borderInlineStartWidth = inlineStart;
+      utiliKitProperties.add('borderBlockStartWidth');
+      utiliKitProperties.add('borderInlineEndWidth');
+      utiliKitProperties.add('borderBlockEndWidth');
+      utiliKitProperties.add('borderInlineStartWidth');
     } else if (prefix === 'br') {
-      // For border-radius, apply to all corners
-      el.style.borderTopLeftRadius = top;
-      el.style.borderTopRightRadius = right;
-      el.style.borderBottomRightRadius = bottom;
-      el.style.borderBottomLeftRadius = left;
-      utiliKitProperties.add('borderTopLeftRadius');
-      utiliKitProperties.add('borderTopRightRadius');
-      utiliKitProperties.add('borderBottomRightRadius');
-      utiliKitProperties.add('borderBottomLeftRadius');
+      el.style.borderStartStartRadius = blockStart;
+      el.style.borderStartEndRadius = inlineEnd;
+      el.style.borderEndEndRadius = blockEnd;
+      el.style.borderEndStartRadius = inlineStart;
+      utiliKitProperties.add('borderStartStartRadius');
+      utiliKitProperties.add('borderStartEndRadius');
+      utiliKitProperties.add('borderEndEndRadius');
+      utiliKitProperties.add('borderEndStartRadius');
     }
 
     return true;
@@ -257,12 +274,79 @@
    * @returns {boolean}
    *   TRUE if the keyword rule was applied, FALSE otherwise.
    */
+  /**
+   * Allowed keyword values per CSS property.
+   *
+   * Restricts keyword rules to valid CSS values only, preventing
+   * arbitrary strings from being applied as CSS property values.
+   */
+  const allowedKeywords = {
+    display: ['none', 'block', 'inline', 'inline-block', 'flex', 'inline-flex', 'grid', 'inline-grid', 'table', 'table-row', 'table-cell', 'contents', 'flow-root', 'list-item'],
+    position: ['static', 'relative', 'absolute', 'fixed', 'sticky'],
+    overflow: ['visible', 'hidden', 'scroll', 'auto', 'clip'],
+    overflowX: ['visible', 'hidden', 'scroll', 'auto', 'clip'],
+    overflowY: ['visible', 'hidden', 'scroll', 'auto', 'clip'],
+    textAlign: ['left', 'right', 'center', 'justify', 'start', 'end'],
+    float: ['left', 'right', 'none', 'inline-start', 'inline-end'],
+    clear: ['left', 'right', 'both', 'none', 'inline-start', 'inline-end'],
+    borderStyle: ['none', 'solid', 'dashed', 'dotted', 'double', 'groove', 'ridge', 'inset', 'outset', 'hidden'],
+    boxSizing: ['content-box', 'border-box'],
+    cursor: ['auto', 'default', 'none', 'pointer', 'grab', 'grabbing', 'text', 'move', 'not-allowed', 'crosshair', 'wait', 'help', 'zoom-in', 'zoom-out', 'col-resize', 'row-resize', 'n-resize', 's-resize', 'e-resize', 'w-resize'],
+    userSelect: ['none', 'auto', 'text', 'all', 'contain'],
+    flexDirection: ['row', 'row-reverse', 'column', 'column-reverse'],
+    flexWrap: ['nowrap', 'wrap', 'wrap-reverse'],
+    justifyContent: ['start', 'end', 'center', 'between', 'around', 'evenly', 'flex-start', 'flex-end', 'space-between', 'space-around', 'space-evenly', 'stretch', 'normal'],
+    alignItems: ['start', 'end', 'center', 'stretch', 'baseline', 'flex-start', 'flex-end', 'self-start', 'self-end', 'normal'],
+    alignContent: ['start', 'end', 'center', 'stretch', 'between', 'around', 'evenly', 'flex-start', 'flex-end', 'space-between', 'space-around', 'space-evenly', 'normal'],
+    order: ['0', '1', '2', '3', '4', '5', '-1'],
+    visibility: ['visible', 'hidden', 'collapse'],
+    whiteSpace: ['normal', 'nowrap', 'pre', 'pre-wrap', 'pre-line', 'break-spaces'],
+    wordBreak: ['normal', 'break-all', 'keep-all', 'break-word'],
+    textDecoration: ['none', 'underline', 'overline', 'line-through'],
+    textTransform: ['none', 'uppercase', 'lowercase', 'capitalize'],
+    fontStyle: ['normal', 'italic', 'oblique'],
+    listStyleType: ['none', 'disc', 'circle', 'square', 'decimal'],
+    objectFit: ['contain', 'cover', 'fill', 'none', 'scale-down'],
+    objectPosition: ['top', 'bottom', 'left', 'right', 'center'],
+    pointerEvents: ['auto', 'none'],
+    resize: ['none', 'both', 'horizontal', 'vertical'],
+    tableLayout: ['auto', 'fixed'],
+    borderCollapse: ['collapse', 'separate'],
+    verticalAlign: ['baseline', 'top', 'middle', 'bottom', 'sub', 'super', 'text-top', 'text-bottom'],
+    backgroundSize: ['auto', 'cover', 'contain'],
+  };
+
   Drupal.utilikit.applyKeywordRule = function(el, rule, suffix, utiliKitProperties, className) {
     if (!rule.isKeyword) return false;
     const match = suffix.match(/^([\w-]+)$/);
     if (!match) return false;
-    el.style[rule.css] = match[1];
-    utiliKitProperties.add(rule.css);
+
+    const keyword = match[1];
+    const cssProp = rule.css;
+
+    // Validate against allowed keywords for this CSS property.
+    if (allowedKeywords[cssProp]) {
+      // Map shorthand values (e.g., 'between' -> 'space-between').
+      let value = keyword;
+      if (cssProp === 'justifyContent' || cssProp === 'alignContent') {
+        const shorthandMap = {
+          'between': 'space-between',
+          'around': 'space-around',
+          'evenly': 'space-evenly',
+        };
+        value = shorthandMap[keyword] || keyword;
+      }
+      if (!allowedKeywords[cssProp].includes(value)) {
+        return false;
+      }
+      el.style[cssProp] = value;
+    }
+    else {
+      // No allowlist defined for this property — reject unknown properties.
+      return false;
+    }
+
+    utiliKitProperties.add(cssProp);
     return true;
   };
 
@@ -341,8 +425,8 @@
 Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProperties, className) {
     if (prefix !== 'gp') return false;
 
-    // First convert 'd' to '.' in the suffix
-    const normalizedSuffix = suffix.replace(/d/g, '.');
+    // Convert decimal notation: digit-d-digit becomes digit.digit (e.g., 1d5 -> 1.5).
+    const normalizedSuffix = suffix.replace(/(\d)d(\d)/g, '$1.$2');
 
     const match = normalizedSuffix.match(/^(\d+(?:\.\d+)?(?:px|pr|em|rem|vh|vw)?)(?:-(\d+(?:\.\d+)?(?:px|pr|em|rem|vh|vw)?))?$/);
     if (!match) return false;

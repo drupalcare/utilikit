@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\utilikit\Service;
 
+use Drupal\Core\Asset\AssetOptimizerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Asset\AssetOptimizerInterface;
 use Psr\Log\LoggerInterface;
-use Drupal\Core\File\FileExists;
 
 /**
  * Manages CSS file operations for UtiliKit static mode.
@@ -20,48 +20,6 @@ use Drupal\Core\File\FileExists;
  * and cache-busting URL generation.
  */
 class UtilikitFileManager {
-
-  /**
-   * The state manager service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitStateManager
-   */
-  protected UtilikitStateManager $stateManager;
-
-  /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected FileSystemInterface $fileSystem;
-
-  /**
-   * The file URL generator service.
-   *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
-   */
-  protected FileUrlGeneratorInterface $fileUrlGenerator;
-
-  /**
-   * The configuration factory service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected ConfigFactoryInterface $configFactory;
-
-  /**
-   * The CSS optimizer service.
-   *
-   * @var \Drupal\Core\Asset\AssetOptimizerInterface
-   */
-  protected AssetOptimizerInterface $cssOptimizer;
-
-  /**
-   * The logger service.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
 
   /**
    * Constructs a new UtilikitFileManager object.
@@ -80,20 +38,13 @@ class UtilikitFileManager {
    *   The logger service for recording file operations.
    */
   public function __construct(
-    UtilikitStateManager $stateManager,
-    FileSystemInterface $fileSystem,
-    FileUrlGeneratorInterface $fileUrlGenerator,
-    ConfigFactoryInterface $configFactory,
-    AssetOptimizerInterface $cssOptimizer,
-    LoggerInterface $logger,
-  ) {
-    $this->stateManager = $stateManager;
-    $this->fileSystem = $fileSystem;
-    $this->fileUrlGenerator = $fileUrlGenerator;
-    $this->configFactory = $configFactory;
-    $this->cssOptimizer = $cssOptimizer;
-    $this->logger = $logger;
-  }
+    protected readonly UtilikitStateManager $stateManager,
+    protected readonly FileSystemInterface $fileSystem,
+    protected readonly FileUrlGeneratorInterface $fileUrlGenerator,
+    protected readonly ConfigFactoryInterface $configFactory,
+    protected readonly AssetOptimizerInterface $cssOptimizer,
+    protected readonly LoggerInterface $logger,
+  ) {}
 
   /**
    * Ensures the static CSS file exists and is up to date.
@@ -165,48 +116,64 @@ class UtilikitFileManager {
    *
    * @param string $css_file_uri
    *   The URI of the CSS file to optimize.
+   *
+   * @return bool
+   *   TRUE if optimization succeeded, FALSE otherwise.
    */
-  private function optimizeCssFile(string $css_file_uri): void {
+  private function optimizeCssFile(string $css_file_uri): bool {
     try {
+      // Read via stream wrapper URI (e.g. public://) for Drupal compatibility.
       $css_content = file_get_contents($css_file_uri);
-      if ($css_content === FALSE) {
+      if ($css_content === FALSE || $css_content === '') {
         $this->logger->error('Failed to read CSS file for optimization: @uri', [
           '@uri' => $css_file_uri,
         ]);
-        return;
+        return FALSE;
       }
 
+      $optimized_css = '';
+
       try {
-        $css_asset = [
-          'type' => 'file',
-          'data' => $css_file_uri,
-          'weight' => 0,
-          'group' => 0,
-          'every_page' => FALSE,
-          'media' => 'all',
-          'preprocess' => TRUE,
-          'browsers' => ['IE' => TRUE, '!IE' => TRUE],
-        ];
+        // Drupal's CssOptimizer::optimize() expects a real file path in
+        // 'data' and returns the optimized CSS as a string.
+        $real_path = $this->fileSystem->realpath($css_file_uri);
+        if ($real_path && file_exists($real_path)) {
+          $css_asset = [
+            'type' => 'file',
+            'data' => $real_path,
+            'weight' => 0,
+            'group' => 0,
+            'every_page' => FALSE,
+            'media' => 'all',
+            'preprocess' => TRUE,
+            'browsers' => ['IE' => TRUE, '!IE' => TRUE],
+          ];
 
-        $optimized_assets = $this->cssOptimizer->optimize($css_asset);
+          $result = $this->cssOptimizer->optimize($css_asset);
 
-        if (!empty($optimized_assets) && isset($optimized_assets['data'])) {
-          $optimized_css = file_get_contents($optimized_assets['data']);
-        }
-        else {
-          $optimized_css = $this->minifyCss($css_content);
+          // optimize() returns a string of optimized CSS.
+          if (is_string($result) && $result !== '') {
+            $optimized_css = $result;
+          }
         }
       }
       catch (\Exception $e) {
+        // Drupal optimizer failed, fall through to minifyCss().
+      }
+
+      // Fallback to built-in minifier.
+      if ($optimized_css === '') {
         $optimized_css = $this->minifyCss($css_content);
       }
 
-      if (!empty($optimized_css) && $optimized_css !== $css_content) {
+      if ($optimized_css !== '' && $optimized_css !== $css_content) {
         $this->fileSystem->saveData($optimized_css, $css_file_uri, FileExists::Replace);
 
         $original_size = strlen($css_content);
         $optimized_size = strlen($optimized_css);
-        $reduction = round((1 - $optimized_size / $original_size) * 100, 1);
+        $reduction = ($original_size > 0)
+          ? round((1 - $optimized_size / $original_size) * 100, 1)
+          : 0;
 
         $this->logger->info('CSS optimized: @original KB → @optimized KB (@reduction% reduction)', [
           '@original' => round($original_size / 1024, 1),
@@ -214,11 +181,14 @@ class UtilikitFileManager {
           '@reduction' => $reduction,
         ]);
       }
+
+      return TRUE;
     }
     catch (\Exception $e) {
       $this->logger->warning('CSS optimization failed: @message. Using unoptimized CSS.', [
         '@message' => $e->getMessage(),
       ]);
+      return FALSE;
     }
   }
 
@@ -274,14 +244,18 @@ class UtilikitFileManager {
     if ($dir_real_path && is_dir($dir_real_path)) {
       $files = scandir($dir_real_path);
       if ($files !== FALSE && count($files) <= 2) {
-        @rmdir($dir_real_path);
+        if (!rmdir($dir_real_path)) {
+          $this->logger->debug('Could not remove empty directory: @path', ['@path' => $dir_real_path]);
+        }
 
         $parent_dir = $this->fileSystem->dirname($css_directory);
         $parent_real_path = $this->fileSystem->realpath($parent_dir);
         if ($parent_real_path && is_dir($parent_real_path)) {
           $parent_files = scandir($parent_real_path);
           if ($parent_files !== FALSE && count($parent_files) <= 2) {
-            @rmdir($parent_real_path);
+            if (!rmdir($parent_real_path)) {
+              $this->logger->debug('Could not remove empty parent directory: @path', ['@path' => $parent_real_path]);
+            }
           }
         }
       }
@@ -307,8 +281,11 @@ class UtilikitFileManager {
       return NULL;
     }
 
-    // Read file content for hash (more reliable than state which may be stale).
-    $css_content = file_get_contents($css_real_path);
+    // Read via stream wrapper URI (e.g. public://) for Drupal compatibility.
+    $css_content = file_get_contents($css_file_uri);
+    if ($css_content === FALSE) {
+      return NULL;
+    }
     // Use 6 chars to match Drupal's cache busting format.
     $css_hash = substr(md5($css_content), 0, 6);
 

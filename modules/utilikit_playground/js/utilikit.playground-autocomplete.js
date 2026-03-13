@@ -39,26 +39,26 @@
     mg: { css: 'margin', sides: true, isNumericFlexible: true, allowAuto: true, group: 'Box Model' },
     bw: { css: 'borderWidth', sides: true, isNumericFlexible: true, group: 'Box Model' },
     br: { css: 'borderRadius', sides: true, isNumericFlexible: true, group: 'Box Model' },
-    bs: { css: 'borderStyle', isKeyword: true, group: 'Box Model' },
+    bs: { css: 'borderStyle', isKeyword: true, sides: true, group: 'Box Model' },
 
     // Colors
     bc: { css: 'borderColor', isColor: true, group: 'Colors' },
     bg: { css: 'backgroundColor', isColor: true, group: 'Colors' },
     tc: { css: 'color', isColor: true, group: 'Colors' },
 
-    // Sizing
-    wd: { css: 'width', isNumericFlexible: true, group: 'Sizing' },
-    ht: { css: 'height', isNumericFlexible: true, group: 'Sizing' },
-    xw: { css: 'maxWidth', isNumericFlexible: true, group: 'Sizing' },
-    nw: { css: 'minWidth', isNumericFlexible: true, group: 'Sizing' },
-    xh: { css: 'maxHeight', isNumericFlexible: true, group: 'Sizing' },
-    nh: { css: 'minHeight', isNumericFlexible: true, group: 'Sizing' },
+    // Sizing (logical properties)
+    wd: { css: 'inlineSize', isNumericFlexible: true, group: 'Sizing' },
+    ht: { css: 'blockSize', isNumericFlexible: true, group: 'Sizing' },
+    xw: { css: 'maxInlineSize', isNumericFlexible: true, group: 'Sizing' },
+    nw: { css: 'minInlineSize', isNumericFlexible: true, group: 'Sizing' },
+    xh: { css: 'maxBlockSize', isNumericFlexible: true, group: 'Sizing' },
+    nh: { css: 'minBlockSize', isNumericFlexible: true, group: 'Sizing' },
 
-    // Positioning
-    tp: { css: 'top', isNumericFlexible: true, group: 'Positioning' },
-    lt: { css: 'left', isNumericFlexible: true, group: 'Positioning' },
-    ri: { css: 'right', isNumericFlexible: true, group: 'Positioning' },
-    bt: { css: 'bottom', isNumericFlexible: true, group: 'Positioning' },
+    // Positioning (logical properties)
+    tp: { css: 'insetBlockStart', isNumericFlexible: true, group: 'Positioning' },
+    lt: { css: 'insetInlineStart', isNumericFlexible: true, group: 'Positioning' },
+    ri: { css: 'insetInlineEnd', isNumericFlexible: true, group: 'Positioning' },
+    bt: { css: 'insetBlockEnd', isNumericFlexible: true, group: 'Positioning' },
     ps: { css: 'position', isKeyword: true, group: 'Positioning' },
 
     // Typography
@@ -231,6 +231,15 @@
       keywords.forEach(keyword => {
         suggestions.push(`uk-${prefix}--${keyword}`);
       });
+
+      // Side-specific keyword suggestions (e.g., uk-bs--b-dashed).
+      if (rule.sides) {
+        ['t', 'r', 'b', 'l'].forEach(dir => {
+          keywords.forEach(keyword => {
+            suggestions.push(`uk-${prefix}--${dir}-${keyword}`);
+          });
+        });
+      }
     }
 
     else if (rule.isColor) {
@@ -241,6 +250,16 @@
           suggestions.push(`uk-${prefix}--${color.value}-${opacity}`);
         });
       });
+      // Pseudo-state variants for bg and tc only (static/head mode).
+      if (prefix === 'bg' || prefix === 'tc') {
+        commonColors.slice(0, 6).forEach(color => {
+          ['h', 'f', 'a'].forEach(state => {
+            suggestions.push(`uk-${prefix}--${color.value}-${state}`);
+          });
+          // Alpha + pseudo-state combo
+          suggestions.push(`uk-${prefix}--${color.value}-50-h`);
+        });
+      }
     }
 
     else if (rule.isInteger) {
@@ -426,16 +445,29 @@
         if (currentSuggestions.length > 0) {
           selectedIndex = -1;
 
-          // Build autocomplete HTML
-          autocomplete.innerHTML = currentSuggestions.map((sug, index) => {
+          // Build autocomplete using safe DOM methods (no innerHTML with dynamic data).
+          autocomplete.textContent = '';
+          const fragment = document.createDocumentFragment();
+          currentSuggestions.forEach((sug, index) => {
             const propertyName = getPropertyName(sug);
-            return `
-              <div class="autocomplete-item" data-index="${index}" data-value="${sug}">
-                <span class="autocomplete-class">${sug}</span>
-                <span class="autocomplete-property">${propertyName}</span>
-              </div>
-            `;
-          }).join('');
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            item.dataset.index = index;
+            item.dataset.value = sug;
+
+            const classSpan = document.createElement('span');
+            classSpan.className = 'autocomplete-class';
+            classSpan.textContent = sug;
+
+            const propSpan = document.createElement('span');
+            propSpan.className = 'autocomplete-property';
+            propSpan.textContent = propertyName;
+
+            item.appendChild(classSpan);
+            item.appendChild(propSpan);
+            fragment.appendChild(item);
+          });
+          autocomplete.appendChild(fragment);
 
           autocomplete.style.display = 'block';
 

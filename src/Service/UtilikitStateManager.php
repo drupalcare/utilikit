@@ -24,21 +24,14 @@ use Drupal\Core\State\StateInterface;
 class UtilikitStateManager {
 
   /**
-   * The state service for persistent data storage.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected StateInterface $state;
-
-  /**
    * Constructs a new UtilikitStateManager.
    *
    * @param \Drupal\Core\State\StateInterface $state
    *   The state service for storing persistent data across requests.
    */
-  public function __construct(StateInterface $state) {
-    $this->state = $state;
-  }
+  public function __construct(
+    protected readonly StateInterface $state,
+  ) {}
 
   /**
    * Gets the list of known utility classes.
@@ -130,7 +123,7 @@ class UtilikitStateManager {
    * This removes the generated CSS and known classes from state storage.
    * Used during module resets, mode switches, and uninstallation.
    */
-  public function clearUtiliKitData(): void {
+  public function clearUtilikitData(): void {
     $this->state->deleteMultiple([
       UtilikitConstants::STATE_GENERATED_CSS,
       UtilikitConstants::STATE_KNOWN_CLASSES,
@@ -213,7 +206,7 @@ class UtilikitStateManager {
    *   An array of state key names used by UtiliKit for core operations.
    *   Does not include rate limiting keys as they are dynamic.
    */
-  public function getAllUtiliKitStateKeys(): array {
+  public function getAllUtilikitStateKeys(): array {
     return [
       UtilikitConstants::STATE_KNOWN_CLASSES,
       UtilikitConstants::STATE_GENERATED_CSS,

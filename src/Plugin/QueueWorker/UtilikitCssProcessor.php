@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\utilikit\Plugin\QueueWorker;
 
-use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Queue\QueueWorkerBase;
 use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Processes queued CSS updates for UtiliKit utility classes.
@@ -27,27 +27,13 @@ use Psr\Log\LoggerInterface;
 class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPluginInterface {
 
   /**
-   * The logger service.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
-   * The UtiliKit service provider.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
-   */
-  protected UtilikitServiceProvider $serviceProvider;
-
-  /**
    * Constructs a new UtilikitCssProcessor object.
    *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
    *   The plugin_id for the plugin instance.
-   * @param mixed $plugin_definition
+   * @param array $plugin_definition
    *   The plugin implementation definition.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service for recording processing events.
@@ -56,14 +42,12 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
    */
   public function __construct(
     array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    LoggerInterface $logger,
-    UtilikitServiceProvider $serviceProvider,
+    string $plugin_id,
+    array $plugin_definition,
+    protected readonly LoggerInterface $logger,
+    protected readonly UtilikitServiceProvider $serviceProvider,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->logger = $logger;
-    $this->serviceProvider = $serviceProvider;
   }
 
   /**

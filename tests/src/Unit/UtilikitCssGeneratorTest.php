@@ -86,14 +86,20 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
 
     $this->settingsConfig
       ->method('get')
-      ->with('active_breakpoints')
-      ->willReturn([
-        'sm' => TRUE,
-        'md' => TRUE,
-        'lg' => TRUE,
-        'xl' => TRUE,
-        'xxl' => TRUE,
-      ]);
+      ->willReturnCallback(static function (string $key) {
+        return match ($key) {
+          'active_breakpoints' => [
+            'sm' => TRUE,
+            'md' => TRUE,
+            'lg' => TRUE,
+            'xl' => TRUE,
+            'xxl' => TRUE,
+          ],
+          'use_important' => TRUE,
+          'rendering_mode' => 'inline',
+          default => NULL,
+        };
+      });
 
     $this->cssGenerator = new UtilikitCssGenerator(
       $this->configFactory,
@@ -110,17 +116,17 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
    */
   public function testGenerateCssFromClassesFiltersInvalidAndDuplicateValues(): void {
     $classes = [
-      'uk-m--10',
+      'uk-pd--10',
       '',
       NULL,
       'not-utilikit',
-      'uk-m--10',
+      'uk-pd--10',
     ];
 
     $this->contentScanner
       ->method('isValidUtilityClass')
       ->willReturnCallback(static function (string $class): bool {
-        return substr($class, 0, 3) === 'uk-';
+        return str_starts_with($class, 'uk-');
       });
 
     $this->cache
@@ -144,7 +150,7 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
     $this->assertIsString($css);
     $this->assertNotSame('', $css);
     // Valid utility class should appear as a selector.
-    $this->assertStringContainsString('.uk-m--10', $css);
+    $this->assertStringContainsString('.uk-pd--10', $css);
     // Non-utilikit class should not become a selector.
     $this->assertStringNotContainsString('not-utilikit', $css);
   }
@@ -155,9 +161,7 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCssFromClasses
    */
   public function testGenerateCssFromClassesUsesCacheWhenAvailable(): void {
-    $classes = ['uk-m--10'];
-    sort($classes);
-    $cid = 'utilikit:css:' . md5(serialize($classes));
+    $classes = ['uk-pd--10'];
 
     $cacheHit = (object) ['data' => '/* cached css */'];
 
@@ -168,14 +172,18 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
     $this->cache
       ->expects($this->exactly(2))
       ->method('get')
-      ->with($cid)
+      ->with($this->callback(static function (string $cid): bool {
+        return str_starts_with($cid, 'utilikit:css:');
+      }))
       ->willReturnOnConsecutiveCalls(FALSE, $cacheHit);
 
     $this->cache
       ->expects($this->once())
       ->method('set')
       ->with(
-        $cid,
+        $this->callback(static function (string $cid): bool {
+          return str_starts_with($cid, 'utilikit:css:');
+        }),
         $this->isType('string'),
         $this->anything(),
         $this->callback(static function (array $tags): bool {

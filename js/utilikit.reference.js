@@ -1,244 +1,59 @@
 /**
  * @file
- * Interactive features for UtiliKit Reference page with comprehensive security.
+ * Interactive features for UtiliKit Reference page.
  *
- * This file provides the complete interactive functionality for the UtiliKit
- * reference documentation page, including copy-to-clipboard features, live
- * utility class examples, hover tooltips, and comprehensive security measures
- * to prevent XSS attacks and ensure safe user interactions.
- *
- * Key Features:
- * - Secure copy-to-clipboard functionality for utility class examples
- * - Interactive live preview playground with real-time CSS application
- * - Hover tooltips with contextual examples and usage information
- * - Comprehensive input validation and sanitization throughout
- * - Cross-browser compatibility for clipboard operations
- * - Accessibility features for screen readers and keyboard navigation
- *
- * Security Measures:
- * - All user input sanitized through UtiliKit's security utilities
- * - Utility class validation before any DOM manipulation
- * - Safe DOM element creation preventing XSS vulnerabilities
- * - Input validation for all clipboard and preview operations
- * - Error handling that fails safely without exposing internals
- *
- * User Experience Features:
- * - Visual feedback for successful and failed operations
- * - Debounced input handling for smooth interactive performance
- * - Fallback clipboard methods for broader browser support
- * - Contextual examples tailored to specific utility class types
- * - Responsive design considerations for mobile and desktop usage
+ * Provides copy-to-clipboard, live utility class preview playground,
+ * and click-to-expand usage panels with security validation throughout.
  */
 (function (Drupal, once) {
   'use strict';
 
-  /**
-   * UtiliKit Reference page behavior for interactive documentation features.
-   *
-   * This behavior initializes all interactive features on the UtiliKit reference
-   * page, including copy buttons, live examples, and hover effects. It ensures
-   * proper dependency loading and provides comprehensive error handling for
-   * a robust user experience.
-   */
   Drupal.behaviors.utilikitReference = {
-
-    /**
-     * Attaches interactive functionality to UtiliKit reference page elements.
-     *
-     * This method initializes all interactive features with proper dependency
-     * checking and error handling. It waits for UtiliKit core functions to
-     * be available before proceeding with initialization to ensure all
-     * required functionality is present.
-     *
-     * @param {Document|Element} context
-     *   The DOM context being processed, typically the document or a
-     *   specific container after AJAX operations.
-     * @param {Object} settings
-     *   Drupal settings object containing configuration and runtime data.
-     */
-    attach: function (context, settings) {
-      // Wait for UtiliKit core to be loaded before initializing reference features
-      if (typeof Drupal.utilikit === 'undefined' || typeof Drupal.utilikit.applyClasses !== 'function') {
-        setTimeout(() => {
-          Drupal.behaviors.utilikitReference.attach(context, settings);
-        }, 100);
+    attach(context, settings, retryCount = 0) {
+      const maxRetries = 50;
+      if (!Drupal.utilikit?.applyClasses) {
+        if (retryCount < maxRetries) {
+          setTimeout(() => {
+            Drupal.behaviors.utilikitReference.attach(context, settings, retryCount + 1);
+          }, 100);
+        }
         return;
       }
 
-      // Initialize all reference page features with error handling
-      once('utilikit-reference', '.utilikit-reference-page', context).forEach(function (element) {
+      for (const element of once('utilikit-reference', '.utilikit-reference-page', context)) {
         try {
-          initializeCopyButtons(element);
           initializeInteractiveExample(element);
           addHoverEffects(element);
         } catch (error) {
           console.error('UtiliKit Reference: Initialization failed', error);
         }
-      });
+      }
     }
   };
 
-  /**
-   * Initializes secure copy-to-clipboard functionality for utility class examples.
-   *
-   * This function adds copy buttons to utility class syntax examples and
-   * group collections, with comprehensive security validation to prevent
-   * malicious code injection. All copied content is validated before
-   * clipboard operations to ensure only valid UtiliKit classes are copied.
-   *
-   * Security Features:
-   * - Input sanitization through UtiliKit security utilities
-   * - Utility class validation before clipboard operations
-   * - Safe DOM element creation to prevent XSS attacks
-   * - Error handling that fails safely without exposing internals
-   *
-   * @param {Element} container
-   *   The container element containing syntax items and copy targets.
-   *   Should be the reference page container or a specific section.
-   *
-   * @example
-   * // Called automatically during reference page initialization
-   * // Manual initialization for specific container:
-   * const section = document.querySelector('.syntax-section');
-   * initializeCopyButtons(section);
-   */
-  function initializeCopyButtons(container) {
-    // Initialize individual syntax item copy buttons
-    container.querySelectorAll('.syntax-item').forEach(function (item) {
-      // Skip items that already have copy buttons to prevent duplicates
-      if (item.querySelector('.copy-btn')) return;
+  // ── Clipboard helpers ────────────────────────────────────────────
 
-      item.style.position = 'relative';
-
-      const syntaxEl = item.querySelector('.syntax');
-      if (!syntaxEl) return;
-
-      // Create secure copy button using UtiliKit's security utilities
-      const copyBtn = Drupal.utilikit.security.createSafeElement('button', 'Copy', {
-        'class': 'copy-btn',
-        'type': 'button',
-        'aria-label': 'Copy utility class example'
-      });
-
-      copyBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        e.preventDefault();
-
-        try {
-          const prefix = syntaxEl.querySelector('.syntax-prefix');
-          const value = syntaxEl.querySelector('.syntax-value');
-          if (!prefix) return;
-
-          // Security: Validate and sanitize prefix
-          const prefixText = Drupal.utilikit.security.sanitizeText(prefix.textContent);
-          let valueText = value ? Drupal.utilikit.security.sanitizeText(value.textContent) : '20';
-
-          // If the value is the generic word "value", get the first example instead
-          if (valueText === 'value') {
-            const examples = getExamplesForSyntax(`uk-${prefixText}--`);
-            valueText = examples.split(',')[0].trim(); // Get first example
-          }
-
-          const textToCopy = `uk-${prefixText}--${valueText}`;
-
-          // Validate the generated class against UtiliKit security rules
-          if (!Drupal.utilikit.security.isValidUtilityClass(textToCopy)) {
-            console.warn('UtiliKit: Invalid class generated for copy');
-            return;
-          }
-
-          safeCopyToClipboard(textToCopy, copyBtn);
-        } catch (error) {
-          console.error('UtiliKit: Copy failed', error);
-          showCopyError(copyBtn);
-        }
-      });
-
-      item.appendChild(copyBtn);
-    });
-
-    // Initialize group copy buttons for bulk copying multiple classes
-    container.querySelectorAll('.copy-group-btn').forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        e.preventDefault();
-
-        try {
-          const groupContainer = btn.closest('.syntax-group').querySelector('.syntax-items');
-          const classes = [];
-
-          groupContainer.querySelectorAll('.syntax-prefix').forEach(function(prefixEl) {
-            const prefixText = Drupal.utilikit.security.sanitizeText(prefixEl.textContent);
-            const className = `uk-${prefixText}--20`;
-
-            // Security: Only add validated classes to prevent malicious content
-            if (Drupal.utilikit.security.isValidUtilityClass(className)) {
-              classes.push(className);
-            }
-          });
-
-          if (classes.length > 0) {
-            safeCopyToClipboard(classes.join(' '), btn);
-          }
-        } catch (error) {
-          console.error('UtiliKit: Group copy failed', error);
-          showCopyError(btn);
-        }
-      });
-    });
-  }
-
-  /**
-   * Secure clipboard copy function with fallback support and validation.
-   *
-   * This function implements secure clipboard operations using modern
-   * Clipboard API with fallback to legacy methods for broader browser
-   * support. All input is validated before clipboard operations to
-   * prevent potential security issues.
-   *
-   * @param {string} text
-   *   The text content to copy to clipboard. Must be a valid, non-empty
-   *   string that has been pre-validated for security.
-   * @param {Element} button
-   *   The button element that triggered the copy operation, used for
-   *   visual feedback and user experience enhancements.
-   */
   function safeCopyToClipboard(text, button) {
-    // Validate input to ensure security and prevent empty clipboard operations
     if (typeof text !== 'string' || !text.trim()) {
       showCopyError(button);
       return;
     }
 
-    // Use modern Clipboard API when available and secure context exists
     if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(text).then(function () {
-        showCopySuccess(button);
-      }).catch(function(err) {
-        console.error('Clipboard API failed:', err);
-        fallbackCopy(text, button);
-      });
+      navigator.clipboard.writeText(text).then(
+        () => showCopySuccess(button),
+        (err) => {
+          console.error('Clipboard API failed:', err);
+          fallbackCopy(text, button);
+        },
+      );
     } else {
-      // Fall back to legacy method for broader browser compatibility
       fallbackCopy(text, button);
     }
   }
 
-  /**
-   * Secure fallback clipboard copy method for legacy browser support.
-   *
-   * This function implements a secure fallback for clipboard operations
-   * using the legacy document.execCommand approach. It creates a temporary
-   * textarea element with security attributes to safely copy content
-   * without exposing it to potential manipulation.
-   *
-   * @param {string} text
-   *   The validated text content to copy using legacy clipboard methods.
-   * @param {Element} button
-   *   The button element for visual feedback during the copy operation.
-   */
   function fallbackCopy(text, button) {
     try {
-      // Create secure temporary textarea for legacy clipboard operation
       const textarea = document.createElement('textarea');
       textarea.value = text;
       textarea.style.position = 'fixed';
@@ -266,40 +81,19 @@
     }
   }
 
-  /**
-   * Displays visual feedback for successful clipboard copy operations.
-   *
-   * This function provides immediate visual feedback to users when clipboard
-   * operations succeed, enhancing user experience with clear confirmation
-   * of the completed action. The feedback is temporary and automatically
-   * reverts to the original state.
-   *
-   * @param {Element} button
-   *   The button element to update with success feedback styling and text.
-   */
   function showCopySuccess(button) {
     const originalText = button.textContent;
     button.textContent = 'Copied!';
     button.classList.add('copied', 'success-pulse');
     button.setAttribute('aria-label', 'Copied to clipboard');
 
-    setTimeout(function () {
+    setTimeout(() => {
       button.textContent = originalText;
       button.classList.remove('copied', 'success-pulse');
       button.setAttribute('aria-label', 'Copy utility class example');
     }, 2000);
   }
 
-  /**
-   * Displays visual feedback for failed clipboard copy operations.
-   *
-   * This function provides clear visual indication when clipboard operations
-   * fail, helping users understand that the operation was not successful
-   * and may need to be retried or performed manually.
-   *
-   * @param {Element} button
-   *   The button element to update with error feedback styling and text.
-   */
   function showCopyError(button) {
     const originalText = button.textContent;
     const originalBg = button.style.background;
@@ -308,63 +102,40 @@
     button.style.background = '#dc3545';
     button.setAttribute('aria-label', 'Copy failed');
 
-    setTimeout(function () {
+    setTimeout(() => {
       button.textContent = originalText;
       button.style.background = originalBg;
       button.setAttribute('aria-label', 'Copy utility class example');
     }, 2000);
   }
 
-  /**
-   * Initializes the interactive example playground with live utility class preview.
-   *
-   * This function creates a secure, interactive environment where users can
-   * test utility classes in real-time with live CSS application and visual
-   * feedback. All input is validated and sanitized to prevent XSS attacks
-   * while providing an educational and functional testing environment.
-   *
-   * Features:
-   * - Real-time utility class application with live preview
-   * - Clickable code examples for quick testing
-   * - Debounced input handling for smooth performance
-   * - Comprehensive input validation and sanitization
-   * - Visual feedback for user interactions
-   *
-   * @param {Element} container
-   *   The container element containing the interactive example interface.
-   *   Should include input field and preview area elements.
-   */
+  // ── Interactive example playground ────────────────────────────────
+
   function initializeInteractiveExample(container) {
     const input = container.querySelector('#utilikit-example-input');
     const preview = container.querySelector('#utilikit-example-preview');
 
-    if (!input || !preview) {
-      return;
-    }
+    if (!input || !preview) return;
 
-    // Make example code blocks clickable for quick testing
-    container.querySelectorAll('.interactive-example code').forEach(function(codeBlock) {
+    // Make example code blocks clickable for quick testing.
+    for (const codeBlock of container.querySelectorAll('.interactive-example code')) {
       codeBlock.style.cursor = 'pointer';
       codeBlock.title = 'Click to try this example';
 
-      codeBlock.addEventListener('click', function() {
+      codeBlock.addEventListener('click', () => {
         try {
-          // Security: Sanitize the code block content before processing
           const content = Drupal.utilikit.security.sanitizeText(codeBlock.textContent);
-
-          // Validate each class individually before applying
-          const classes = content.split(/\s+/).filter(cls => {
-            return Drupal.utilikit.security.isValidUtilityClass(cls);
-          });
+          const classes = content.split(/\s+/).filter(
+            (cls) => Drupal.utilikit.security.isValidUtilityClass(cls),
+          );
 
           if (classes.length > 0) {
             input.value = classes.join(' ');
             updatePreview();
 
-            // Provide visual feedback for successful code block interaction
             codeBlock.style.background = '#28a745';
             codeBlock.style.color = 'white';
-            setTimeout(function() {
+            setTimeout(() => {
               codeBlock.style.background = '';
               codeBlock.style.color = '';
             }, 300);
@@ -373,249 +144,381 @@
           console.error('UtiliKit: Example click failed', error);
         }
       });
-    });
+    }
 
-    // Initialize preview element with safe default state
+    // Initialize preview element with safe default state.
     preview.textContent = 'Preview Text';
     preview.className = 'example-preview utilikit';
 
-    // Set secure initial example with validated classes
     const initialClasses = 'uk-pd--20 uk-bg--007bff uk-tc--ffffff uk-br--8 uk-fs--18';
     input.value = initialClasses;
     updatePreview();
 
-    // Add debounced input listeners for smooth real-time updates
     let timeout;
-    input.addEventListener('input', function() {
+    input.addEventListener('input', () => {
       clearTimeout(timeout);
       timeout = setTimeout(updatePreview, 300);
     });
 
-    input.addEventListener('paste', function() {
+    input.addEventListener('paste', () => {
       setTimeout(updatePreview, 10);
     });
 
-    /**
-     * Updates the live preview with validated utility classes.
-     *
-     * This internal function safely processes user input, validates all
-     * utility classes, and applies them to the preview element. It provides
-     * comprehensive security validation to prevent XSS attacks while
-     * maintaining a smooth user experience.
-     */
     function updatePreview() {
       try {
-        // Security: Validate and sanitize all user input
         const inputValue = Drupal.utilikit.security.sanitizeText(input.value);
         const classes = inputValue.trim().split(/\s+/);
 
-        // Reset preview to secure base state
         preview.className = 'example-preview utilikit';
         preview.removeAttribute('style');
 
-        // Apply only validated utility classes to prevent malicious content
-        classes.forEach(function (cls) {
+        for (const cls of classes) {
           if (cls && Drupal.utilikit.security.isValidUtilityClass(cls)) {
             preview.classList.add(cls);
           }
-        });
+        }
 
-        // Force UtiliKit to safely reprocess the updated element
-        if (Drupal.utilikit && Drupal.utilikit.applyClasses) {
+        if (Drupal.utilikit?.applyClasses) {
           delete preview.dataset.utilikitProps;
           Drupal.utilikit.applyClasses([preview]);
         }
       } catch (error) {
         console.error('UtiliKit: Preview update failed', error);
-        // Reset to safe state on any error to prevent security issues
         preview.className = 'example-preview utilikit';
         preview.removeAttribute('style');
       }
     }
   }
 
-  /**
-   * Adds secure hover effects with contextual examples and tooltips.
-   *
-   * This function enhances the reference page with informative hover
-   * tooltips that provide contextual examples for utility class patterns.
-   * All tooltip content is generated securely to prevent XSS vulnerabilities
-   * while providing valuable educational information.
-   *
-   * @param {Element} container
-   *   The container element containing syntax items that should receive
-   *   hover effects and tooltip functionality.
-   */
+  // ── Click-to-expand usage panels ──────────────────────────────────
+
   function addHoverEffects(container) {
-    container.querySelectorAll('.syntax-item').forEach(function (item) {
-      // Skip items that already have tooltip wrappers to prevent duplicates
-      if (item.parentNode.classList.contains('tooltip-wrapper')) return;
+    let activePanel = null;
+    let activeItem = null;
 
-      try {
-        // Create secure tooltip element using UtiliKit security utilities
-        const tooltip = Drupal.utilikit.security.createSafeElement('div', '', {
-          'class': 'tooltip-content',
-          'role': 'tooltip'
-        });
+    for (const item of container.querySelectorAll('.syntax-item')) {
+      if (item.dataset.expandInit) continue;
+      item.dataset.expandInit = '1';
+      item.style.cursor = 'pointer';
 
-        const syntaxElement = item.querySelector('.syntax');
-        if (!syntaxElement) return;
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
 
-        // Generate secure contextual examples for the utility class pattern
-        const syntax = Drupal.utilikit.security.sanitizeText(syntaxElement.textContent.trim());
-        const examples = getExamplesForSyntax(syntax);
+        if (activeItem === item) {
+          closePanel();
+          return;
+        }
 
-        // Security: Use safe DOM creation instead of innerHTML injection
-        const strongEl = Drupal.utilikit.security.createSafeElement('strong', 'Examples: ');
-        tooltip.appendChild(strongEl);
-        tooltip.appendChild(document.createTextNode(examples));
+        closePanel();
 
-        // Create wrapper for proper tooltip positioning
-        const wrapper = Drupal.utilikit.security.createSafeElement('div', '', {
-          'class': 'tooltip-wrapper'
-        });
+        try {
+          const prefix = item.dataset.prefix || '';
+          if (!prefix) return;
 
-        item.parentNode.insertBefore(wrapper, item);
-        wrapper.appendChild(item);
-        wrapper.appendChild(tooltip);
-      } catch (error) {
-        console.error('UtiliKit: Hover effect failed', error);
-      }
-    });
+          const scenarios = getScenariosForPrefix(prefix, item);
+          if (!scenarios.length) return;
+
+          const panel = document.createElement('div');
+          panel.className = 'expand-panel';
+
+          for (const s of scenarios) {
+            const row = document.createElement('div');
+            row.className = 'expand-row';
+
+            const label = document.createElement('span');
+            label.className = 'expand-label';
+            label.textContent = s.label;
+            row.appendChild(label);
+
+            const code = document.createElement('code');
+            code.className = 'expand-class';
+            code.textContent = s.cls;
+            code.title = 'Click to copy';
+            code.addEventListener('click', (ev) => {
+              ev.stopPropagation();
+              safeCopyToClipboard(s.cls, code);
+            });
+            row.appendChild(code);
+
+            panel.appendChild(row);
+          }
+
+          const allClasses = scenarios.map((s) => s.cls).join(' ');
+          const copyAllBtn = document.createElement('button');
+          copyAllBtn.className = 'expand-copy-all';
+          copyAllBtn.textContent = 'Copy All';
+          copyAllBtn.type = 'button';
+          copyAllBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            safeCopyToClipboard(allClasses, copyAllBtn);
+          });
+          panel.appendChild(copyAllBtn);
+
+          item.closest('.syntax-items').appendChild(panel);
+          item.classList.add('is-expanded');
+
+          activePanel = panel;
+          activeItem = item;
+        } catch (error) {
+          console.error('UtiliKit: Expand panel failed', error);
+        }
+      });
+    }
+
+    function closePanel() {
+      activePanel?.remove();
+      activePanel = null;
+      activeItem?.classList.remove('is-expanded');
+      activeItem = null;
+    }
   }
 
-  /**
-   * Generates secure contextual examples for utility class syntax patterns.
-   *
-   * This function provides tailored examples for different utility class
-   * types, helping users understand the range of values and patterns
-   * available for each utility prefix. All output is sanitized to ensure
-   * security while providing comprehensive educational content.
-   *
-   * @param {string} syntax
-   *   The utility class syntax pattern to generate examples for.
-   *   Should follow the format "uk-prefix--" for proper pattern matching.
-   *
-   * @returns {string}
-   *   Sanitized string containing comma-separated examples appropriate
-   *   for the given utility class pattern.
-   */
-  function getExamplesForSyntax(syntax) {
-    const match = syntax.match(/uk-(\w+)--/);
-    if (!match) return syntax + '20';
+  // ── Scenario data for expand panels ───────────────────────────────
 
-    // Security: Validate the extracted prefix before processing
-    const prefix = Drupal.utilikit.security.validateClassName(match[1]);
-    if (!prefix) return '20';
+  function getScenariosForPrefix(prefix, item) {
+    const hasSides = item.dataset.sides === '1';
+    const hasPseudo = item.dataset.pseudo === '1';
+    const s = [];
+    const p = `uk-${prefix}--`;
 
-    // Comprehensive examples mapping for all utility class types
-    const examples = {
-      'pd': '20, t-16, 10-20-30',           // Padding utilities
-      'mg': '20, auto, t-auto, 10-20',       // Margin utilities
-      'bw': '2, t-1, 1-2-3-4',              // Border width utilities
-      'br': '8, t-16, 50pr, 10-20-30-40',   // Border radius utilities
-      'wd': '100pr, 200, 50vw',             // Width utilities
-      'ht': '100, 100vh, 500',              // Height utilities
-      'xw': '1200, 100pr',                  // Max width utilities
-      'xh': '600, 100vh',                   // Max height utilities
-      'nw': '300, 50pr',                    // Min width utilities
-      'nh': '100, 20vh',                    // Min height utilities
-      'bg': 'ff0000, 007bff-50',            // Background color utilities
-      'tc': '333333, ffffff',               // Text color utilities
-      'bc': 'dee2e6, 007bff',               // Border color utilities
-      'bs': 'solid, dashed, none',          // Border style utilities
-      'bz': 'cover, contain, auto',         // Background size utilities
-      'dp': 'flex, grid, none, block',      // Display utilities
-      'ps': 'relative, absolute, fixed',    // Position utilities
-      'tp': '0, 20, 50pr',                  // Top position utilities
-      'rt': '0, 20, 50pr',                  // Right position utilities
-      'bt': '0, 20, 50pr',                  // Bottom position utilities
-      'lt': '0, 20, 50pr',                  // Left position utilities
-      'fs': '16, 1.5rem, 2em',              // Font size utilities
-      'fw': '400, 700, 900',                // Font weight utilities
-      'lh': '1.5, 24, 2rem',                // Line height utilities
-      'ls': '1, 0.05em, 2',                 // Letter spacing utilities
-      'ta': 'center, left, right',          // Text align utilities
-      'op': '50, 75, 100',                  // Opacity utilities
-      'zi': '10, 100, -1',                  // Z-index utilities
-      'gp': '20, 16-32',                    // Gap utilities
-      'ar': '16-9, 4-3, 1-1',               // Aspect ratio utilities
-      'fl': 'left, right, none',            // Float utilities
-      'cl': 'both, left, right',            // Clear utilities
-      'ov': 'hidden, auto, visible',        // Overflow utilities
-      'cu': 'pointer, move, text',          // Cursor utilities
-      'us': 'none, text, all',              // User select utilities
-      'fd': 'row, column, row-reverse',     // Flex direction utilities
-      'jc': 'center, space-between, flex-start', // Justify content utilities
-      'ai': 'center, flex-start, stretch',  // Align items utilities
-      'ac': 'center, space-between, stretch', // Align content utilities
-      'fx': 'wrap, nowrap',                 // Flex wrap utilities
-      'fg': '1, 2, 0.5',                    // Flex grow utilities
-      'fk': '1, 0, 2',                      // Flex shrink utilities
-      'fb': 'auto, 200, 50pr',              // Flex basis utilities
-      'or': '1, -1, 2',                     // Order utilities
-      'gc': 'repeat-3-1fr, 200-1fr',       // Grid columns utilities
-      'gr': '100-auto-1fr, repeat-2-200',  // Grid rows utilities
-      'gl': '1-3, 2-4',                     // Grid column utilities
-      'gw': '1-2, 2-5',                     // Grid row utilities
-      'rt': '45, 90, 180',                  // Rotate transform utilities
-      'sc': '150, 50, 200',                 // Scale transform utilities
+    // Color prefixes.
+    if (['bg', 'tc', 'bc'].includes(prefix)) {
+      s.push({label: '6-digit hex', cls: `${p}ff0000`});
+      s.push({label: '3-digit hex', cls: `${p}f00`});
+      s.push({label: 'With 50% opacity', cls: `${p}ff0000-50`});
+      if (hasPseudo) {
+        s.push({label: 'Hover state', cls: `${p}007bff-h`});
+        s.push({label: 'Focus state', cls: `${p}007bff-f`});
+        s.push({label: 'Active state', cls: `${p}007bff-a`});
+        s.push({label: 'Opacity + hover', cls: `${p}007bff-50-h`});
+      }
+      s.push({label: 'Responsive (md)', cls: `uk-md-${prefix}--ff0000`});
+      return s;
+    }
+
+    // Sides prefixes (pd, mg, bw, br, bs, bc).
+    if (hasSides) {
+      s.push({label: 'All sides', cls: `${p}20`});
+      s.push({label: 'Top only', cls: `${p}t-20`});
+      s.push({label: 'Right only', cls: `${p}r-20`});
+      s.push({label: 'Bottom only', cls: `${p}b-20`});
+      s.push({label: 'Left only', cls: `${p}l-20`});
+      s.push({label: '2-value (top/bottom, left/right)', cls: `${p}10-20`});
+      s.push({label: '4-value (t r b l)', cls: `${p}10-20-10-20`});
+      if (prefix === 'mg') {
+        s.push({label: 'Auto', cls: `${p}auto`});
+        s.push({label: 'Top auto', cls: `${p}t-auto`});
+      }
+      if (prefix === 'pd' || prefix === 'mg') {
+        s.push({label: 'In rem', cls: `${p}1d5rem`});
+        s.push({label: 'In %', cls: `${p}50pr`});
+      }
+      if (prefix === 'br') {
+        s.push({label: 'In %', cls: `${p}50pr`});
+      }
+      s.push({label: 'Responsive (md)', cls: `uk-md-${prefix}--20`});
+      return s;
+    }
+
+    // Keyword prefixes.
+    const keywords = {
+      dp: ['flex', 'grid', 'block', 'inline-block', 'inline-flex', 'none'],
+      ps: ['relative', 'absolute', 'fixed', 'sticky', 'static'],
+      ta: ['center', 'start', 'end', 'justify'],
+      ov: ['hidden', 'auto', 'scroll', 'visible'],
+      cu: ['pointer', 'default', 'move', 'text', 'not-allowed', 'grab'],
+      fl: ['inline-start', 'inline-end', 'none'],
+      cl: ['both', 'inline-start', 'inline-end', 'none'],
+      us: ['none', 'text', 'all', 'auto'],
+      fd: ['row', 'column', 'row-reverse', 'column-reverse'],
+      jc: ['center', 'flex-start', 'flex-end', 'space-between', 'space-around', 'space-evenly'],
+      ai: ['center', 'flex-start', 'flex-end', 'stretch', 'baseline'],
+      ac: ['center', 'flex-start', 'flex-end', 'stretch', 'space-between', 'space-around'],
+      fx: ['wrap', 'nowrap', 'wrap-reverse'],
+      bz: ['cover', 'contain', 'auto'],
     };
+    if (keywords[prefix]) {
+      for (const kw of keywords[prefix]) {
+        s.push({label: kw, cls: `${p}${kw}`});
+      }
+      s.push({label: 'Responsive (md)', cls: `uk-md-${prefix}--${keywords[prefix][0]}`});
+      return s;
+    }
 
-    return Drupal.utilikit.security.sanitizeText(examples[prefix] || '20, 50pr, auto');
+    // Sizing (numericFlexible, no sides).
+    if (['wd', 'ht', 'xw', 'xh', 'nw', 'nh'].includes(prefix)) {
+      s.push({label: 'Pixels', cls: `${p}200`});
+      s.push({label: 'Percentage', cls: `${p}100pr`});
+      s.push({label: 'Viewport width', cls: `${p}50vw`});
+      s.push({label: 'Viewport height', cls: `${p}100vh`});
+      s.push({label: 'In rem', cls: `${p}20rem`});
+      s.push({label: 'In em', cls: `${p}10em`});
+      if (['wd', 'ht'].includes(prefix)) {
+        s.push({label: 'Auto', cls: `${p}auto`});
+      }
+      s.push({label: 'Responsive (md)', cls: `uk-md-${prefix}--200`});
+      return s;
+    }
+
+    // Font size / line height.
+    if (prefix === 'fs' || prefix === 'lh') {
+      s.push({label: 'Pixels', cls: `${p}16`});
+      s.push({label: 'In rem', cls: `${p}1d5rem`});
+      s.push({label: 'In em', cls: `${p}1d25em`});
+      s.push({label: 'Decimal (1.6)', cls: `${p}1d6`});
+      s.push({label: 'Responsive (md)', cls: `uk-md-${prefix}--16`});
+      return s;
+    }
+
+    // Letter spacing.
+    if (prefix === 'ls') {
+      s.push({label: 'Pixels', cls: `${p}2`});
+      s.push({label: 'In em', cls: `${p}0d05em`});
+      s.push({label: 'Negative', cls: `${p}-1`});
+      s.push({label: 'Responsive (md)', cls: 'uk-md-ls--2'});
+      return s;
+    }
+
+    // Gap.
+    if (prefix === 'gp') {
+      s.push({label: 'Single value', cls: `${p}20`});
+      s.push({label: 'Row & column', cls: `${p}16-32`});
+      s.push({label: 'In rem', cls: `${p}1d5rem`});
+      s.push({label: 'Responsive (md)', cls: 'uk-md-gp--20'});
+      return s;
+    }
+
+    // Position offsets (tp=top, ri=right, bt=bottom, lt=left; do not use 'rt' here — rt is rotate).
+    if (['tp', 'ri', 'bt', 'lt'].includes(prefix)) {
+      s.push({label: 'Pixels', cls: `${p}20`});
+      s.push({label: 'Zero', cls: `${p}0`});
+      s.push({label: 'Percentage', cls: `${p}50pr`});
+      s.push({label: 'Negative', cls: `${p}-20`});
+      s.push({label: 'In rem', cls: `${p}2rem`});
+      s.push({label: 'Responsive (md)', cls: `uk-md-${prefix}--20`});
+      return s;
+    }
+
+    // Opacity.
+    if (prefix === 'op') {
+      s.push({label: 'Fully visible', cls: `${p}100`});
+      s.push({label: '75%', cls: `${p}75`});
+      s.push({label: '50%', cls: `${p}50`});
+      s.push({label: '25%', cls: `${p}25`});
+      s.push({label: 'Hidden', cls: `${p}0`});
+      s.push({label: 'Responsive (md)', cls: 'uk-md-op--50'});
+      return s;
+    }
+
+    // Z-index.
+    if (prefix === 'zi') {
+      s.push({label: 'Low', cls: `${p}1`});
+      s.push({label: 'Medium', cls: `${p}10`});
+      s.push({label: 'High', cls: `${p}100`});
+      s.push({label: 'Max', cls: `${p}9999`});
+      s.push({label: 'Negative', cls: `${p}-1`});
+      s.push({label: 'Responsive (md)', cls: 'uk-md-zi--10'});
+      return s;
+    }
+
+    // Font weight.
+    if (prefix === 'fw') {
+      s.push({label: 'Thin', cls: `${p}100`});
+      s.push({label: 'Light', cls: `${p}300`});
+      s.push({label: 'Normal', cls: `${p}400`});
+      s.push({label: 'Semi-bold', cls: `${p}600`});
+      s.push({label: 'Bold', cls: `${p}700`});
+      s.push({label: 'Black', cls: `${p}900`});
+      s.push({label: 'Responsive (md)', cls: 'uk-md-fw--700'});
+      return s;
+    }
+
+    // Order.
+    if (prefix === 'or') {
+      s.push({label: 'First', cls: `${p}-1`});
+      s.push({label: 'Default', cls: `${p}0`});
+      s.push({label: 'Second', cls: `${p}1`});
+      s.push({label: 'Third', cls: `${p}2`});
+      s.push({label: 'Last', cls: `${p}99`});
+      return s;
+    }
+
+    // Flex grow / shrink.
+    if (prefix === 'fg' || prefix === 'fk') {
+      s.push({label: 'None', cls: `${p}0`});
+      s.push({label: 'Default', cls: `${p}1`});
+      s.push({label: '1.5x', cls: `${p}1d5`});
+      s.push({label: 'Double', cls: `${p}2`});
+      return s;
+    }
+
+    // Flex basis.
+    if (prefix === 'fb') {
+      s.push({label: 'Auto', cls: `${p}auto`});
+      s.push({label: 'Pixels', cls: `${p}200`});
+      s.push({label: 'Percentage', cls: `${p}50pr`});
+      s.push({label: 'Zero', cls: `${p}0`});
+      return s;
+    }
+
+    // Aspect ratio.
+    if (prefix === 'ar') {
+      s.push({label: 'Widescreen 16:9', cls: `${p}16-9`});
+      s.push({label: 'Standard 4:3', cls: `${p}4-3`});
+      s.push({label: 'Square 1:1', cls: `${p}1-1`});
+      s.push({label: 'Ultra-wide 21:9', cls: `${p}21-9`});
+      return s;
+    }
+
+    // Grid template columns / rows.
+    if (prefix === 'gc') {
+      s.push({label: '3 equal columns', cls: `${p}repeat-3-1fr`});
+      s.push({label: '4 equal columns', cls: `${p}repeat-4-1fr`});
+      s.push({label: 'Fixed + flexible', cls: `${p}200-1fr`});
+      s.push({label: 'Auto-fill', cls: `${p}auto-fill-minmax-200-1fr`});
+      return s;
+    }
+    if (prefix === 'gr') {
+      s.push({label: '2 equal rows', cls: `${p}repeat-2-1fr`});
+      s.push({label: 'Fixed + auto', cls: `${p}100-auto-1fr`});
+      return s;
+    }
+
+    // Grid column / row span.
+    if (prefix === 'gl') {
+      s.push({label: 'Span 2 columns', cls: `${p}1-3`});
+      s.push({label: 'Span 3 columns', cls: `${p}1-4`});
+      s.push({label: 'Start at col 2', cls: `${p}2-4`});
+      return s;
+    }
+    if (prefix === 'gw') {
+      s.push({label: 'Span 2 rows', cls: `${p}1-3`});
+      s.push({label: 'Start at row 2', cls: `${p}2-4`});
+      return s;
+    }
+
+    // Rotate (rt only; right position is 'ri' above).
+    if (prefix === 'rt') {
+      s.push({label: '45 degrees', cls: `${p}45`});
+      s.push({label: '90 degrees', cls: `${p}90`});
+      s.push({label: '180 degrees', cls: `${p}180`});
+      s.push({label: 'Negative 45', cls: `${p}-45`});
+      return s;
+    }
+
+    // Scale.
+    if (prefix === 'sc') {
+      s.push({label: 'Half (50%)', cls: `${p}50`});
+      s.push({label: 'Normal (100%)', cls: `${p}100`});
+      s.push({label: '1.5x (150%)', cls: `${p}150`});
+      s.push({label: 'Double (200%)', cls: `${p}200`});
+      return s;
+    }
+
+    // Fallback.
+    s.push({label: 'Example', cls: `${p}20`});
+    s.push({label: 'Responsive (md)', cls: `uk-md-${prefix}--20`});
+    return s;
   }
 
 })(Drupal, once);
-
-/**
- * Integration Notes for UtiliKit Reference Page:
- *
- * Security Architecture:
- * - All user input sanitized through UtiliKit's security utilities
- * - Utility class validation prevents injection of malicious CSS
- * - Safe DOM element creation eliminates XSS vulnerabilities
- * - Error handling fails safely without exposing system internals
- * - Content validation occurs at multiple layers for defense in depth
- *
- * User Experience Enhancements:
- * - Copy-to-clipboard with visual feedback and fallback support
- * - Interactive live preview with real-time utility class application
- * - Contextual tooltips with relevant examples for each utility type
- * - Clickable code examples for quick testing and experimentation
- * - Responsive design considerations for mobile and desktop usage
- *
- * Performance Optimizations:
- * - Debounced input handling prevents excessive processing during typing
- * - Efficient DOM querying with targeted selectors and early returns
- * - Lazy initialization with dependency checking for UtiliKit core
- * - Minimal DOM manipulation and efficient event listener management
- * - Graceful degradation when optional features are unavailable
- *
- * Accessibility Features:
- * - Proper ARIA labels and roles for screen reader compatibility
- * - Keyboard navigation support for all interactive elements
- * - Clear visual feedback for all user interactions and state changes
- * - Semantic HTML structure with appropriate heading hierarchy
- * - High contrast feedback for success and error states
- *
- * Browser Compatibility:
- * - Modern Clipboard API with fallback to legacy document.execCommand
- * - Cross-browser event handling and DOM manipulation
- * - Progressive enhancement with graceful feature degradation
- * - Standards-compliant CSS and JavaScript implementation
- * - Mobile device considerations for touch interactions
- *
- * Development and Debugging Support:
- * - Comprehensive error logging with actionable context information
- * - Development mode integration with UtiliKit's logging system
- * - Non-blocking error handling that preserves page functionality
- * - Clear separation of concerns for maintainable code architecture
- * - Extensible design for adding new interactive features
- *
- * Educational Value:
- * - Contextual examples tailored to specific utility class types
- * - Interactive playground for hands-on learning and experimentation
- * - Visual feedback that reinforces understanding of utility class effects
- * - Comprehensive coverage of all utility class patterns and variations
- * - Progressive disclosure of information through hover interactions
- */

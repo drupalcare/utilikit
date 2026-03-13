@@ -5,29 +5,116 @@ utilikit.settings:
     rendering_mode:
       type: string
       label: 'Rendering mode'
-    css_generation_mode:
-      type: string
-      label: 'CSS generation mode'
-    inline_mode_use_important:
+    enable_transitions:
       type: boolean
-      label: 'Use !important in inline mode'
-    scope:
-      type: string
-      label: 'Scope of generated CSS (global, theme, or component)'
-      description: 'Determines how broadly UtiliKit utility classes are applied.'
-    cache_enabled:
+      label: 'Enable transitions'
+    debounce:
+      type: integer
+      label: 'Debounce delay (ms)'
+    optimize_css:
       type: boolean
-      label: 'Enable CSS caching'
-      description: 'If enabled, UtiliKit caches generated CSS for faster performance.'
-    breakpoints:
-      type: sequence
-      label: 'Breakpoints'
-      sequence:
-        type: string
-        label: 'Breakpoint key'
+      label: 'Optimize CSS output'
+    use_important:
+      type: boolean
+      label: 'Use !important in CSS rules'
     active_breakpoints:
-      type: sequence
+      type: mapping
       label: 'Active breakpoints'
+      mapping:
+        sm:
+          type: string
+          label: 'Small breakpoint'
+        md:
+          type: string
+          label: 'Medium breakpoint'
+        lg:
+          type: string
+          label: 'Large breakpoint'
+        xl:
+          type: string
+          label: 'Extra large breakpoint'
+        xxl:
+          type: string
+          label: 'Extra extra large breakpoint'
+    scope_global:
+      type: boolean
+      label: 'Enable globally'
+    disable_admin:
+      type: boolean
+      label: 'Disable on admin pages'
+    scope_content_types:
+      type: boolean
+      label: 'Limit to specific content types'
+    enabled_content_types:
+      type: sequence
+      label: 'Enabled content types'
       sequence:
         type: string
-        label: 'Active breakpoint'
+        label: 'Content type'
+    update_on_node_save:
+      type: boolean
+      label: 'Update on node save'
+    update_on_block_save:
+      type: boolean
+      label: 'Update on block save'
+    update_on_paragraph_save:
+      type: boolean
+      label: 'Update on paragraph save'
+    dev_mode:
+      type: boolean
+      label: 'Developer mode'
+    admin_preview:
+      type: boolean
+      label: 'Admin preview'
+    show_page_errors:
+      type: boolean
+      label: 'Show page errors'
+    log_level:
+      type: string
+      label: 'Log level'
+    batch_size:
+      type: integer
+      label: 'Batch size'
+    max_classes_per_request:
+      type: integer
+      label: 'Max classes per request'
+    rate_limit_requests:
+      type: integer
+      label: 'Rate limit requests per minute'
+    css_cache_ttl:
+      type: integer
+      label: 'CSS cache TTL (seconds)'
+    css_directory:
+      type: string
+      label: 'CSS directory'
+    css_filename:
+      type: string
+      label: 'CSS filename'
+    legacy_mode:
+      type: boolean
+      label: 'Legacy mode'
+    migration_complete:
+      type: boolean
+      label: 'Migration complete'
+    scanning_entity_types:
+      type: sequence
+      label: 'Scanning entity types'
+      sequence:
+        type: string
+        label: 'Entity type'
+    experimental_features:
+      type: mapping
+      label: 'Experimental features'
+      mapping:
+        grid_auto_generation:
+          type: boolean
+          label: 'Grid auto generation'
+        advanced_selectors:
+          type: boolean
+          label: 'Advanced selectors'
+        css_variables:
+          type: boolean
+          label: 'CSS variables'
+        media_query_optimization:
+          type: boolean
+          label: 'Media query optimization'

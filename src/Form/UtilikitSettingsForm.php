@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace Drupal\utilikit\Form;
 
-use Drupal\Core\Form\ConfigFormBase;
-use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\StorableConfigBase;
+use Drupal\Core\Config\TypedConfigManagerInterface;
 use Drupal\Core\Datetime\DateFormatterInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\File\FileSystemInterface;
-use Drupal\utilikit\Service\UtilikitServiceProvider;
+use Drupal\Core\Form\ConfigFormBase;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StringTranslation\ByteSizeMarkup;
 use Drupal\utilikit\Service\UtilikitConstants;
+use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Traits\FormHelperTrait;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\Core\StringTranslation\ByteSizeMarkup;
 
 /**
  * Configuration form for UtiliKit module settings.
@@ -29,43 +32,12 @@ class UtilikitSettingsForm extends ConfigFormBase {
   use FormHelperTrait;
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * The date formatter service.
-   *
-   * @var \Drupal\Core\Datetime\DateFormatterInterface
-   */
-  protected DateFormatterInterface $dateFormatter;
-
-  /**
-   * The module handler service.
-   *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
-   */
-  protected ModuleHandlerInterface $moduleHandler;
-
-  /**
-   * The UtiliKit service provider.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
-   */
-  protected UtilikitServiceProvider $serviceProvider;
-
-  /**
-   * The file system service.
-   *
-   * @var \Drupal\Core\File\FileSystemInterface
-   */
-  protected FileSystemInterface $fileSystem;
-
-  /**
    * Constructs a new UtilikitSettingsForm object.
    *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory service.
+   * @param \Drupal\Core\Config\TypedConfigManagerInterface $typedConfigManager
+   *   The typed config manager service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    * @param \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter
@@ -78,17 +50,15 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *   The file system service.
    */
   public function __construct(
-    EntityTypeManagerInterface $entityTypeManager,
-    DateFormatterInterface $dateFormatter,
-    ModuleHandlerInterface $moduleHandler,
-    UtilikitServiceProvider $serviceProvider,
-    FileSystemInterface $fileSystem,
+    ConfigFactoryInterface $configFactory,
+    TypedConfigManagerInterface $typedConfigManager,
+    protected readonly EntityTypeManagerInterface $entityTypeManager,
+    protected readonly DateFormatterInterface $dateFormatter,
+    protected readonly ModuleHandlerInterface $moduleHandler,
+    protected readonly UtilikitServiceProvider $serviceProvider,
+    protected readonly FileSystemInterface $fileSystem,
   ) {
-    $this->entityTypeManager = $entityTypeManager;
-    $this->dateFormatter = $dateFormatter;
-    $this->moduleHandler = $moduleHandler;
-    $this->serviceProvider = $serviceProvider;
-    $this->fileSystem = $fileSystem;
+    parent::__construct($configFactory, $typedConfigManager);
   }
 
   /**
@@ -96,6 +66,8 @@ class UtilikitSettingsForm extends ConfigFormBase {
    */
   public static function create(ContainerInterface $container): static {
     return new static(
+      $container->get('config.factory'),
+      $container->get('config.typed'),
       $container->get('entity_type.manager'),
       $container->get('date.formatter'),
       $container->get('module_handler'),
@@ -124,6 +96,8 @@ class UtilikitSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state): array {
     // Attach the CSS library.
     $form['#attached']['library'][] = 'utilikit/utilikit-settings';
+    // Vary form cache by user so developer tools render per permission.
+    $form['#cache']['contexts'][] = 'user';
     $config = $this->config('utilikit.settings');
 
     $form = array_merge($form, $this->buildRenderingModeSection($config));
@@ -132,7 +106,9 @@ class UtilikitSettingsForm extends ConfigFormBase {
     $form = array_merge($form, $this->buildScopeSection($config));
     $form = array_merge($form, $this->buildTriggersSection($config));
     $form = array_merge($form, $this->buildCacheSection($config));
-    $form = array_merge($form, $this->buildDeveloperSection($config));
+    if ($this->currentUser()->hasPermission('administer utilikit')) {
+      $form = array_merge($form, $this->buildDeveloperSection($config));
+    }
 
     return parent::buildForm($form, $form_state);
   }
@@ -140,13 +116,13 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * Builds the rendering mode configuration section.
    *
-   * @param \Drupal\Core\Config\ImmutableConfig $config
+   * @param \Drupal\Core\Config\StorableConfigBase $config
    *   The current UtiliKit configuration.
    *
    * @return array
    *   Form elements for rendering mode selection.
    */
-  private function buildRenderingModeSection($config): array {
+  private function buildRenderingModeSection(StorableConfigBase $config): array {
     return [
       'rendering_mode' => [
         '#type' => 'radios',
@@ -164,13 +140,13 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * Builds the performance configuration section.
    *
-   * @param \Drupal\Core\Config\ImmutableConfig $config
+   * @param \Drupal\Core\Config\StorableConfigBase $config
    *   The current UtiliKit configuration.
    *
    * @return array
    *   Form elements for performance and optimization settings.
    */
-  private function buildPerformanceSection($config): array {
+  private function buildPerformanceSection(StorableConfigBase $config): array {
     return [
       'performance' => [
         '#type' => 'details',
@@ -187,7 +163,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'optimize_css' => $this->createCheckboxField(
           $this->t('Optimize CSS output'),
           $this->t('Minify and optimize the generated CSS to reduce size.'),
-          (bool) $config->get('optimize_css') ?? TRUE,
+          (bool) ($config->get('optimize_css') ?? TRUE),
           [
             'states' => [
               'visible' => [
@@ -201,7 +177,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'use_important' => $this->createCheckboxField(
           $this->t('Use !important in CSS rules'),
           $this->t('Add !important to all utility class rules to ensure they override inline styles or css variables. Recommended for utility-first workflows. <strong>Note:</strong> Changing this setting will regenerate all site CSS.'),
-          (bool) $config->get('use_important') ?? TRUE,
+          (bool) ($config->get('use_important') ?? TRUE),
           [
             'states' => [
               'visible' => [
@@ -214,7 +190,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'enable_transitions' => $this->createCheckboxField(
           $this->t('Enable smooth transitions'),
           $this->t('Apply CSS transitions when styles change dynamically (recommended for better UX).'),
-          (bool) $config->get('enable_transitions') ?? TRUE
+          (bool) ($config->get('enable_transitions') ?? TRUE)
         ),
 
         'debounce' => $this->createNumberField(
@@ -236,13 +212,13 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * Builds the scope configuration section.
    *
-   * @param \Drupal\Core\Config\ImmutableConfig $config
+   * @param \Drupal\Core\Config\StorableConfigBase $config
    *   The current UtiliKit configuration.
    *
    * @return array
    *   Form elements for scope control settings.
    */
-  private function buildScopeSection($config): array {
+  private function buildScopeSection(StorableConfigBase $config): array {
     return [
       'scope' => [
         '#type' => 'details',
@@ -251,18 +227,18 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'scope_global' => $this->createCheckboxField(
           $this->t('Enable globally on all pages'),
           $this->t('Load UtiliKit across your entire site.'),
-          (bool) $config->get('scope_global') ?? TRUE
+          (bool) ($config->get('scope_global') ?? TRUE)
         ),
         'disable_admin' => $this->createCheckboxField(
           $this->t('Disable on admin pages'),
           $this->t('Prevent UtiliKit from loading on administrative routes. This does not affect UtiliKit development tools (Playground, Examples, Test Suite) which always run independently.'),
-          (bool) $config->get('disable_admin') ?? FALSE,
+          (bool) ($config->get('disable_admin') ?? FALSE),
           ['states' => ['visible' => [':input[name="scope_global"]' => ['checked' => TRUE]]]]
         ),
         'scope_content_types' => $this->createCheckboxField(
           $this->t('Limit to specific content types'),
           $this->t('Only load UtiliKit on selected content types.'),
-          (bool) $config->get('scope_content_types') ?? FALSE,
+          (bool) ($config->get('scope_content_types') ?? FALSE),
           ['states' => ['disabled' => [':input[name="scope_global"]' => ['checked' => TRUE]]]]
         ),
         'enabled_content_types' => $this->buildContentTypesField($config),
@@ -273,13 +249,13 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * Builds the content types field with options.
    *
-   * @param \Drupal\Core\Config\ImmutableConfig $config
+   * @param \Drupal\Core\Config\StorableConfigBase $config
    *   The current UtiliKit configuration.
    *
    * @return array
    *   Form elements for content types selection.
    */
-  private function buildContentTypesField($config): array {
+  private function buildContentTypesField(StorableConfigBase $config): array {
     $node_types = $this->entityTypeManager->getStorage('node_type')->loadMultiple();
     $options = [];
     foreach ($node_types as $node_type) {
@@ -308,13 +284,13 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * Builds the triggers configuration section.
    *
-   * @param \Drupal\Core\Config\ImmutableConfig $config
+   * @param \Drupal\Core\Config\StorableConfigBase $config
    *   The current UtiliKit configuration.
    *
    * @return array
    *   Form elements for automatic update triggers in static mode.
    */
-  private function buildTriggersSection($config): array {
+  private function buildTriggersSection(StorableConfigBase $config): array {
     $description = $this->t('<div class="messages messages--info"><strong>How automatic updates work in Static & Head Modes:</strong><br>@enabled_text<br>@disabled_text<br><br><em>@note_text</em></div>', [
       '@enabled_text' => '• Enabled: When you save content with new utility classes, they are automatically added to the generated CSS.',
       '@disabled_text' => '• Disabled: When you save content, new classes are NOT added to the generated CSS. You must click the "Update UtiliKit" button to scan for and add them.',
@@ -336,17 +312,17 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'update_on_node_save' => $this->createCheckboxField(
           $this->t('Update when saving nodes'),
           '',
-          (bool) $config->get('update_on_node_save') ?? FALSE
+          (bool) ($config->get('update_on_node_save') ?? FALSE)
         ),
         'update_on_block_save' => $this->createCheckboxField(
           $this->t('Update when saving custom blocks'),
           '',
-          (bool) $config->get('update_on_block_save') ?? FALSE
+          (bool) ($config->get('update_on_block_save') ?? FALSE)
         ),
         'update_on_paragraph_save' => $this->createCheckboxField(
           $this->t('Update when saving paragraphs'),
           '',
-          (bool) $config->get('update_on_paragraph_save') ?? FALSE
+          (bool) ($config->get('update_on_paragraph_save') ?? FALSE)
         ),
       ],
     ];
@@ -355,13 +331,13 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * Builds the cache management section.
    *
-   * @param \Drupal\Core\Config\ImmutableConfig $config
+   * @param \Drupal\Core\Config\StorableConfigBase $config
    *   The current UtiliKit configuration.
    *
    * @return array
    *   Form elements for cache management and test CSS generation.
    */
-  private function buildCacheSection($config): array {
+  private function buildCacheSection(StorableConfigBase $config): array {
     $knownClasses = $this->serviceProvider->getStateManager()->getKnownClasses();
 
     $cacheSection = [
@@ -387,15 +363,10 @@ class UtilikitSettingsForm extends ConfigFormBase {
 
     // Check if utilikit_test module is enabled.
     if ($this->moduleHandler->moduleExists('utilikit_test')) {
-      // Check if test CSS file exists FIRST.
-      $testCssFile = UtilikitConstants::CSS_DIRECTORY . '/utilikit-test-complete.css';
-      $testCssPath = $this->fileSystem->realpath($testCssFile);
-      $testFileExists = $testCssPath && file_exists($testCssPath);
+      $testFileInfo = $this->serviceProvider->getTestCssGenerator()->getTestCssFileInfo();
 
-      // Only show delete button if file exists.
-      if ($testFileExists && $config->get('dev_mode')) {
-        $fileSize = filesize($testCssPath);
-
+      // Only show file info and delete button if file exists.
+      if ($testFileInfo['exists'] && $config->get('dev_mode')) {
         // Add file info and delete button.
         $cacheSection['cache']['test_css_delete'] = [
           '#type' => 'container',
@@ -405,8 +376,9 @@ class UtilikitSettingsForm extends ConfigFormBase {
             ],
           ],
           'info' => [
-            '#markup' => $this->t('<p class="messages messages--warning">Test CSS file exists: utilikit-test-complete.css (@size)</p>', [
-              '@size' => (string) ByteSizeMarkup::create((int) $fileSize),
+            '#markup' => $this->t('<p class="messages messages--warning">Test CSS file exists: <a href="@url" target="_blank">utilikit-test-complete.css</a> (@size)</p>', [
+              '@url' => $testFileInfo['url'],
+              '@size' => (string) ByteSizeMarkup::create((int) $testFileInfo['size']),
             ]),
           ],
           'button' => $this->createSubmitButton(
@@ -452,29 +424,22 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *   The current state of the form.
    */
   public function deleteTestCss(array &$form, FormStateInterface $form_state): void {
-    $testCssFile = UtilikitConstants::CSS_DIRECTORY . '/utilikit-test-complete.css';
-    $testCssPath = $this->fileSystem->realpath($testCssFile);
+    try {
+      $generator = $this->serviceProvider->getTestCssGenerator();
+      $result = $generator->deleteTestCssFile();
 
-    if ($testCssPath && file_exists($testCssPath)) {
-      try {
-        $this->fileSystem->delete($testCssFile);
-        $this->messenger()->addStatus($this->t('Test CSS file deleted successfully.'));
-
-        // Log the deletion using parent's logger.
-        $this->getLogger('utilikit')->notice('Test CSS file deleted by user.');
+      if ($result) {
+        $this->messenger()->addStatus($this->t('Test CSS files deleted successfully.'));
+        $this->getLogger('utilikit')->notice('Test CSS files deleted by user.');
       }
-      catch (\Exception $e) {
-        $this->messenger()->addError($this->t('Failed to delete test CSS file: @error', [
-          '@error' => $e->getMessage(),
-        ]));
-
-        $this->getLogger('utilikit')->error('Failed to delete test CSS file: @error', [
-          '@error' => $e->getMessage(),
-        ]);
+      else {
+        $this->messenger()->addError($this->t('Failed to delete one or more test CSS files.'));
       }
     }
-    else {
-      $this->messenger()->addWarning($this->t('Test CSS file not found.'));
+    catch (\Exception $e) {
+      $this->messenger()->addError($this->t('Failed to delete test CSS files: @error', [
+        '@error' => $e->getMessage(),
+      ]));
     }
 
     $form_state->setRebuild(TRUE);
@@ -531,7 +496,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * Builds the scanning scope section.
    */
-  private function buildScanningScopeSection($config): array {
+  private function buildScanningScopeSection(StorableConfigBase $config): array {
     $entity_types = $this->entityTypeManager->getDefinitions();
     $options = [];
     $counts = [];
@@ -589,13 +554,13 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * Builds the developer tools section.
    *
-   * @param \Drupal\Core\Config\ImmutableConfig $config
+   * @param \Drupal\Core\Config\StorableConfigBase $config
    *   The current UtiliKit configuration.
    *
    * @return array
    *   Form elements for developer and debugging options.
    */
-  private function buildDeveloperSection($config): array {
+  private function buildDeveloperSection(StorableConfigBase $config): array {
     $developerSection = [
       'developer' => [
         '#type' => 'details',
@@ -604,17 +569,17 @@ class UtilikitSettingsForm extends ConfigFormBase {
         'dev_mode' => $this->createCheckboxField(
           $this->t('Enable developer mode'),
           $this->t('Output debug information to browser console.'),
-          (bool) $config->get('dev_mode') ?? FALSE
+          (bool) ($config->get('dev_mode') ?? FALSE)
         ),
         'admin_preview' => $this->createCheckboxField(
           $this->t('Visual debugging'),
           $this->t('Show outlines around UtiliKit elements for debugging.'),
-          (bool) $config->get('admin_preview') ?? FALSE
+          (bool) ($config->get('admin_preview') ?? FALSE)
         ),
         'show_page_errors' => $this->createCheckboxField(
           $this->t('Display errors on page'),
           $this->t('Show validation errors as Drupal messages (requires developer mode). <strong>Note:</strong> Only works in inline mode - static mode uses pre-generated CSS and does not validate classes in real-time.'),
-          (bool) $config->get('show_page_errors') ?? FALSE,
+          (bool) ($config->get('show_page_errors') ?? FALSE),
           [
             'states' => [
               'visible' => [':input[name="dev_mode"]' => ['checked' => TRUE]],
@@ -633,78 +598,97 @@ class UtilikitSettingsForm extends ConfigFormBase {
           $config->get('log_level') ?? 'warnings',
           ['states' => ['visible' => [':input[name="dev_mode"]' => ['checked' => TRUE]]]]
         ),
-        'static_css_info' => [
-          '#type' => 'fieldset',
-          '#title' => $this->t('Generated CSS (Static & Head Modes)'),
-          '#states' => [
-            'visible' => [
-              ':input[name="dev_mode"]' => ['checked' => TRUE],
-              [
-                [':input[name="rendering_mode"]' => ['value' => 'static']],
-                [':input[name="rendering_mode"]' => ['value' => 'head']],
-              ],
-            ],
-          ],
-        ],
       ],
     ];
 
-    $fileManager = $this->serviceProvider->getFileManager();
-    $css_url = $fileManager->getStaticCssUrl();
-    $known_classes = $this->serviceProvider->getStateManager()->getKnownClasses();
-
+    // Only show the Generated CSS fieldset for static and head modes.
+    // Using server-side check instead of #states because the content
+    // is already rendered server-side per mode — #states would only
+    // toggle visibility while leaving mismatched content in the DOM.
     $rendering_mode = $config->get('rendering_mode') ?? 'inline';
 
-    if ($rendering_mode === 'head') {
+    if ($rendering_mode === 'static' || $rendering_mode === 'head') {
+      $known_classes = $this->serviceProvider->getStateManager()->getKnownClasses();
+      $class_count = count($known_classes);
       $css_timestamp = $this->serviceProvider->getStateManager()->getCssTimestamp();
       $file_time = $css_timestamp
         ? $this->dateFormatter->format($css_timestamp, 'custom', 'j M Y - g:i A T')
         : $this->t('Unknown');
 
-      $css = $this->serviceProvider->getStateManager()->getGeneratedCss();
-      $css_size = !empty($css) ? round(strlen($css) / 1024, 1) . ' KB' : '0 KB';
-
-      $developerSection['developer']['static_css_info']['file_details'] = [
-        '#markup' => $this->t('<div class="messages messages--status"><strong>CSS Generated (Head Mode):</strong><br>CSS is injected in page head on each request<br><small>Classes: @count | Size: @size | Last Updated: @time</small></div>', [
-          '@count' => count($known_classes),
-          '@size' => $css_size,
-          '@time' => $file_time,
-        ]),
+      $developerSection['developer']['static_css_info'] = [
+        '#type' => 'fieldset',
+        '#title' => $rendering_mode === 'head'
+          ? $this->t('Generated CSS (Head Mode)')
+          : $this->t('Generated CSS (Static Mode)'),
       ];
-    }
-    elseif ($css_url) {
-      $css_timestamp = $this->serviceProvider->getStateManager()->getCssTimestamp();
-      $file_time = $css_timestamp
-        ? $this->dateFormatter->format($css_timestamp, 'custom', 'j M Y - g:i A T')
-        : $this->t('Unknown');
 
-      $developerSection['developer']['static_css_info']['file_details'] = [
-        '#markup' => $this->t('<div class="messages messages--status"><strong>CSS File Generated:</strong><br><a href="@css_url" target="_blank" rel="noopener">View Generated CSS File <span aria-hidden="true">↗</span></a><br><small>Classes: @count | Last Updated: @time</small></div>', [
-          '@css_url' => $css_url,
-          '@count' => count($known_classes),
-          '@time' => $file_time,
-        ]),
-      ];
-    }
-    else {
-      $developerSection['developer']['static_css_info']['no_file'] = [
-        '#markup' => '<div class="messages messages--warning">' .
-        $this->t('No CSS file found. Save this form to generate the CSS file, or add UtiliKit classes to your content.') .
-        '</div>',
-      ];
-    }
+      if ($rendering_mode === 'head') {
+        $css = $this->serviceProvider->getStateManager()->getGeneratedCss();
+        $css_size = !empty($css) ? round(strlen($css) / 1024, 1) . ' KB' : '0 KB';
 
-    $developerSection['developer']['static_css_info']['regenerate_note'] = [
-      '#markup' => '<p><small>' .
-      $this->t('To regenerate the CSS file, use the "Clear All CSS & Reset" button in the Cache Management section above, then save this form.') .
-      '</small></p>',
-    ];
+        $developerSection['developer']['static_css_info']['file_details'] = [
+          '#type' => 'container',
+          '#attributes' => ['class' => ['messages', 'messages--status']],
+          'title' => [
+            '#markup' => '<strong>' . $this->t('CSS Generated (Head Mode)') . '</strong>',
+          ],
+          'description' => [
+            '#markup' => '<br>' . $this->t('CSS is injected in page head on each request'),
+          ],
+          'stats' => [
+            '#markup' => '<br><small>' . $this->t('Classes: @count | Size: @size | Last Updated: @time', [
+              '@count' => $class_count,
+              '@size' => $css_size,
+              '@time' => $file_time,
+            ]) . '</small>',
+          ],
+        ];
+      }
+      else {
+        $fileManager = $this->serviceProvider->getFileManager();
+        $css_url = $fileManager->getStaticCssUrl();
 
-    if (isset($developerSection['developer']['static_css_info'])) {
-      $developerSection['developer']['static_css_info']['#cache'] = [
-        'max-age' => 0,
-        'contexts' => ['user'],
-        'tags' => [UtilikitConstants::CACHE_TAG_CSS],
+        // Check if static CSS file exists.
+        $css_file_uri = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
+        $css_real_path = $this->fileSystem->realpath($css_file_uri);
+
+        if ($css_real_path && file_exists($css_real_path)) {
+          $file_size = round(filesize($css_real_path) / 1024, 1) . ' KB';
+          $css_url = $fileManager->getStaticCssUrl();
+
+          $developerSection['developer']['static_css_info']['file_details'] = [
+            '#type' => 'container',
+            '#attributes' => ['class' => ['messages', 'messages--status']],
+            'title' => [
+              '#markup' => '<strong>' . $this->t('CSS File Generated') . '</strong>',
+            ],
+            'link' => [
+              '#markup' => '<br><a href="' . htmlspecialchars($css_url, ENT_QUOTES, 'UTF-8') . '" target="_blank" rel="noopener">' . $this->t('View Generated CSS File') . '</a>',
+            ],
+            'stats' => [
+              '#markup' => '<br><small>' . $this->t('Classes: @count | Size: @size | Last Updated: @time', [
+                '@count' => $class_count,
+                '@size' => $file_size,
+                '@time' => $file_time,
+              ]) . '</small>',
+            ],
+          ];
+        }
+        else {
+          $developerSection['developer']['static_css_info']['no_file'] = [
+            '#type' => 'container',
+            '#attributes' => ['class' => ['messages', 'messages--warning']],
+            'message' => [
+              '#markup' => $this->t('No CSS file found. Save this form to generate the CSS file, or add UtiliKit classes to your content.'),
+            ],
+          ];
+        }
+      }
+
+      $developerSection['developer']['static_css_info']['regenerate_note'] = [
+        '#markup' => '<p><small>' .
+        $this->t('To regenerate the CSS file, use the "Clear All CSS & Reset" button in the Cache Management section above, then save this form.') .
+        '</small></p>',
       ];
     }
 
@@ -732,7 +716,9 @@ class UtilikitSettingsForm extends ConfigFormBase {
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
-    $this->validateDeveloperModeSettings($form_state);
+    if ($this->currentUser()->hasPermission('administer utilikit')) {
+      $this->validateDeveloperModeSettings($form_state);
+    }
   }
 
   /**
@@ -754,20 +740,28 @@ class UtilikitSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
-    $oldMode = $this->config('utilikit.settings')->get('rendering_mode') ?? 'inline';
-    $oldUseImportant = $this->config('utilikit.settings')->get('use_important') ?? TRUE;
+    $oldConfig = $this->config('utilikit.settings');
+    $oldMode = $oldConfig->get('rendering_mode') ?? 'inline';
+    $oldUseImportant = (bool) ($oldConfig->get('use_important') ?? TRUE);
+    $oldOptimizeCss = (bool) ($oldConfig->get('optimize_css') ?? TRUE);
     $newMode = $form_state->getValue('rendering_mode');
-    $newUseImportant = $form_state->getValue('use_important');
+    $newUseImportant = (bool) $form_state->getValue('use_important');
+    $newOptimizeCss = (bool) $form_state->getValue('optimize_css');
 
     $this->saveAllSettings($form_state);
+
+    // Clear all caches first — this must happen before any file generation
+    // because clearAllCaches() -> cssOptimizer->deleteAll() wipes the
+    // public://css/ directory and would delete our generated CSS file.
+    $this->serviceProvider->getCacheManager()->clearAllCaches();
+
     $this->handleModeSwitch($oldMode, $newMode);
 
-    // Regenerate CSS if use_important setting changed.
-    if ($oldUseImportant !== $newUseImportant) {
+    // Regenerate CSS if use_important or optimize_css changed (and mode
+    // didn't change, since mode switch already handles regeneration).
+    if ($oldMode === $newMode && ($oldUseImportant !== $newUseImportant || $oldOptimizeCss !== $newOptimizeCss)) {
       $this->serviceProvider->regenerateStaticCss();
     }
-
-    $this->serviceProvider->getCacheManager()->clearAllCaches();
 
     parent::submitForm($form, $form_state);
   }
@@ -779,20 +773,28 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *   The current state of the form.
    */
   private function saveAllSettings(FormStateInterface $form_state): void {
-    $settingsMap = [
-      'dev_mode', 'show_page_errors', 'enable_transitions', 'log_level',
-      'admin_preview', 'rendering_mode', 'scope_global', 'disable_admin',
+    $isAdmin = $this->currentUser()->hasPermission('administer utilikit');
+
+    // Developer tool settings require 'administer utilikit' permission.
+    $developerSettings = ['dev_mode', 'show_page_errors', 'admin_preview', 'log_level'];
+    $generalSettings = [
+      'enable_transitions', 'rendering_mode', 'scope_global', 'disable_admin',
       'scope_content_types', 'update_on_node_save', 'update_on_block_save',
       'update_on_paragraph_save', 'optimize_css', 'use_important',
     ];
+
+    $settingsMap = $isAdmin
+      ? array_merge($developerSettings, $generalSettings)
+      : $generalSettings;
+
     $config = $this->config('utilikit.settings');
     foreach ($settingsMap as $setting) {
       $config->set($setting, $form_state->getValue($setting));
     }
 
-    // Validate debounce range (0-1000ms)
+    // Validate debounce range (0-500ms, matching form UI constraints).
     $debounce = (int) $form_state->getValue('debounce');
-    $debounce = max(0, min(1000, $debounce));
+    $debounce = max(0, min(500, $debounce));
     $config->set('debounce', $debounce);
 
     // Validate breakpoints against allowed values.
@@ -921,14 +923,15 @@ class UtilikitSettingsForm extends ConfigFormBase {
    */
   public function clearCssCache(array &$form, FormStateInterface $form_state): void {
     // Clear all UtiliKit data.
-    $this->serviceProvider->getStateManager()->clearUtiliKitData();
+    $this->serviceProvider->getStateManager()->clearUtilikitData();
 
     // Clean up all CSS files (static and test).
     $this->serviceProvider->getFileManager()->cleanupStaticFiles();
 
     // Also clean test CSS if exists.
-    $testCssFile = UtilikitConstants::CSS_DIRECTORY . '/utilikit-test-complete.css';
-    if (file_exists($testCssFile)) {
+    $testCssFile = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::TEST_CSS_FILENAME;
+    $testCssPath = $this->fileSystem->realpath($testCssFile);
+    if ($testCssPath && file_exists($testCssPath)) {
       try {
         $this->fileSystem->delete($testCssFile);
       }
@@ -939,14 +942,9 @@ class UtilikitSettingsForm extends ConfigFormBase {
       }
     }
 
-    // Reset ALL configuration to defaults.
+    // Reset CSS-related config to safe defaults; preserve other settings.
     $config = $this->configFactory()->getEditable('utilikit.settings');
-    // Delete entire config.
-    $config->delete();
-
-    // Re-create config with essential settings enabled.
-    // Use configFactory()->getEditable() to ensure we get a fresh object.
-    $this->configFactory()->getEditable('utilikit.settings')
+    $config
       ->set('rendering_mode', 'inline')
       ->set('scope_global', TRUE)
       ->set('disable_admin', TRUE)

@@ -76,8 +76,8 @@
      * Border Style and Color Properties.
      */
 
-    /** Border style keywords (uk-bs--solid, uk-bs--dashed). */
-    bs: { css: 'borderStyle', isKeyword: true },
+    /** Border style keywords (uk-bs--solid, uk-bs--b-dashed). */
+    bs: { css: 'borderStyle', isKeyword: true, sides: true },
 
     /** Border color with alpha support (uk-bc--red-50). */
     bc: { css: 'borderColor', isColor: true },
@@ -88,23 +88,23 @@
      * Control element sizing with support for various units and auto values.
      */
 
-    /** Width with auto support (uk-wd--200, uk-wd--auto). */
-    wd: { css: 'width', isNumericFlexible: true, allowAuto: true },
+    /** Inline size (width) with auto support (uk-wd--200, uk-wd--auto). */
+    wd: { css: 'inlineSize', isNumericFlexible: true, allowAuto: true },
 
-    /** Height with auto support (uk-ht--100vh, uk-ht--auto). */
-    ht: { css: 'height', isNumericFlexible: true, allowAuto: true },
+    /** Block size (height) with auto support (uk-ht--100vh, uk-ht--auto). */
+    ht: { css: 'blockSize', isNumericFlexible: true, allowAuto: true },
 
-    /** Maximum width with auto support (uk-xw--1200). */
-    xw: { css: 'maxWidth', isNumericFlexible: true, allowAuto: true },
+    /** Max inline size (max-width) with auto support (uk-xw--1200). */
+    xw: { css: 'maxInlineSize', isNumericFlexible: true, allowAuto: true },
 
-    /** Minimum width with auto support (uk-nw--300). */
-    nw: { css: 'minWidth', isNumericFlexible: true, allowAuto: true },
+    /** Min inline size (min-width) with auto support (uk-nw--300). */
+    nw: { css: 'minInlineSize', isNumericFlexible: true, allowAuto: true },
 
-    /** Maximum height (uk-xh--500). */
-    xh: { css: 'maxHeight', isNumericFlexible: true },
+    /** Max block size (max-height) (uk-xh--500). */
+    xh: { css: 'maxBlockSize', isNumericFlexible: true },
 
-    /** Minimum height (uk-nh--200). */
-    nh: { css: 'minHeight', isNumericFlexible: true },
+    /** Min block size (min-height) (uk-nh--200). */
+    nh: { css: 'minBlockSize', isNumericFlexible: true },
 
     /**
      * Positioning Properties.
@@ -112,17 +112,17 @@
      * CSS positioning values for absolute, relative, and fixed elements.
      */
 
-    /** Top position (uk-tp--10). */
-    tp: { css: 'top', isNumericFlexible: true },
+    /** Inset block start (top) position (uk-tp--10). */
+    tp: { css: 'insetBlockStart', isNumericFlexible: true },
 
-    /** Left position (uk-lt--20). */
-    lt: { css: 'left', isNumericFlexible: true },
+    /** Inset inline start (left) position (uk-lt--20). */
+    lt: { css: 'insetInlineStart', isNumericFlexible: true },
 
-    /** Right position (uk-ri--30). */
-    ri: { css: 'right', isNumericFlexible: true },
+    /** Inset inline end (right) position (uk-ri--30). */
+    ri: { css: 'insetInlineEnd', isNumericFlexible: true },
 
-    /** Bottom position (uk-bt--40). */
-    bt: { css: 'bottom', isNumericFlexible: true },
+    /** Inset block end (bottom) position (uk-bt--40). */
+    bt: { css: 'insetBlockEnd', isNumericFlexible: true },
 
     /**
      * Typography Properties.

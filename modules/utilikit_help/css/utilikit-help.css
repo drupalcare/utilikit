@@ -1,160 +1,166 @@
 /**
  * @file
- * UtiliKit Help Page Styles - Making documentation beautiful! ✨
+ * UtiliKit Help Page Styles.
+ *
+ * All rules scoped under .utilikit-help-page to avoid theme conflicts.
+ * Inherits font, text color, and background from the active theme.
  */
 
-/* =============================================================================
-   Variables & Base Styles
+/* ==========================================================================
+   Custom properties — scoped to help page
    ========================================================================== */
-
-:root {
-  --help-primary: #007bff;
-  --help-secondary: #6f42c1;
-  --help-success: #28a745;
-  --help-warning: #ffc107;
-  --help-danger: #dc3545;
-  --help-info: #17a2b8;
-  --help-light: #f8f9fa;
-  --help-dark: #343a40;
-  --help-border: #dee2e6;
-  --help-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  --help-shadow-lg: 0 4px 12px rgba(0,0,0,0.15);
-  --help-border-radius: 8px;
-  --help-transition: all 0.3s ease;
-}
 
 .utilikit-help-page {
-  color: var(--help-dark);
+  --uk-primary: #007bff;
+  --uk-secondary: #6f42c1;
+  --uk-success: #28a745;
+  --uk-warning: #ffc107;
+  --uk-danger: #dc3545;
+  --uk-info: #17a2b8;
+  --uk-light: #f8f9fa;
+  --uk-dark: #343a40;
+  --uk-border: #dee2e6;
+  --uk-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --uk-shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --uk-radius: 8px;
+  --uk-transition: 0.3s ease;
 }
 
-/* =============================================================================
-   Hero Section
+/* ==========================================================================
+   Hero
    ========================================================================== */
 
-.help-hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #d9d9d9!important;
+.utilikit-help-page .help-hero {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
   padding: 60px 40px;
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   margin-bottom: 40px;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
 
-.help-hero::before {
+.utilikit-help-page .help-hero::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="2" fill="white" opacity="0.1"/></svg>') repeat;
   background-size: 50px 50px;
-  animation: float 20s infinite linear;
+  animation: uk-float 20s infinite linear;
 }
 
-@keyframes float {
-  0% {
-    transform: translateY(0) translateX(0);
-}
-  100% {
-    transform: translateY(-50px) translateX(-50px);
-}
+@keyframes uk-float {
+  to { transform: translateY(-50px) translateX(-50px); }
 }
 
-.hero-content {
+.utilikit-help-page .hero-content {
   position: relative;
   z-index: 1;
-  color: #d9d9d9!important;
+  color: #fff !important;
 }
 
-.hero-title {
-  color: #d9d9d9!important;
+.utilikit-help-page .hero-title {
+  color: #fff !important;
   font-size: 3rem;
   font-weight: 700;
   margin-bottom: 20px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.example-code code,
-.hero-content p {
-  color: #f3f3f3!important;
+.utilikit-help-page .hero-content p,
+.utilikit-help-page .example-code code {
+  color: #f3f3f3 !important;
 }
 
-.hero-emoji {
+.utilikit-help-page .hero-emoji {
   display: inline-block;
-  animation: bounce 2s infinite;
+  animation: uk-bounce 2s infinite;
   margin: 0 10px;
 }
 
-@keyframes bounce {
-  0%,
-  20%,
-  50%,
-  80%,
-  100% {
-    transform: translateY(0);
-}
-  40% {
-    transform: translateY(-10px);
-}
-  60% {
-    transform: translateY(-5px);
-}
+@keyframes uk-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
 }
 
-.hero-subtitle {
+.utilikit-help-page .hero-subtitle {
   font-size: 1.2rem;
   opacity: 0.9;
   margin-bottom: 30px;
   max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
+  margin-inline-start: auto;
+  margin-inline-end: auto;
 }
 
-.hero-badges {
+.utilikit-help-page .hero-badges {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 10px;
 }
 
-.badge {
+.utilikit-help-page .badge {
   padding: 8px 16px;
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 600;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2) !important;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.3);
-  transition: var(--help-transition);
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: inherit !important;
+  transition: transform var(--uk-transition), background var(--uk-transition);
 }
 
-.badge:hover {
+.utilikit-help-page .badge:hover {
   transform: translateY(-2px);
-  background: rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.3);
 }
 
-/* =============================================================================
-   Vertical Tabs Layout
+/* ==========================================================================
+   Mobile nav toggle button
    ========================================================================== */
 
-.help-content {
+.utilikit-help-page .mobile-nav-toggle {
+  display: none;
+  width: 100%;
+  padding: 15px 20px;
+  background: var(--uk-primary) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: var(--uk-radius);
+  cursor: pointer;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-bottom: 10px;
+  transition: background var(--uk-transition);
+}
+
+.utilikit-help-page .mobile-nav-toggle:hover {
+  background: #0069d9;
+}
+
+/* ==========================================================================
+   Vertical tabs layout
+   ========================================================================== */
+
+.utilikit-help-page .help-content {
   margin-bottom: 60px;
 }
 
-.vertical-tabs-wrapper {
+.utilikit-help-page .vertical-tabs-wrapper {
   display: flex;
   gap: 30px;
   align-items: flex-start;
 }
 
-.vertical-tabs-nav {
+.utilikit-help-page .vertical-tabs-nav {
   flex: 0 0 280px;
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+  background: #fff !important;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
   padding: 20px 0;
   position: sticky;
   top: 20px;
@@ -162,155 +168,148 @@
   overflow-y: auto;
 }
 
-.tab-button {
+.utilikit-help-page .tab-button {
   display: flex;
   align-items: center;
   width: 100%;
   padding: 15px 20px;
-  border: none;
-  background: none;
-  text-align: left;
+  border: none !important;
+  background: none !important;
+  text-align: start;
   cursor: pointer;
-  transition: var(--help-transition);
+  transition: background var(--uk-transition), padding-inline-start var(--uk-transition);
   position: relative;
-  color: var(--help-dark);
+  color: var(--uk-dark) !important;
   font-size: 1rem;
 }
 
-.tab-button:hover {
-  background-color: var(--help-light);
-  padding-left: 25px;
+.utilikit-help-page .tab-button:hover {
+  background-color: var(--uk-light);
+  padding-inline-start: 25px;
 }
 
-.tab-button.active {
-  background-color: var(--help-primary);
-  color: white;
+.utilikit-help-page .tab-button.active {
+  background-color: var(--uk-primary) !important;
+  color: #fff !important;
   font-weight: 600;
 }
 
-.tab-button.active::before {
+.utilikit-help-page .tab-button.active::before {
   content: '';
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
   width: 4px;
-  background: var(--help-warning);
+  background: var(--uk-warning);
   border-radius: 0 4px 4px 0;
 }
 
-.tab-icon {
+.utilikit-help-page .tab-icon {
   font-size: 1.2rem;
-  margin-right: 12px;
+  margin-inline-end: 12px;
   width: 24px;
   text-align: center;
 }
 
-.tab-text {
+.utilikit-help-page .tab-text {
   flex: 1;
 }
 
-.vertical-tabs-content {
+.utilikit-help-page .vertical-tabs-content {
   flex: 1;
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
   min-height: 600px;
 }
 
-.tab-content {
-  display: none;
+.utilikit-help-page .tab-content {
+  display: none !important;
   padding: 16px;
-  animation: fadeInUp 0.4s ease;
+  animation: uk-fadeIn 0.4s ease;
 }
 
-.tab-content.active {
-  display: block;
+.utilikit-help-page .tab-content.active {
+  display: block !important;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes uk-fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* =============================================================================
-   Content Styling
+/* ==========================================================================
+   Content typography
    ========================================================================== */
 
-.tab-content h2 {
+.utilikit-help-page .tab-content h2 {
   font-size: 2.5rem;
-  color: var(--help-primary);
+  color: var(--uk-secondary) !important;
   margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 15px;
 }
 
-.tab-content h3 {
+.utilikit-help-page .tab-content h3 {
   font-size: 1.8rem;
-  color: var(--help-primary);
-  margin: 30px 0 15px 0;
-  border-bottom: 2px solid var(--help-light);
+  color: var(--uk-primary) !important;
+  margin: 30px 0 15px;
+  border-bottom: 2px solid var(--uk-light);
   padding-bottom: 10px;
 }
 
-.tab-content h2 {
-  color: var(--help-secondary);
-}
-
-.tab-content h4 {
+.utilikit-help-page .tab-content h4 {
   font-size: 1.3rem;
-  color: var(--help-secondary);
-  margin: 25px 0 10px 0;
+  color: #495057 !important;
+  margin: 25px 0 10px!important;
 }
 
-.intro-text {
+.utilikit-help-page .intro-text {
   font-size: 1.1rem;
   color: #666;
   margin-bottom: 30px;
   padding: 20px;
-  background: var(--help-light);
-  border-radius: var(--help-border-radius);
-  border-left: 4px solid var(--help-primary);
+  background: var(--uk-light);
+  border-radius: var(--uk-radius);
+  border-inline-start: 4px solid var(--uk-primary);
 }
 
-.intro-text.abbr code {
+.utilikit-help-page .intro-text.abbr code {
   font-weight: bold;
-    color: var(--help-primary);
+  color: var(--uk-primary);
 }
 
-.intro-text.abbr span {
+.utilikit-help-page .intro-text.abbr span {
   font-weight: 500;
-    color: var(--help-secondary);
+  color: var(--uk-secondary);
 }
 
+.utilikit-help-page code {
+  display: inline-block;
+}
 
-/* =============================================================================
-   Steps & Cards
+/* ==========================================================================
+   Steps & cards
    ========================================================================== */
 
-.steps-container {
+.utilikit-help-page .steps-container {
   margin: 30px 0;
 }
 
-.step {
+.utilikit-help-page .step {
   display: flex;
   margin-bottom: 40px;
   align-items: flex-start;
   gap: 20px;
 }
 
-.step-number {
+.utilikit-help-page .step-number {
   flex: 0 0 50px;
   height: 50px;
-  background: var(--help-primary);
-  color: white;
+  background: var(--uk-primary) !important;
+  color: #fff !important;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -321,46 +320,46 @@
   top: 100px;
 }
 
-.step-content {
+.utilikit-help-page .step-content {
   flex: 1;
 }
 
-.step-content h3 {
+.utilikit-help-page .step-content h3 {
   margin-top: 0;
-  color: var(--help-primary);
+  color: var(--uk-primary);
   border: none;
   padding: 0;
 }
 
-/* =============================================================================
-   Code Examples
+/* ==========================================================================
+   Code examples
    ========================================================================== */
 
-.code-example {
+.utilikit-help-page .code-example {
   margin: 20px 0;
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   overflow: hidden;
-  box-shadow: var(--help-shadow);
+  box-shadow: var(--uk-shadow);
 }
 
-.code-example.error {
-  border-left: 4px solid var(--help-danger);
+.utilikit-help-page .code-example.error {
+  border-inline-start: 4px solid var(--uk-danger);
 }
 
-.code-header {
-  background: var(--help-dark);
-  color: white;
+.utilikit-help-page .code-header {
+  background: var(--uk-dark) !important;
+  color: #fff !important;
   padding: 10px 15px;
   font-size: 0.9rem;
   font-weight: 600;
 }
 
-.code-example.error .code-header {
-  background: var(--help-danger);
+.utilikit-help-page .code-example.error .code-header {
+  background: var(--uk-danger) !important;
 }
 
-.code-example pre {
-  background: #f8f9fa;
+.utilikit-help-page .code-example pre {
+  background: #f8f9fa !important;
   margin: 0;
   padding: 20px;
   overflow-x: auto;
@@ -368,85 +367,123 @@
   line-height: 1.5;
 }
 
-.code-example code {
-  display: inline-block!important;
-  background: transparent!important;
-  padding: 0!important;
-  color: var(--help-dark);
+.utilikit-help-page .code-example code {
+  display: inline-block;
+  background: transparent !important;
+  padding: 0;
+  color: var(--uk-dark) !important;
 }
 
-/* =============================================================================
-   Pattern Explanation
+/* Copy button on code blocks */
+.utilikit-help-page pre.has-copy-btn {
+  position: relative;
+}
+
+.utilikit-help-page .code-copy-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 10px;
+  padding: 4px 10px;
+  background: var(--uk-primary) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity var(--uk-transition);
+}
+
+.utilikit-help-page pre.has-copy-btn:hover .code-copy-btn {
+  opacity: 1;
+}
+
+.utilikit-help-page .code-copy-btn.copy-success {
+  background: var(--uk-success) !important;
+}
+
+.utilikit-help-page .code-copy-btn.copy-error {
+  background: var(--uk-danger) !important;
+}
+
+/* Click-to-copy inline code */
+.utilikit-help-page code.is-copyable {
+  cursor: pointer;
+}
+
+.utilikit-help-page code.copy-success {
+  outline: 2px solid var(--uk-success);
+  outline-offset: 1px;
+}
+
+/* ==========================================================================
+   Pattern explanation
    ========================================================================== */
 
-.pattern-explanation {
+.utilikit-help-page .pattern-explanation {
   background: #fff7e6;
-  border: 2px solid var(--help-warning);
-  border-radius: var(--help-border-radius);
+  border: 2px solid var(--uk-warning);
+  border-radius: var(--uk-radius);
   padding: 25px;
   margin: 20px 0;
 }
 
-.pattern-formula {
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace!important;
+.utilikit-help-page .pattern-formula {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 1.2rem;
-  background: white;
+  background: #fff;
   padding: 15px;
   border-radius: 6px;
   margin-bottom: 20px;
   text-align: center;
-  border: 2px dashed var(--help-warning);
+  border: 2px dashed var(--uk-warning);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
 }
 
-.pattern-examples {
+.utilikit-help-page .pattern-formula code {
+  display: inline-block;
+}
+
+.utilikit-help-page .pattern-examples {
   display: grid;
   gap: 10px;
 }
 
-.pattern-example {
+.utilikit-help-page .pattern-example {
   display: flex;
   align-items: center;
   gap: 15px;
   padding: 10px;
-  background: white;
+  background: #fff;
   border-radius: 6px;
 }
 
-.pattern-example code {
-  display: inline-flex!important;
-  background: var(--help-light)!important;
+.utilikit-help-page .pattern-example code {
+  display: inline-flex;
+  background: var(--uk-light);
   padding: 5px 10px;
   border-radius: 4px;
-  color: var(--help-primary)!important;
+  color: var(--uk-primary);
   font-weight: 600;
   flex: 0 0 auto;
 }
 
-.utilikit-help-page code {
-  display: inline-block!important;
-}
-
-.utilikit-help-page .pattern-formula code {
-  display: inline-block!important;
-}
-
-/* =============================================================================
-   Live Examples
+/* ==========================================================================
+   Live examples
    ========================================================================== */
 
-.live-example {
+.utilikit-help-page .live-example {
   margin: 30px 0;
   padding: 25px;
-  background: white;
-  border: 2px solid var(--help-border);
-  border-radius: var(--help-border-radius);
+  background: #fff;
+  border: 2px solid var(--uk-border);
+  border-radius: var(--uk-radius);
 }
 
-.example-result {
+.utilikit-help-page .example-result {
   margin-bottom: 20px;
   min-height: 60px;
   display: flex;
@@ -454,225 +491,106 @@
   justify-content: center;
 }
 
-.example-code {
-  background: var(--help-dark);
-  color: white;
+.utilikit-help-page .example-code {
+  background: var(--uk-dark) !important;
+  color: #fff !important;
   padding: 20px;
   border-radius: 6px;
   margin-bottom: 15px;
+  overflow: hidden;
 }
 
-.example-code pre {
+.utilikit-help-page .example-code pre {
   margin: 0;
-  background: transparent;
-  color: inherit;
+  background: transparent !important;
+  color: inherit !important;
   padding: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
-.code-breakdown {
+.utilikit-help-page .code-breakdown {
   display: grid;
   gap: 8px;
 }
 
-.breakdown-item {
+.utilikit-help-page .breakdown-item {
   display: flex;
   align-items: center;
   gap: 15px;
   padding: 8px 12px;
-  background: var(--help-light);
+  background: var(--uk-light);
   border-radius: 6px;
   font-size: 0.9rem;
 }
 
-.breakdown-item code {
-  background: white;
+.utilikit-help-page .breakdown-item code {
+  background: #fff;
   padding: 4px 8px;
   border-radius: 4px;
-  color: var(--help-primary);
+  color: var(--uk-primary);
   font-weight: 600;
   flex: 0 0 auto;
 }
 
-/* =============================================================================
-   Responsive Design (Collapse at 992px)
+/* ==========================================================================
+   How It Works
    ========================================================================== */
 
-@media (max-width: 991.98px) {
-  .vertical-tabs-wrapper {
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .vertical-tabs-nav {
-    flex: none;
-    position: relative;
-    top: auto;
-    max-height: none;
-    overflow: visible;
-    display: none; /* Hidden by default on mobile */
-    margin-bottom: 20px;
-  }
-
-  /* Mobile tab toggle button */
-  .vertical-tabs-wrapper::before {
-    content: '📚 Show Navigation Menu';
-    display: block;
-    background: var(--help-primary);
-    color: white;
-    padding: 15px 20px;
-    border-radius: var(--help-border-radius);
-    cursor: pointer;
-    text-align: center;
-    font-weight: 600;
-    margin-bottom: 10px;
-    transition: var(--help-transition);
-  }
-
-  .vertical-tabs-wrapper.nav-open::before {
-    content: '✖️ Hide Navigation Menu';
-  }
-
-  .vertical-tabs-wrapper.nav-open .vertical-tabs-nav {
-    display: block;
-  }
-
-  .tab-button {
-    border-bottom: 1px solid var(--help-border);
-  }
-
-  .tab-button:last-child {
-    border-bottom: none;
-  }
-
-  .vertical-tabs-content {
-    box-shadow: none;
-    border: 1px solid var(--help-border);
-  }
-
-  .tab-content {
-    padding: 20px;
-  }
-
-  .help-hero {
-    padding: 40px 20px;
-  }
-
-  .hero-title {
-    font-size: 2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
-  }
-
-  .hero-badges {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .steps-container .step {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .step-number {
-    position: relative;
-    top: auto;
-  }
-}
-
-@media (max-width: 767.98px) {
-  .utilikit-help-page {
-    padding: 0 15px;
-  }
-
-  .help-hero {
-    padding: 30px 15px;
-    margin-bottom: 30px;
-  }
-
-  .hero-title {
-    font-size: 1.8rem;
-  }
-
-  .tab-content {
-    padding: 15px;
-  }
-
-  .tab-content h2 {
-    font-size: 2rem;
-  }
-
-  .pattern-formula {
-    font-size: 1rem;
-    padding: 10px;
-  }
-
-  .pattern-example {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-}
-
-/* =============================================================================
-   Specific Tab Content Styles
-   ========================================================================== */
-
-/* How It Works Tab */
-.how-it-works-steps {
+.utilikit-help-page .how-it-works-steps {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 30px;
   margin: 40px 0;
 }
 
-.work-step {
+.utilikit-help-page .work-step {
   text-align: center;
   padding: 30px 20px;
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
-  transition: var(--help-transition);
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
+  transition: transform var(--uk-transition), box-shadow var(--uk-transition);
 }
 
-.work-step:hover {
+.utilikit-help-page .work-step:hover {
   transform: translateY(-5px);
-  box-shadow: var(--help-shadow-lg);
+  box-shadow: var(--uk-shadow-lg);
 }
 
-.work-icon {
+.utilikit-help-page .work-icon {
   font-size: 3rem;
   margin-bottom: 20px;
   display: block;
 }
 
-.work-step h3 {
-  color: var(--help-primary);
-  margin: 0 0 15px 0;
+.utilikit-help-page .work-step h3 {
+  color: var(--uk-primary);
+  margin: 0 0 15px;
   border: none;
   padding: 0;
 }
 
-/* Mode Cards */
-.modes-explanation {
+/* Mode cards */
+.utilikit-help-page .modes-explanation {
   margin: 40px 0;
 }
 
-.mode-card {
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+.utilikit-help-page .mode-card {
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
   margin-bottom: 30px;
   overflow: hidden;
-  transition: var(--help-transition);
+  transition: box-shadow var(--uk-transition);
 }
 
-.mode-card:hover {
-  box-shadow: var(--help-shadow-lg);
+.utilikit-help-page .mode-card:hover {
+  box-shadow: var(--uk-shadow-lg);
 }
 
-.mode-header {
+.utilikit-help-page .mode-header {
   padding: 20px 25px;
   display: flex;
   align-items: center;
@@ -681,405 +599,422 @@
   gap: 10px;
 }
 
-.inline-mode {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+.utilikit-help-page .inline-mode {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: #fff !important;
 }
 
-.static-mode {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
+.utilikit-help-page .static-mode {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+  color: #fff !important;
 }
 
-.mode-header h4 {
+.utilikit-help-page .head-mode {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+  color: #1a3c34 !important;
+}
+
+.utilikit-help-page .mode-header h4 {
   margin: 0;
   color: inherit;
 }
 
-.mode-badge {
+.utilikit-help-page .mode-badge {
   padding: 6px 12px;
   border-radius: 15px;
   font-size: 0.8rem;
   font-weight: 600;
-  background: rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255, 255, 255, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
-.mode-content {
+.utilikit-help-page .mode-content {
   padding: 25px;
 }
 
-.benefits-list {
-  list-style: none;
-  padding: 0;
-  margin: 15px 0 0 0;
+.utilikit-help-page .benefits-list {
+  list-style: none !important;
+  padding: 0 !important;
+  margin: 15px 0 0;
 }
 
-.benefits-list li {
+.utilikit-help-page .benefits-list li {
   padding: 8px 0;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* Developer Mode Tab */
-.dev-features {
+/* ==========================================================================
+   Developer mode
+   ========================================================================== */
+
+.utilikit-help-page .dev-features {
   display: grid;
   gap: 30px;
   margin: 40px 0;
 }
 
-.dev-feature {
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+.utilikit-help-page .dev-feature {
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
   padding: 30px;
-  border-left: 5px solid var(--help-primary);
+  border-inline-start: 5px solid var(--uk-primary);
 }
 
-.feature-icon {
+.utilikit-help-page .feature-icon {
   font-size: 2.5rem;
   margin-bottom: 15px;
   display: block;
 }
 
-.dev-feature h3 {
-  color: var(--help-primary);
-  margin: 0 0 15px 0;
+.utilikit-help-page .dev-feature h3 {
+  color: var(--uk-primary);
+  margin: 0 0 15px;
   border: none;
   padding: 0;
 }
 
-.visual-demo {
+.utilikit-help-page .visual-demo {
   margin: 20px 0;
   padding: 20px;
-  background: var(--help-light);
-  border-radius: var(--help-border-radius);
-  border: 2px dashed var(--help-primary);
+  background: var(--uk-light);
+  border-radius: var(--uk-radius);
+  border: 2px dashed var(--uk-primary);
 }
 
-.demo-element {
+.utilikit-help-page .demo-element {
   display: inline-block;
-  outline: 2px dashed rgba(0, 123, 255, 0.7) !important;
+  outline: 2px dashed rgba(0, 123, 255, 0.7);
   outline-offset: 2px;
 }
 
-.demo-caption {
-  margin: 10px 0 0 0;
+.utilikit-help-page .demo-caption {
+  margin: 10px 0 0;
   font-size: 0.9rem;
   color: #666;
   font-style: italic;
 }
 
-.console-preview {
-  background: #1a1a1a;
-  color: #00ff00;
+.utilikit-help-page .console-preview {
+  background: #1a1a1a !important;
+  color: #00ff00 !important;
   padding: 20px;
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 0.9rem;
   line-height: 1.5;
   margin: 15px 0;
 }
 
-.console-line {
+.utilikit-help-page .console-line {
   margin-bottom: 5px;
 }
 
-.debug-panel-preview {
+.utilikit-help-page .debug-panel-preview {
   margin: 20px 0;
 }
 
-.debug-panel-mock {
-  background: rgba(0,0,0,0.8);
-  color: white;
+.utilikit-help-page .debug-panel-mock {
+  background: rgba(0, 0, 0, 0.8) !important;
+  color: #fff !important;
   padding: 15px;
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   font-size: 0.9rem;
   width: 250px;
   margin: 0 auto;
   font-family: monospace;
 }
 
-.debug-btn {
+.utilikit-help-page .debug-btn {
   display: block;
   width: 100%;
   margin: 8px 0;
   padding: 8px 12px;
-  background: var(--help-primary);
-  color: white;
-  border: none;
+  background: var(--uk-primary) !important;
+  color: #fff !important;
+  border: none !important;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.8rem;
 }
 
-.debug-info {
+.utilikit-help-page .debug-info {
   margin-top: 15px;
   padding-top: 15px;
   border-top: 1px solid #666;
   font-size: 0.8rem;
 }
 
-.debug-info div {
+.utilikit-help-page .debug-info div {
   display: flex;
   justify-content: space-between;
   margin-bottom: 5px;
 }
 
-/* Testing Guide */
-.testing-guide {
+/* Testing guide */
+.utilikit-help-page .testing-guide {
   background: #e8f5e8;
-  border: 2px solid var(--help-success);
-  border-radius: var(--help-border-radius);
+  border: 2px solid var(--uk-success);
+  border-radius: var(--uk-radius);
   padding: 25px;
   margin: 30px 0;
 }
 
-.test-steps {
+.utilikit-help-page .test-steps {
   margin: 20px 0;
 }
 
-.test-step {
+.utilikit-help-page .test-step {
   display: flex;
   align-items: center;
   gap: 15px;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(40,167,69,0.2);
+  border-bottom: 1px solid rgba(40, 167, 69, 0.2);
 }
 
-.test-step:last-child {
+.utilikit-help-page .test-step:last-child {
   border-bottom: none;
 }
 
-.step-num {
+.utilikit-help-page .step-num {
   font-size: 1.2rem;
   flex: 0 0 auto;
 }
 
-/* Real Examples Tab */
-.examples-grid {
+/* ==========================================================================
+   Real examples
+   ========================================================================== */
+
+.utilikit-help-page .examples-grid {
   display: grid;
   gap: 30px;
   margin: 30px 0;
 }
 
-.example-card {
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+.utilikit-help-page .example-card {
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
   overflow: hidden;
-  transition: var(--help-transition);
+  transition: box-shadow var(--uk-transition), transform var(--uk-transition);
 }
 
-.example-card:hover {
-  box-shadow: var(--help-shadow-lg);
+.utilikit-help-page .example-card:hover {
+  box-shadow: var(--uk-shadow-lg);
   transform: translateY(-2px);
 }
 
-.example-card h3 {
+.utilikit-help-page .example-card h3 {
   margin: 0;
   padding: 20px 25px 15px;
-  background: var(--help-light);
-  border-bottom: 1px solid var(--help-border);
-  color: var(--help-primary);
+  background: var(--uk-light);
+  border-bottom: 1px solid var(--uk-border);
+  color: var(--uk-primary);
 }
 
-.example-card > p {
+.utilikit-help-page .example-card > p {
   padding: 0 25px 15px;
   margin: 0;
   color: #666;
 }
 
-.example-demo {
+.utilikit-help-page .example-demo {
   padding: 25px;
   background: #f8f9fa;
-  border-top: 1px solid var(--help-border);
-  border-bottom: 1px solid var(--help-border);
+  border-top: 1px solid var(--uk-border);
+  border-bottom: 1px solid var(--uk-border);
 }
 
-.code-details {
+.utilikit-help-page .code-details {
   margin: 0;
 }
 
-.code-details summary {
+.utilikit-help-page .code-details summary {
   padding: 15px 25px;
   cursor: pointer;
-  background: var(--help-dark);
-  color: white;
+  background: var(--uk-dark) !important;
+  color: #fff !important;
   font-weight: 600;
-  transition: var(--help-transition);
+  transition: background var(--uk-transition);
 }
 
-.code-details summary:hover {
-  background: #2c3034;
+.utilikit-help-page .code-details summary:hover {
+  background: #2c3034 !important;
 }
 
-.code-details pre {
+.utilikit-help-page .code-details pre {
   margin: 0;
-  background: #f8f9fa;
+  background: #f8f9fa !important;
   padding: 25px;
   overflow-x: auto;
 }
 
-/* Responsive Tab */
-.breakpoints-explanation {
+/* ==========================================================================
+   Responsive design tab
+   ========================================================================== */
+
+.utilikit-help-page .breakpoints-explanation {
   margin: 30px 0;
 }
 
-.breakpoints-grid {
+.utilikit-help-page .breakpoints-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
   margin: 30px 0;
 }
 
-.breakpoint-card {
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+.utilikit-help-page .breakpoint-card {
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
   padding: 20px;
   text-align: center;
-  transition: var(--help-transition);
-  border-top: 4px solid var(--help-primary);
+  transition: transform var(--uk-transition), box-shadow var(--uk-transition);
+  border-top: 4px solid var(--uk-primary);
 }
 
-.breakpoint-card:hover {
+.utilikit-help-page .breakpoint-card:hover {
   transform: translateY(-3px);
-  box-shadow: var(--help-shadow-lg);
+  box-shadow: var(--uk-shadow-lg);
 }
 
-.breakpoint-icon {
+.utilikit-help-page .breakpoint-icon {
   font-size: 2rem;
   margin-bottom: 15px;
   display: block;
 }
 
-.breakpoint-card h4 {
-  margin: 0 0 10px 0;
-  color: var(--help-primary);
+.utilikit-help-page .breakpoint-card h4 {
+  margin: 0 0 10px;
+  color: var(--uk-primary);
 }
 
-.breakpoint-card code {
-  background: var(--help-light);
+.utilikit-help-page .breakpoint-card code {
+  background: var(--uk-light);
   padding: 6px 10px;
   border-radius: 4px;
-  color: var(--help-secondary);
+  color: var(--uk-secondary);
   font-weight: 600;
 }
 
-.responsive-demo {
+.utilikit-help-page .responsive-demo {
   margin: 30px 0;
   padding: 30px;
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
 }
 
-.responsive-breakdown {
+.utilikit-help-page .responsive-breakdown {
   margin: 30px 0;
   padding: 25px;
   background: #f8f9fa;
-  border-radius: var(--help-border-radius);
-  border-left: 4px solid var(--help-info);
+  border-radius: var(--uk-radius);
+  border-inline-start: 4px solid var(--uk-info);
 }
 
-.responsive-list {
-  list-style: none;
-  padding: 0;
+.utilikit-help-page .responsive-list {
+  list-style: none !important;
+  padding: 0 !important;
   margin: 15px 0;
 }
 
-.responsive-list li {
+.utilikit-help-page .responsive-list li {
   padding: 10px 0;
-  border-bottom: 1px solid #dee2e6;
+  border-bottom: 1px solid var(--uk-border);
 }
 
-.responsive-list li:last-child {
+.utilikit-help-page .responsive-list li:last-child {
   border-bottom: none;
 }
 
-.responsive-tips {
+.utilikit-help-page .responsive-tips {
   margin: 40px 0;
 }
 
-.tips-grid {
+.utilikit-help-page .tips-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
   margin: 20px 0;
 }
 
-.tip-card {
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+.utilikit-help-page .tip-card {
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
   padding: 25px;
   text-align: center;
-  transition: var(--help-transition);
+  transition: transform var(--uk-transition), box-shadow var(--uk-transition);
 }
 
-.tip-card:hover {
+.utilikit-help-page .tip-card:hover {
   transform: translateY(-3px);
-  box-shadow: var(--help-shadow-lg);
+  box-shadow: var(--uk-shadow-lg);
 }
 
-.tip-icon {
+.utilikit-help-page .tip-icon {
   font-size: 2.5rem;
   margin-bottom: 15px;
   display: block;
 }
 
-.tip-card h4 {
-  color: var(--help-primary);
-  margin: 0 0 15px 0;
+.utilikit-help-page .tip-card h4 {
+  color: var(--uk-primary);
+  margin: 0 0 15px;
 }
 
-/* Troubleshooting Tab */
-.troubleshooting-sections {
+/* ==========================================================================
+   Troubleshooting
+   ========================================================================== */
+
+.utilikit-help-page .troubleshooting-sections {
   margin: 30px 0;
 }
 
-.trouble-section {
+.utilikit-help-page .trouble-section {
   margin-bottom: 40px;
 }
 
-.trouble-section h3 {
-  color: var(--help-danger);
-  background: #f8d7da;
+.utilikit-help-page .trouble-section h3 {
+  color: var(--uk-danger) !important;
+  background: #f8d7da !important;
   padding: 15px 20px;
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   margin-bottom: 20px;
-  border: 1px solid #f5c6cb;
+  border: 1px solid #f5c6cb !important;
 }
 
-.trouble-card {
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+.utilikit-help-page .trouble-card {
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
   padding: 25px;
-  border-left: 5px solid var(--help-danger);
+  border-inline-start: 5px solid var(--uk-danger);
 }
 
-.trouble-symptom {
+.utilikit-help-page .trouble-symptom {
   background: #fff3cd;
   padding: 15px;
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   border: 1px solid #ffeaa7;
   margin-bottom: 20px;
 }
 
-.solution-list {
-  padding-left: 20px;
+.utilikit-help-page .solution-list {
+  padding-inline-start: 20px;
   margin: 15px 0;
 }
 
-.solution-list li {
+.utilikit-help-page .solution-list li {
   margin-bottom: 15px;
   line-height: 1.6;
 }
 
-.code-fix {
+.utilikit-help-page .code-fix {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -1087,326 +1022,305 @@
   font-size: 0.9rem;
 }
 
-.fix-wrong {
-  color: var(--help-danger);
+.utilikit-help-page .fix-wrong {
+  color: var(--uk-danger) !important;
 }
 
-.fix-right {
-  color: var(--help-success);
+.utilikit-help-page .fix-right {
+  color: var(--uk-success) !important;
 }
 
-.emergency-toolkit {
+.utilikit-help-page .emergency-toolkit {
   margin: 40px 0;
   padding: 30px;
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
-  border-radius: var(--help-border-radius);
-  color: white;
+  background: linear-gradient(135deg, #d9534f 0%, #c9302c 100%) !important;
+  border-radius: var(--uk-radius);
+  color: #fff !important;
 }
 
-.emergency-toolkit h3 {
-  color: var(--help-primary);
+.utilikit-help-page .emergency-toolkit h3 {
+  color: var(--uk-primary);
   margin-top: 0;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.toolkit-grid {
+.utilikit-help-page .toolkit-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
   margin: 20px 0;
 }
 
-.tool-card {
-  background: rgba(255,255,255,0.2);
+.utilikit-help-page .tool-card {
+  background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   padding: 20px;
   text-align: center;
-  border: 1px solid rgba(255,255,255,0.3);
-  transition: var(--help-transition);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: background var(--uk-transition), transform var(--uk-transition);
 }
 
-.tool-card:hover {
-  background: rgba(255,255,255,0.3);
+.utilikit-help-page .tool-card:hover {
+  background: rgba(255, 255, 255, 0.3);
   transform: translateY(-3px);
 }
 
-.tool-icon {
+.utilikit-help-page .tool-icon {
   font-size: 2rem;
   margin-bottom: 15px;
   display: block;
 }
 
-.tool-card h4 {
-  color: var(--help-primary);
-  margin: 0 0 10px 0;
+.utilikit-help-page .tool-card h4 {
+  color: var(--uk-primary);
+  margin: 0 0 10px;
 }
 
-.tool-card p {
-  color: var(--help-dark);
+.utilikit-help-page .tool-card p {
+  color: var(--uk-dark);
   margin: 0;
   font-size: 0.9rem;
 }
 
-.help-section {
+.utilikit-help-page .help-section {
   margin: 40px 0;
   padding: 30px;
-  background: var(--help-light);
-  border-radius: var(--help-border-radius);
-  border: 2px solid var(--help-primary);
+  background: var(--uk-light);
+  border-radius: var(--uk-radius);
+  border: 2px solid var(--uk-primary);
 }
 
-.help-links {
+.utilikit-help-page .help-links {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
   margin: 20px 0;
 }
 
-.help-link {
+.utilikit-help-page .help-link {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 12px 20px;
-  background: var(--help-primary);
-  color: white;
-  text-decoration: none;
-  border-radius: var(--help-border-radius);
-  transition: var(--help-transition);
+  background: var(--uk-primary) !important;
+  color: #fff !important;
+  text-decoration: none !important;
+  border-radius: var(--uk-radius);
+  transition: background var(--uk-transition), transform var(--uk-transition);
   font-weight: 600;
 }
 
-.help-link:hover {
-  background: #0056b3;
+.utilikit-help-page .help-link:hover {
+  background: #0056b3 !important;
   transform: translateY(-2px);
-  color: white;
-  text-decoration: none;
+  color: #fff !important;
+  text-decoration: none !important;
 }
 
-.help-icon {
+.utilikit-help-page .help-icon {
   font-size: 1.2rem;
 }
 
-/* Pro Tips Tab */
-.pro-tips-grid {
+/* ==========================================================================
+   Pro tips
+   ========================================================================== */
+
+.utilikit-help-page .pro-tips-grid {
   margin: 30px 0;
 }
 
-.tip-section {
+.utilikit-help-page .tip-section {
   margin-bottom: 50px;
 }
 
-.tip-section h3 {
-  background: var(--help-primary);
-  color: white!important;
+.utilikit-help-page .tip-section h3 {
+  background: var(--uk-primary) !important;
+  color: #fff !important;
   padding: 15px 25px;
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   margin-bottom: 25px;
-  border: none;
+  border: none !important;
 }
 
-.tip-cards {
+.utilikit-help-page .tip-cards {
   display: grid;
   gap: 20px;
 }
 
-.tip-card-detailed {
-  background: white;
-  border-radius: var(--help-border-radius);
-  box-shadow: var(--help-shadow);
+.utilikit-help-page .tip-card-detailed {
+  background: #fff;
+  border-radius: var(--uk-radius);
+  box-shadow: var(--uk-shadow);
   padding: 25px;
-  border-left: 5px solid var(--help-secondary);
-  transition: var(--help-transition);
+  border-inline-start: 5px solid var(--uk-secondary);
+  transition: box-shadow var(--uk-transition), transform var(--uk-transition);
 }
 
-.tip-card-detailed:hover {
-  box-shadow: var(--help-shadow-lg);
+.utilikit-help-page .tip-card-detailed:hover {
+  box-shadow: var(--uk-shadow-lg);
   transform: translateY(-2px);
 }
 
-.tip-card-detailed h4 {
-  color: var(--help-secondary);
-  margin: 0 0 15px 0;
+.utilikit-help-page .tip-card-detailed h4 {
+  color: var(--uk-secondary);
+  margin: 0 0 15px;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.pattern-example,
-.component-example {
-  background: var(--help-light);
+.utilikit-help-page .pattern-example,
+.utilikit-help-page .component-example {
+  background: var(--uk-light);
   padding: 15px;
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   margin: 15px 0;
-  border-left: 4px solid var(--help-info);
+  border-inline-start: 4px solid var(--uk-info);
 }
 
-.pro-challenge {
+.utilikit-help-page .pro-challenge {
   margin: 50px 0;
   padding: 40px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: var(--help-border-radius);
-  color: white;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-radius: var(--uk-radius);
+  color: #fff !important;
   text-align: center;
 }
 
-.pro-challenge h3 {
-  color: white;
+.utilikit-help-page .pro-challenge h3 {
+  color: #fff !important;
   margin-top: 0;
-  border: none;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  border: none !important;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.challenge-card {
-  background: rgba(255,255,255,0.1);
+.utilikit-help-page .challenge-card {
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border-radius: var(--help-border-radius);
+  border-radius: var(--uk-radius);
   padding: 30px;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-#pro-tips .pro-challenge * {
-  color: rgba(255,255,255,0.8) !important;
+.utilikit-help-page #pro-tips .pro-challenge * {
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
-.challenge-tips {
+.utilikit-help-page .challenge-tips {
   margin: 20px 0;
-  text-align: left;
+  text-align: start;
 }
 
-.challenge-tips * {
-  background: transparent!important;
+.utilikit-help-page .challenge-tips * {
+  background: transparent !important;
 }
 
-.challenge-tips ul {
+.utilikit-help-page .challenge-tips ul {
   margin: 15px 0;
-  padding-left: 25px;
+  padding-inline-start: 25px;
 }
 
-.challenge-tips li {
+.utilikit-help-page .challenge-tips li {
   margin-bottom: 8px;
 }
 
-.final-wisdom {
+.utilikit-help-page .final-wisdom {
   margin: 50px 0;
   text-align: center;
 }
 
-.wisdom-quote {
-  background: var(--help-light);
+.utilikit-help-page .wisdom-quote {
+  background: var(--uk-light);
   padding: 30px;
-  border-radius: var(--help-border-radius);
-  border-left: 5px solid var(--help-warning);
+  border-radius: var(--uk-radius);
+  border-inline-start: 5px solid var(--uk-warning);
   font-style: italic;
   font-size: 1.1rem;
   line-height: 1.8;
   margin: 0;
 }
 
-.wisdom-quote cite {
+.utilikit-help-page .wisdom-quote cite {
   display: block;
   margin-top: 15px;
   font-style: normal;
   font-weight: 600;
-  color: var(--help-primary);
+  color: var(--uk-primary);
 }
 
-/* =============================================================================
-   Footer
+/* ==========================================================================
+   Units reference
    ========================================================================== */
 
-.help-footer {
-  background: var(--help-dark);
-  color: white!important;
-  padding: 30px 0;
-  border-radius: var(--help-border-radius);
-  text-align: center;
-  margin-top: 60px;
-}
-
-.footer-content p {
-  margin: 5px 0;
-  color: white!important;
-}
-
-.footer-content a {
-  color: var(--help-primary);
-  text-decoration: none;
-  color: white!important;
-}
-
-.footer-content a:hover {
-  text-decoration: underline;
-}
-/* =============================================================================
-   Unite
-   ========================================================================== */
-.table {
+.utilikit-help-page .table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1.5rem;
 }
 
-.table th,
-.table td {
+.utilikit-help-page .table th,
+.utilikit-help-page .table td {
   padding: 0.75rem;
-  text-align: left;
+  text-align: start;
   border-bottom: 1px solid #e5e7eb;
 }
 
-.table th {
+.utilikit-help-page .table th {
   background-color: #f9fafb;
   font-weight: 600;
 }
 
-.units-grid {
+.utilikit-help-page .units-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.unit-item {
+.utilikit-help-page .unit-item {
   padding: 1rem;
   background: #f0f9ff;
   border-radius: 0.5rem;
   border: 1px solid #e0f2fe;
 }
 
-.property-section {
+.utilikit-help-page .property-section {
   margin-bottom: 2rem;
 }
-/* =============================================================================
-   Cheatsheat
+
+/* ==========================================================================
+   Cheat sheet
    ========================================================================== */
-.cheat-grid {
+
+.utilikit-help-page .cheat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.cheat-section h3 {
+.utilikit-help-page .cheat-section h3 {
   color: #1f2937;
   margin-bottom: 0.75rem;
   font-size: 1.1rem;
   font-weight: 600;
 }
 
-.cheat-items {
+.utilikit-help-page .cheat-items {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.cheat-item {
+.utilikit-help-page .cheat-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.875rem;
 }
 
-.cheat-item code {
+.utilikit-help-page .cheat-item code {
   background: #f3f4f6;
   padding: 0.25rem 0.5rem;
   border-radius: 0.25rem;
@@ -1414,36 +1328,176 @@
   flex-shrink: 0;
 }
 
-.cheat-example {
+.utilikit-help-page .cheat-example {
   margin-top: 0.75rem;
   font-size: 0.8rem;
   color: #6b7280;
   font-style: italic;
 }
 
-.responsive-row,
-.pattern-grid {
+.utilikit-help-page .responsive-row,
+.utilikit-help-page .pattern-grid {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
 }
 
-.resp-item,
-.pattern-item {
+.utilikit-help-page .resp-item,
+.utilikit-help-page .pattern-item {
   background: #f9fafb;
   padding: 0.5rem 0.75rem;
   border-radius: 0.375rem;
   font-size: 0.875rem;
 }
-.syntax-formula * {
-  color: gray!important;
+
+.utilikit-help-page .syntax-formula * {
+  color: #4b5563;
 }
-.syntax-formula {
+
+.utilikit-help-page .syntax-formula {
   background: #eff3f6;
-  color: gray!important;
+  color: #4b5563;
   padding: 1rem;
   border-radius: 0.5rem;
   font-family: monospace;
   text-align: center;
   margin-bottom: 1rem;
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+.utilikit-help-page .help-footer {
+  background: var(--uk-dark) !important;
+  color: #fff !important;
+  padding: 30px 0;
+  border-radius: var(--uk-radius);
+  text-align: center;
+  margin-top: 60px;
+}
+
+.utilikit-help-page .footer-content p {
+  margin: 5px 0;
+  color: #fff !important;
+}
+
+.utilikit-help-page .footer-content a {
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+.utilikit-help-page .footer-content a:hover {
+  text-decoration: underline !important;
+}
+
+/* ==========================================================================
+   Responsive — tablet (< 992px)
+   ========================================================================== */
+
+@media (max-width: 991.98px) {
+  .utilikit-help-page .mobile-nav-toggle {
+    display: block;
+  }
+
+  .utilikit-help-page .vertical-tabs-wrapper {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .utilikit-help-page .vertical-tabs-nav {
+    flex: none;
+    position: relative;
+    top: auto;
+    max-height: none;
+    overflow: visible;
+    display: none !important;
+    margin-bottom: 20px;
+  }
+
+  .utilikit-help-page .vertical-tabs-wrapper.nav-open .vertical-tabs-nav {
+    display: block !important;
+  }
+
+  .utilikit-help-page .tab-button {
+    border-bottom: 1px solid var(--uk-border);
+  }
+
+  .utilikit-help-page .tab-button:last-child {
+    border-bottom: none;
+  }
+
+  .utilikit-help-page .vertical-tabs-content {
+    box-shadow: none;
+    border: 1px solid var(--uk-border);
+  }
+
+  .utilikit-help-page .tab-content {
+    padding: 20px;
+  }
+
+  .utilikit-help-page .help-hero {
+    padding: 40px 20px;
+  }
+
+  .utilikit-help-page .hero-title {
+    font-size: 2rem;
+  }
+
+  .utilikit-help-page .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .utilikit-help-page .hero-badges {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .utilikit-help-page .steps-container .step {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .utilikit-help-page .step-number {
+    position: relative;
+    top: auto;
+  }
+}
+
+/* ==========================================================================
+   Responsive — mobile (< 768px)
+   ========================================================================== */
+
+@media (max-width: 767.98px) {
+  .utilikit-help-page {
+    padding: 0 15px;
+  }
+
+  .utilikit-help-page .help-hero {
+    padding: 30px 15px;
+    margin-bottom: 30px;
+  }
+
+  .utilikit-help-page .hero-title {
+    font-size: 1.8rem;
+  }
+
+  .utilikit-help-page .tab-content {
+    padding: 15px;
+  }
+
+  .utilikit-help-page .tab-content h2 {
+    font-size: 2rem;
+  }
+
+  .utilikit-help-page .pattern-formula {
+    font-size: 1rem;
+    padding: 10px;
+  }
+
+  .utilikit-help-page .pattern-example {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
 }

@@ -74,15 +74,15 @@
       .then(response => response.text())
       .then(html => {
         if (html.trim()) {
-          // Parse the HTML
-          const wrapper = document.createElement('div');
-          wrapper.innerHTML = html;
-          const button = wrapper.firstElementChild;
+          // Parse with DOMParser to avoid executing any scripts in the response (XSS-safe).
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+          const source = doc.body.firstElementChild;
 
-          if (button) {
+          if (source && source.id === 'utilikit-update-button') {
+            const button = document.importNode(source, true);
             document.body.appendChild(button);
 
-            // Attach click handler
             button.addEventListener('click', function() {
               updateUtilikit();
             });
@@ -153,11 +153,10 @@
      * possible response states including success, error, and retry scenarios.
      */
     function attemptUpdate() {
-      fetch('/utilikit/update-css', {
+      fetch('/utilikit/update-css?token=' + encodeURIComponent(csrfToken), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken,
           'X-Requested-With': 'XMLHttpRequest'
         },
         body: JSON.stringify({

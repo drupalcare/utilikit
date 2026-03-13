@@ -1,0 +1,150 @@
+        <div class="tab-content" id="troubleshooting" role="tabpanel">
+        <h2>🩺 Troubleshooting</h2>
+        <p class="intro-text">
+        Don't panic! Even the best chefs sometimes burn the toast. 🍞 Here's your <strong>emergency toolkit</strong>
+        for when UtiliKit isn't cooperating. We'll get you back to styling in no time!
+        </p>
+
+        <div class="troubleshooting-sections">
+
+        <div class="trouble-section">
+        <h3>😱 "My classes aren't working!"</h3>
+        <div class="trouble-card">
+        <div class="trouble-symptom">
+        <strong>Symptom:</strong> Added UtiliKit classes but nothing happens – like pressing elevator buttons that don't light up! 😤
+        </div>
+        <div class="trouble-solutions">
+        <h4>🔧 Doctor's Orders:</h4>
+        <ol class="solution-list">
+        <li>
+        <strong>Check the VIP Pass:</strong> Make sure you have the <code>utilikit</code> base class!
+        <div class="code-fix">
+        <span class="fix-wrong">❌ <code>&lt;div class="uk-pd--20"&gt;</code></span>
+        <span class="fix-right">✅ <code>&lt;div class="utilikit uk-pd--20"&gt;</code></span>
+        </div>
+        </li>
+        <li><strong>Clear the Cobwebs:</strong> Run <code>drush cr</code> to clear Drupal cache</li>
+        <li><strong>Enable Detective Mode:</strong> Turn on Developer Mode to see what's happening</li>
+        <li><strong>JavaScript Check:</strong> Make sure JavaScript is enabled (UtiliKit needs it to work its magic!)</li>
+        </ol>
+        </div>
+        </div>
+        </div>
+
+        <div class="trouble-section">
+        <h3>🌪️ "Circular dependency errors!"</h3>
+        <div class="trouble-card">
+        <div class="trouble-symptom">
+        <strong>Symptom:</strong> Scary error messages about circular references – like getting stuck in a revolving door! 🚪
+        </div>
+        <div class="trouble-solutions">
+        <h4>🔧 Emergency Fixes:</h4>
+        <ol class="solution-list">
+        <li><strong>Check Drupal Core:</strong> Run <code>composer reinstall drupal/core --no-dev</code></li>
+        <li><strong>Clear Everything:</strong> <code>drush cr</code> (the classic "turn it off and on again")</li>
+        <li><strong>File Permissions:</strong> Make sure your web server can read all files</li>
+        </ol>
+        </div>
+        </div>
+        </div>
+
+        <div class="trouble-section">
+        <h3>📁 "Static mode not generating CSS!"</h3>
+        <div class="trouble-card">
+        <div class="trouble-symptom">
+        <strong>Symptom:</strong> Switched to static mode but no CSS file appears – like ordering pizza and getting an empty box! 📦
+        </div>
+        <div class="trouble-solutions">
+        <h4>🔧 File Detective Work:</h4>
+        <ol class="solution-list">
+        <li><strong>Permission Check:</strong> Make sure <code>sites/default/files/utilikit/</code> is writable</li>
+        <li><strong>Force Regeneration:</strong> Go to UtiliKit settings → "Clear All CSS & Reset" → Save</li>
+        <li><strong>Add Some Classes:</strong> Make sure you actually have UtiliKit classes in your content!</li>
+        </ol>
+        </div>
+        </div>
+        </div>
+
+        <div class="trouble-section">
+        <h3>📱 "Responsive classes not working!"</h3>
+        <div class="trouble-card">
+        <div class="trouble-symptom">
+        <strong>Symptom:</strong> Responsive classes not kicking in at the right screen sizes – like wearing winter clothes in summer! 🌞❄️
+        </div>
+        <div class="trouble-solutions">
+        <h4>🔧 Responsive Rescue:</h4>
+        <ol class="solution-list">
+        <li><strong>Breakpoint Check:</strong> Verify the breakpoint is enabled in UtiliKit settings</li>
+        <li><strong>Syntax Check:</strong> Make sure you're using the right format: <code>uk-md-pd--20</code></li>
+        <li><strong>Browser DevTools:</strong> Check if the CSS is actually being applied at different screen sizes</li>
+        <li><strong>Cache Clear:</strong> You know the drill... <code>drush cr</code>!</li>
+        </ol>
+        </div>
+        </div>
+        </div>
+
+        <div class="trouble-section">
+        <h3>🎭 "Hover/focus states not working!"</h3>
+        <div class="trouble-card">
+        <div class="trouble-symptom">
+        <strong>Symptom:</strong> Added <code>-h</code>, <code>-f</code>, or <code>-a</code> suffixes but nothing happens on hover/focus/active – like pressing a doorbell with no wires! 🔔
+        </div>
+        <div class="trouble-solutions">
+        <h4>🔧 Pseudo-State Fixes:</h4>
+        <ol class="solution-list">
+        <li><strong>Check Your Mode:</strong> Pseudo-states only work in <strong>Static</strong> and <strong>Head</strong> modes. Inline mode does not support them.</li>
+        <li><strong>Check the Property:</strong> Only <code>bg</code> (background) and <code>tc</code> (text color) support pseudo-state suffixes</li>
+        <li><strong>Syntax:</strong> The suffix goes after the hex value: <code>uk-bg--007bff-h</code> ✅ not <code>uk-bg-h--007bff</code> ❌</li>
+        <li><strong>Regenerate CSS:</strong> In static mode, save a node or click "Update CSS" to regenerate the file</li>
+        </ol>
+        </div>
+        </div>
+        </div>
+
+        </div>
+
+        <div class="emergency-toolkit">
+        <h3>🚨 Emergency Toolkit</h3>
+        <div class="toolkit-grid">
+        <div class="tool-card">
+        <div class="tool-icon">🔍</div>
+        <h4>Enable Developer Mode</h4>
+        <p>Your first line of defense! It shows you exactly what's happening behind the scenes.</p>
+        </div>
+        <div class="tool-card">
+        <div class="tool-icon">🧹</div>
+        <h4>Clear All Caches</h4>
+        <p><code>drush cr</code> - The magic spell that fixes 80% of Drupal problems!</p>
+        </div>
+        <div class="tool-card">
+        <div class="tool-icon">🔧</div>
+        <h4>Browser DevTools</h4>
+        <p>Press F12 and investigate! Check the Console and Elements tabs for clues.</p>
+        </div>
+        <div class="tool-card">
+        <div class="tool-icon">📋</div>
+        <h4>Test in Playground</h4>
+        <p>Use the UtiliKit Playground to test classes in isolation – perfect for debugging!</p>
+        </div>
+        </div>
+        </div>
+
+        <div class="help-section">
+        <h3>🆘 Still Stuck? We've Got Your Back!</h3>
+        <p>Sometimes you need to call in the cavalry! Here's where to get help:</p>
+        <div class="help-links">
+        <a href="https://www.drupal.org/project/issues/utilikit" class="help-link">
+        <span class="help-icon">🐛</span>
+        <span>Report Issues</span>
+        </a>
+        <a href="https://www.alaahaddad.com" class="help-link">
+        <span class="help-icon">👨‍💻</span>
+        <span>Contact Developer</span>
+        </a>
+        <a href="/admin/config/development/utilikit/playground" class="help-link">
+        <span class="help-icon">🎮</span>
+        <span>Test in Playground</span>
+        </a>
+        </div>
+        </div>
+        </div>

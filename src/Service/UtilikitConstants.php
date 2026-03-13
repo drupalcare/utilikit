@@ -53,12 +53,12 @@ class UtilikitConstants {
   /**
    * Timeout in seconds for CSS update lock acquisition.
    */
-  public const CSS_UPDATE_LOCK_TIMEOUT = 5;
+  public const CSS_UPDATE_LOCK_TIMEOUT = 10;
 
   /**
    * Wait time in seconds between CSS update lock attempts.
    */
-  public const CSS_UPDATE_LOCK_WAIT = 2;
+  public const CSS_UPDATE_LOCK_WAIT = 5;
 
   // ======================================================================= */
   // VALIDATION AND LIMITS
@@ -150,7 +150,7 @@ class UtilikitConstants {
   /**
    * Entity types and their corresponding configuration keys for auto-update.
    */
-  public const array AUTO_UPDATE_ENTITY_TYPES = [
+  public const AUTO_UPDATE_ENTITY_TYPES = [
     'node' => 'update_on_node_save',
     'block_content' => 'update_on_block_save',
     'paragraph' => 'update_on_paragraph_save',
@@ -162,12 +162,12 @@ class UtilikitConstants {
   /**
    * Queue name for CSS processing queue worker.
    */
-  public const string QUEUE_CSS_PROCESSOR = 'utilikit_css_processor';
+  public const QUEUE_CSS_PROCESSOR = 'utilikit_css_processor';
 
   /**
    * Lock identifier for CSS update operations.
    */
-  public const string LOCK_CSS_UPDATE = 'utilikit_css_update';
+  public const LOCK_CSS_UPDATE = 'utilikit_css_update';
 
   // ======================================================================= */
   // STATE API KEYS
@@ -175,12 +175,12 @@ class UtilikitConstants {
   /**
    * State key for storing known utility classes array.
    */
-  public const string STATE_KNOWN_CLASSES = 'utilikit.known_classes';
+  public const STATE_KNOWN_CLASSES = 'utilikit.known_classes';
 
   /**
    * State key for storing generated CSS content.
    */
-  public const string STATE_GENERATED_CSS = 'utilikit.generated_css';
+  public const STATE_GENERATED_CSS = 'utilikit.generated_css';
 
   /**
    * State key for storing CSS generation timestamp.
@@ -190,7 +190,22 @@ class UtilikitConstants {
   /**
    * State key for storing last cleanup operation timestamp.
    */
-  public const string STATE_LAST_CLEANUP = 'utilikit.last_cleanup';
+  public const STATE_LAST_CLEANUP = 'utilikit.last_cleanup';
+
+  // ======================================================================= */
+  // PSEUDO-STATE SUFFIXES
+  // ======================================================================= */
+  /**
+   * Maps single-letter suffixes to CSS pseudo-state selectors.
+   *
+   * Used by color rules (bg, tc) to generate :hover, :focus, :active
+   * CSS selectors. Only supported in static and head rendering modes.
+   */
+  public const PSEUDO_STATE_MAP = [
+    'h' => 'hover',
+    'f' => 'focus',
+    'a' => 'active',
+  ];
 
   // ======================================================================= */
   // VALIDATION PATTERNS
@@ -224,12 +239,12 @@ class UtilikitConstants {
   /**
    * Directory path for storing UtiliKit CSS files.
    */
-  public const string CSS_DIRECTORY = 'public://css/utilikit';
+  public const CSS_DIRECTORY = 'public://utilikit';
 
   /**
    * Filename for the main generated CSS file.
    */
-  public const string CSS_FILENAME = 'generated.css';
+  public const CSS_FILENAME = 'utilikit-static-style.css';
 
   /**
    * Filename for the complete test CSS file.

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\utilikit\Controller;
 
 use Drupal\Core\Controller\ControllerBase;
+use Drupal\Component\Utility\Html;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\utilikit\Service\UtilikitRules;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -20,27 +21,20 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class UtilikitReferenceController extends ControllerBase {
 
   /**
-   * The UtiliKit rules service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitRules
-   */
-  protected UtilikitRules $rulesService;
-
-  /**
    * Constructs a new UtilikitReferenceController object.
    *
    * @param \Drupal\utilikit\Service\UtilikitRules $rulesService
    *   The UtiliKit rules service for accessing utility class definitions.
    */
-  public function __construct(UtilikitRules $rulesService) {
-    $this->rulesService = $rulesService;
-  }
+  public function __construct(
+    protected readonly UtilikitRules $rulesService,
+  ) {}
 
   /**
    * {@inheritdoc}
    */
-  public static function create(ContainerInterface $container): self {
-    return new self(
+  public static function create(ContainerInterface $container): static {
+    return new static(
       $container->get('utilikit.rules')
     );
   }
@@ -102,20 +96,20 @@ class UtilikitReferenceController extends ControllerBase {
 
         $rows[] = [
           $rule['css'],
-          ['data' => ['#markup' => '<code>uk-' . $prefix . '</code>']],
-          ['data' => ['#markup' => '<code>' . $example . '</code>']],
-          ['data' => ['#markup' => '<code>' . $this->getResponsiveExample($example) . '</code>']],
+          ['data' => ['#markup' => '<code>' . Html::escape('uk-' . $prefix) . '</code>']],
+          ['data' => ['#markup' => '<code>' . Html::escape($example) . '</code>']],
+          ['data' => ['#markup' => '<code>' . Html::escape($this->getResponsiveExample($example)) . '</code>']],
           $this->getValueType($rule),
           [
             'data' => [
-              '#markup' => '<span title="' . htmlspecialchars($note_full) . '">' . htmlspecialchars($note_short) . '</span>',
+              '#markup' => '<span title="' . Html::escape($note_full) . '">' . Html::escape($note_short) . '</span>',
             ],
           ],
         ];
       }
 
       $build[] = [
-        '#markup' => '<h3>' . $group . '</h3>',
+        '#markup' => '<h3>' . Html::escape($group) . '</h3>',
       ];
 
       $build[] = [
@@ -126,8 +120,7 @@ class UtilikitReferenceController extends ControllerBase {
       ];
     }
 
-    // Add cache metadata for admin-facing reference page.
-    // Use max-age 0 since this is admin-only, dynamic, and non-performance-critical.
+    // Admin reference page: max-age 0 (dynamic, non-performance-critical).
     $build['#cache'] = [
       'contexts' => ['user.permissions'],
       'tags' => [UtilikitConstants::CACHE_TAG_CONFIG],
@@ -184,33 +177,35 @@ class UtilikitReferenceController extends ControllerBase {
       $output .= '<div class="syntax-group-title">';
       $output .= '<span class="syntax-group-icon">' . ($groupIcons[$groupName] ?? '•') . '</span>';
       $output .= $groupName;
-      $output .= '<button type="button" class="copy-group-btn" data-group="' . htmlspecialchars($groupName) . '">' . $this->t('Copy All') . '</button>';
+      // Copy All button removed — now inside each tooltip-wrapper.
       $output .= '</div>';
       $output .= '<div class="syntax-items">';
 
       foreach ($groupRules as $prefix => $rule) {
-        $cssProperty = str_replace(['backgroundColor', 'borderWidth', 'borderRadius', 'borderStyle', 'borderColor',
-          'maxWidth', 'minWidth', 'maxHeight', 'minHeight', 'fontSize', 'lineHeight',
-          'fontWeight', 'letterSpacing', 'textAlign', 'zIndex', 'aspectRatio',
-          'flexGrow', 'flexShrink', 'flexBasis', 'flexDirection', 'justifyContent',
-          'alignItems', 'alignContent', 'flexWrap', 'gridTemplateColumns',
-          'gridTemplateRows', 'gridColumn', 'gridRow', 'userSelect', 'backgroundSize',
-        ],
-                                  ['background-color', 'border-width', 'border-radius', 'border-style', 'border-color',
-                                    'max-width', 'min-width', 'max-height', 'min-height', 'font-size', 'line-height',
-                                    'font-weight', 'letter-spacing', 'text-align', 'z-index', 'aspect-ratio',
-                                    'flex-grow', 'flex-shrink', 'flex-basis', 'flex-direction', 'justify-content',
-                                    'align-items', 'align-content', 'flex-wrap', 'grid-template-columns',
-                                    'grid-template-rows', 'grid-column', 'grid-row', 'user-select', 'background-size',
-                                  ],
-                                  $rule['css']);
+        $cssProperty = $this->camelToDash($rule['css']);
+        $example = $this->getExample($prefix, $rule);
+        $valueType = $this->getValueType($rule);
+        $notes = $this->getNotes($rule, $prefix);
 
-        $output .= '<div class="syntax-item">';
-        $output .= '<span class="property-name">' . $cssProperty . '</span>';
+        // Build data attributes for JS info card.
+        $dataAttrs = ' data-prefix="' . Html::escape($prefix) . '"';
+        $dataAttrs .= ' data-css="' . Html::escape($cssProperty) . '"';
+        $dataAttrs .= ' data-example="' . Html::escape($example) . '"';
+        $dataAttrs .= ' data-type="' . Html::escape($valueType) . '"';
+        $dataAttrs .= ' data-notes="' . Html::escape($notes) . '"';
+        if (!empty($rule['sides'])) {
+          $dataAttrs .= ' data-sides="1"';
+        }
+        if (in_array($prefix, ['bg', 'tc'], TRUE)) {
+          $dataAttrs .= ' data-pseudo="1"';
+        }
+
+        $output .= '<div class="syntax-item"' . $dataAttrs . '>';
+        $output .= '<span class="property-name">' . Html::escape($cssProperty) . '</span>';
         $output .= '<span class="syntax">';
         $output .= '<span class="syntax-uk">uk</span>';
         $output .= '<span class="syntax-dash">-</span>';
-        $output .= '<span class="syntax-prefix">' . htmlspecialchars($prefix, ENT_QUOTES, 'UTF-8') . '</span>';
+        $output .= '<span class="syntax-prefix">' . Html::escape($prefix) . '</span>';
         $output .= '<span class="syntax-dash">--</span>';
         $output .= '<span class="syntax-value">value</span>';
         $output .= '</span>';
@@ -220,6 +215,7 @@ class UtilikitReferenceController extends ControllerBase {
       $output .= '</div></div>';
     }
 
+    $output .= '</div>';
     return $output;
   }
 
@@ -267,6 +263,9 @@ class UtilikitReferenceController extends ControllerBase {
   protected function getExample(string $prefix, array $rule): string {
     // Color properties.
     if (!empty($rule['isColor'])) {
+      if (in_array($prefix, ['bg', 'tc'], TRUE)) {
+        return "uk-{$prefix}--ff0000, uk-{$prefix}--ff0000-h";
+      }
       return "uk-{$prefix}--ff0000";
     }
 
@@ -283,7 +282,7 @@ class UtilikitReferenceController extends ControllerBase {
         'ta' => 'center',
         'ov' => 'hidden',
         'cu' => 'pointer',
-        'fl' => 'left',
+        'fl' => 'inline-start',
         'cl' => 'both',
         'us' => 'none',
         'bs' => 'solid',
@@ -414,8 +413,9 @@ class UtilikitReferenceController extends ControllerBase {
       return 'Range (start-end)';
     }
     if (!empty($rule['isNumericFlexible'])) {
-      $viewport = in_array($rule['css'], ['width', 'height', 'maxWidth',
-        'maxHeight', 'minWidth', 'minHeight', 'fontSize',
+      $viewport = in_array($rule['css'], ['inlineSize', 'blockSize',
+        'maxInlineSize', 'maxBlockSize', 'minInlineSize', 'minBlockSize',
+        'fontSize',
       ]);
       return $viewport ? 'px, %, em, rem, vh, vw' : 'px, %, em, rem';
     }
@@ -438,7 +438,11 @@ class UtilikitReferenceController extends ControllerBase {
    */
   protected function getNotes(array $rule, string $prefix): string {
     if (!empty($rule['isColor'])) {
-      return 'Use 6-digit hex (ff0000) or 3-digit (f00). Add -50 for 50% opacity: uk-bg--ff0000-50';
+      $note = 'Use 6-digit hex (ff0000) or 3-digit (f00). Add -50 for 50% opacity: uk-bg--ff0000-50';
+      if (in_array($prefix, ['bg', 'tc'], TRUE)) {
+        $note .= '. Pseudo-states (static/head mode): -h (hover), -f (focus), -a (active). Example: uk-' . $prefix . '--007bff-h';
+      }
+      return $note;
     }
 
     if (!empty($rule['sides'])) {
@@ -514,6 +518,9 @@ class UtilikitReferenceController extends ControllerBase {
    */
   protected function getShortNote(array $rule, string $prefix): string {
     if (!empty($rule['isColor'])) {
+      if (in_array($prefix, ['bg', 'tc'], TRUE)) {
+        return 'Hex + opacity + hover/focus/active';
+      }
       return 'Hex + optional opacity';
     }
     if (!empty($rule['sides'])) {
@@ -548,6 +555,19 @@ class UtilikitReferenceController extends ControllerBase {
     }
 
     return '';
+  }
+
+  /**
+   * Converts a camelCase CSS property name to dash-case.
+   *
+   * @param string $property
+   *   The camelCase property name (e.g., 'backgroundColor').
+   *
+   * @return string
+   *   The dash-case property name (e.g., 'background-color').
+   */
+  protected function camelToDash(string $property): string {
+    return strtolower(preg_replace('/([A-Z])/', '-$1', $property));
   }
 
 }

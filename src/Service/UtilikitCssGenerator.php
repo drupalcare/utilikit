@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\utilikit\Service;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -17,34 +17,6 @@ use Psr\Log\LoggerInterface;
  * complex parsing for features like decimal notation and grid track lists.
  */
 class UtilikitCssGenerator {
-
-  /**
-   * The configuration factory service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  public ConfigFactoryInterface $configFactory;
-
-  /**
-   * The cache backend service.
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
-   */
-  protected CacheBackendInterface $cache;
-
-  /**
-   * The content scanner service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitContentScanner
-   */
-  protected UtilikitContentScanner $contentScanner;
-
-  /**
-   * The logger service.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
 
   /**
    * Constructs a new UtilikitCssGenerator object.
@@ -59,16 +31,11 @@ class UtilikitCssGenerator {
    *   The logger service for recording CSS generation operations.
    */
   public function __construct(
-    ConfigFactoryInterface $configFactory,
-    CacheBackendInterface $cache,
-    UtilikitContentScanner $contentScanner,
-    LoggerInterface $logger,
-  ) {
-    $this->configFactory = $configFactory;
-    $this->cache = $cache;
-    $this->contentScanner = $contentScanner;
-    $this->logger = $logger;
-  }
+    protected readonly ConfigFactoryInterface $configFactory,
+    protected readonly CacheBackendInterface $cache,
+    protected readonly UtilikitContentScanner $contentScanner,
+    protected readonly LoggerInterface $logger,
+  ) {}
 
   /**
    * Generates CSS from an array of utility classes.
@@ -85,9 +52,7 @@ class UtilikitCssGenerator {
    */
   public function generateCssFromClasses(array $classes): string {
     // Filter out null, empty, and non-string values FIRST.
-    $classes = array_filter($classes, static function ($class) {
-      return is_string($class) && !empty($class);
-    });
+    $classes = array_filter($classes, static fn ($class) => is_string($class) && $class !== '');
 
     // Remove duplicates.
     $classes = array_unique($classes);
@@ -101,7 +66,25 @@ class UtilikitCssGenerator {
     }
 
     sort($classes);
-    $cid = 'utilikit:css:' . md5(serialize($classes));
+
+    // Fetch config once before the loop to avoid repeated calls.
+    $config = $this->configFactory->get('utilikit.settings');
+    $activeBreakpoints = array_keys(array_filter($config->get('active_breakpoints') ?? []));
+    if (empty($activeBreakpoints)) {
+      $activeBreakpoints = array_keys(UtilikitConstants::DEFAULT_BREAKPOINTS);
+    }
+    $useImportant = (bool) ($config->get('use_important') ?? TRUE);
+    $renderingMode = $config->get('rendering_mode') ?? 'inline';
+
+    // Include settings that affect CSS output in the cache key so changes
+    // to use_important, rendering_mode, or breakpoints produce fresh CSS.
+    $configHash = md5(json_encode([
+      $classes,
+      $useImportant,
+      $renderingMode,
+      $activeBreakpoints,
+    ]));
+    $cid = 'utilikit:css:' . $configHash;
 
     if ($cache = $this->cache->get($cid)) {
       return $cache->data;
@@ -150,16 +133,8 @@ class UtilikitCssGenerator {
         continue;
       }
 
-      if ($breakpoint) {
-        $config = $this->configFactory->get('utilikit.settings');
-        $activeBreakpoints = array_keys(array_filter($config->get('active_breakpoints') ?? []));
-
-        if (empty($activeBreakpoints)) {
-          $activeBreakpoints = array_keys(UtilikitConstants::DEFAULT_BREAKPOINTS);
-        }
-        if (!in_array($breakpoint, $activeBreakpoints, TRUE)) {
-          continue;
-        }
+      if ($breakpoint && !in_array($breakpoint, $activeBreakpoints, TRUE)) {
+        continue;
       }
 
       if (!isset($rules[$prefix])) {
@@ -181,12 +156,19 @@ class UtilikitCssGenerator {
         continue;
       }
 
+      // Handle structured return from color rules (with pseudo-state).
+      $pseudoState = NULL;
+      if (is_array($declaration)) {
+        $pseudoState = $declaration['pseudoState'] ?? NULL;
+        $declaration = $declaration['declaration'];
+      }
+
       $selector = '.' . $this->escapeCssSelector($class);
 
-      // Add !important if configured (static/head modes only)
-      $config = $this->configFactory->get('utilikit.settings');
-      $useImportant = $config->get('use_important') ?? TRUE;
-      $renderingMode = $config->get('rendering_mode') ?? 'inline';
+      // Append pseudo-state selector for static/head modes.
+      if ($pseudoState && isset(UtilikitConstants::PSEUDO_STATE_MAP[$pseudoState])) {
+        $selector .= ':' . UtilikitConstants::PSEUDO_STATE_MAP[$pseudoState];
+      }
 
       if ($useImportant && in_array($renderingMode, ['static', 'head'], TRUE)) {
         $declaration = str_replace(';', ' !important;', $declaration);
@@ -234,32 +216,53 @@ class UtilikitCssGenerator {
    *   Escaped CSS selector safe for use in stylesheets.
    */
   private function escapeCssSelector(string $selector): string {
-    // CSS spec requires escaping these characters in selectors
-    // But we need special handling for dots in decimal numbers.
-    // First, protect decimal dots by temporarily replacing them
-    // Match patterns like 0.5, 1.25, 2.5, etc.
-    $selector = preg_replace_callback(
-    '/(\d+)\.(\d+)/',
-    function ($matches) {
-      // Use a placeholder that won't be escaped.
-      return $matches[1] . '___DECIMAL___' . $matches[2];
-    },
-    $selector
-    );
-
-    // Now escape special characters (including remaining dots)
-    $special = ['!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',',
-      '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']',
-      '^', '`', '{', '|', '}', '~',
+    // Escape each character individually: walk the string and escape any
+    // CSS special character with a backslash. This avoids fragile
+    // placeholder-based approaches and handles all edge cases.
+    $special = [
+      '!' => TRUE,
+      '"' => TRUE,
+      '#' => TRUE,
+      '$' => TRUE,
+      '%' => TRUE,
+      '&' => TRUE,
+      "'" => TRUE,
+      '(' => TRUE,
+      ')' => TRUE,
+      '*' => TRUE,
+      '+' => TRUE,
+      ',' => TRUE,
+      '.' => TRUE,
+      '/' => TRUE,
+      ':' => TRUE,
+      ';' => TRUE,
+      '<' => TRUE,
+      '=' => TRUE,
+      '>' => TRUE,
+      '?' => TRUE,
+      '@' => TRUE,
+      '[' => TRUE,
+      '\\' => TRUE,
+      ']' => TRUE,
+      '^' => TRUE,
+      '`' => TRUE,
+      '{' => TRUE,
+      '|' => TRUE,
+      '}' => TRUE,
+      '~' => TRUE,
     ];
 
-    $escaped = $selector;
-    foreach ($special as $char) {
-      $escaped = str_replace($char, '\\' . $char, $escaped);
+    $escaped = '';
+    $length = strlen($selector);
+    for ($i = 0; $i < $length; $i++) {
+      $char = $selector[$i];
+      if (isset($special[$char])) {
+        $escaped .= '\\' . $char;
+      }
+      else {
+        $escaped .= $char;
+      }
     }
-
-    // Restore decimal dots with single escaping.
-    $escaped = str_replace('___DECIMAL___', '\\.', $escaped);
 
     return $escaped;
   }
@@ -280,10 +283,11 @@ class UtilikitCssGenerator {
    * @param string $className
    *   The complete utility class name.
    *
-   * @return string|null
-   *   Generated CSS declaration or NULL if rule cannot be applied.
+   * @return string|array|null
+   *   Generated CSS declaration string, structured array (for color rules
+   *   with pseudo-state info), or NULL if rule cannot be applied.
    */
-  private function applyRule(array $rule, string $prefix, string $suffix, string $className): ?string {
+  private function applyRule(array $rule, string $prefix, string $suffix, string $className): string|array|null {
     if (!empty($rule['sides'])) {
       $result = $this->applySidesRule($rule, $prefix, $suffix);
       if ($result) {
@@ -316,7 +320,12 @@ class UtilikitCssGenerator {
     }
 
     if (!empty($rule['isColor'])) {
-      return $this->applyColorRule($rule, $suffix);
+      $colorResult = $this->applyColorRule($rule, $suffix);
+      if ($colorResult === NULL) {
+        return NULL;
+      }
+      // Return structured result with pseudo-state info for color rules.
+      return $colorResult;
     }
 
     if (!empty($rule['isFractional'])) {
@@ -348,6 +357,22 @@ class UtilikitCssGenerator {
    *   Generated CSS declaration or NULL if rule doesn't match pattern.
    */
   private function applySidesRule(array $rule, string $prefix, string $suffix): ?string {
+    // Keyword sides: e.g. uk-bs--b-dashed → border-bottom-style: dashed.
+    if (!empty($rule['isKeyword']) && preg_match('/^(t|r|b|l)-([\w-]+)$/', $suffix, $matches)) {
+      $side = $matches[1];
+      $keyword = $matches[2];
+      $cssProperty = UtilikitRules::getCssPropertyName($rule['css']);
+      $sideMap = [
+        't' => '-block-start',
+        'r' => '-inline-end',
+        'b' => '-block-end',
+        'l' => '-inline-start',
+      ];
+      // e.g. border-style + -block-end → border-block-end-style.
+      $sidedProperty = preg_replace('/^(border)(-\w+)$/', '$1' . $sideMap[$side] . '$2', $cssProperty);
+      return "{$sidedProperty}: $keyword;";
+    }
+
     if (!preg_match('/^(t|r|b|l)-(auto|\d+(?:d\d+)?(?:px|pr|em|rem|vh|vw)?)$/', $suffix, $matches)) {
       return NULL;
     }
@@ -379,10 +404,10 @@ class UtilikitCssGenerator {
         return NULL;
       }
       $radiusMap = [
-        't' => ['top-left', 'top-right'],
-        'r' => ['top-right', 'bottom-right'],
-        'b' => ['bottom-right', 'bottom-left'],
-        'l' => ['top-left', 'bottom-left'],
+        't' => ['start-start', 'start-end'],
+        'r' => ['start-end', 'end-end'],
+        'b' => ['end-end', 'end-start'],
+        'l' => ['start-start', 'end-start'],
       ];
       $declarations = [];
       foreach ($radiusMap[$side] as $corner) {
@@ -391,12 +416,12 @@ class UtilikitCssGenerator {
       return implode('; ', $declarations) . ';';
     }
     elseif ($prefix === 'bw') {
-      $sideMap = ['t' => 'top', 'r' => 'right', 'b' => 'bottom', 'l' => 'left'];
+      $sideMap = ['t' => 'block-start', 'r' => 'inline-end', 'b' => 'block-end', 'l' => 'inline-start'];
       return "border-{$sideMap[$side]}-width: $value;";
     }
     else {
       $cssProperty = UtilikitRules::getCssPropertyName($rule['css']);
-      $sideMap = ['t' => '-top', 'r' => '-right', 'b' => '-bottom', 'l' => '-left'];
+      $sideMap = ['t' => '-block-start', 'r' => '-inline-end', 'b' => '-block-end', 'l' => '-inline-start'];
       return "{$cssProperty}{$sideMap[$side]}: $value;";
     }
   }
@@ -458,67 +483,69 @@ class UtilikitCssGenerator {
       return NULL;
     }
 
-    // Apply CSS shorthand logic.
-    $top = $right = $bottom = $left = NULL;
+    // Apply CSS shorthand logic using logical properties.
+    // block-start = top, inline-end = right, block-end = bottom,
+    // inline-start = left (in LTR writing mode).
+    $blockStart = $inlineEnd = $blockEnd = $inlineStart = NULL;
 
     switch (count($values)) {
       case 1:
         // All sides same.
-        $top = $right = $bottom = $left = $values[0];
+        $blockStart = $inlineEnd = $blockEnd = $inlineStart = $values[0];
         break;
 
       case 2:
-        // Vertical | Horizontal.
-        $top = $bottom = $values[0];
-        $right = $left = $values[1];
+        // Block | Inline.
+        $blockStart = $blockEnd = $values[0];
+        $inlineEnd = $inlineStart = $values[1];
         break;
 
       case 3:
-        // Top | Horizontal | Bottom.
-        $top = $values[0];
-        $right = $left = $values[1];
-        $bottom = $values[2];
+        // Block-start | Inline | Block-end.
+        $blockStart = $values[0];
+        $inlineEnd = $inlineStart = $values[1];
+        $blockEnd = $values[2];
         break;
 
       case 4:
-        // Top | Right | Bottom | Left.
-        $top = $values[0];
-        $right = $values[1];
-        $bottom = $values[2];
-        $left = $values[3];
+        // Block-start | Inline-end | Block-end | Inline-start.
+        $blockStart = $values[0];
+        $inlineEnd = $values[1];
+        $blockEnd = $values[2];
+        $inlineStart = $values[3];
         break;
     }
 
-    // Generate CSS based on prefix.
+    // Generate CSS based on prefix using logical properties.
     $declarations = [];
 
     switch ($prefix) {
       case 'pd':
-        $declarations[] = "padding-top: $top";
-        $declarations[] = "padding-right: $right";
-        $declarations[] = "padding-bottom: $bottom";
-        $declarations[] = "padding-left: $left";
+        $declarations[] = "padding-block-start: $blockStart";
+        $declarations[] = "padding-inline-end: $inlineEnd";
+        $declarations[] = "padding-block-end: $blockEnd";
+        $declarations[] = "padding-inline-start: $inlineStart";
         break;
 
       case 'mg':
-        $declarations[] = "margin-top: $top";
-        $declarations[] = "margin-right: $right";
-        $declarations[] = "margin-bottom: $bottom";
-        $declarations[] = "margin-left: $left";
+        $declarations[] = "margin-block-start: $blockStart";
+        $declarations[] = "margin-inline-end: $inlineEnd";
+        $declarations[] = "margin-block-end: $blockEnd";
+        $declarations[] = "margin-inline-start: $inlineStart";
         break;
 
       case 'bw':
-        $declarations[] = "border-top-width: $top";
-        $declarations[] = "border-right-width: $right";
-        $declarations[] = "border-bottom-width: $bottom";
-        $declarations[] = "border-left-width: $left";
+        $declarations[] = "border-block-start-width: $blockStart";
+        $declarations[] = "border-inline-end-width: $inlineEnd";
+        $declarations[] = "border-block-end-width: $blockEnd";
+        $declarations[] = "border-inline-start-width: $inlineStart";
         break;
 
       case 'br':
-        $declarations[] = "border-top-left-radius: $top";
-        $declarations[] = "border-top-right-radius: $right";
-        $declarations[] = "border-bottom-right-radius: $bottom";
-        $declarations[] = "border-bottom-left-radius: $left";
+        $declarations[] = "border-start-start-radius: $blockStart";
+        $declarations[] = "border-start-end-radius: $inlineEnd";
+        $declarations[] = "border-end-end-radius: $blockEnd";
+        $declarations[] = "border-end-start-radius: $inlineStart";
         break;
     }
 
@@ -738,13 +765,16 @@ class UtilikitCssGenerator {
    * @return string|null
    *   Generated CSS color declaration or NULL if invalid color.
    */
-  private function applyColorRule(array $rule, string $suffix): ?string {
-    $color = $this->parseColorWithAlpha($suffix);
-    if ($color === NULL) {
+  private function applyColorRule(array $rule, string $suffix): ?array {
+    $result = $this->parseColorWithAlpha($suffix);
+    if ($result === NULL) {
       return NULL;
     }
     $cssProperty = UtilikitRules::getCssPropertyName($rule['css']);
-    return "$cssProperty: $color;";
+    return [
+      'declaration' => "$cssProperty: {$result['color']};",
+      'pseudoState' => $result['pseudoState'],
+    ];
   }
 
   /**
@@ -805,43 +835,47 @@ class UtilikitCssGenerator {
   }
 
   /**
-   * Parses color values with optional alpha transparency.
+   * Parses color values with optional alpha and pseudo-state suffix.
    *
    * Converts hex color values (3 or 6 digits) with optional alpha
-   * percentage into CSS color values (hex or rgba format).
+   * percentage and optional pseudo-state suffix (-h, -f, -a) into
+   * CSS color values and pseudo-state identifiers.
    *
    * @param string $suffix
-   *   Color suffix with optional alpha (e.g., "ff0000-50").
+   *   Color suffix with optional alpha and state (e.g., "ff0000-50-h").
    *
-   * @return string|null
-   *   CSS color value or NULL if invalid format.
+   * @return array|null
+   *   Array with 'color' (CSS value) and 'pseudoState' (h|f|a|null),
+   *   or NULL if invalid format.
    */
-  private function parseColorWithAlpha(string $suffix): ?string {
-    if (preg_match('/^([0-9a-fA-F]{6})(?:-(\d{1,3}))?$/', $suffix, $matches)) {
+  private function parseColorWithAlpha(string $suffix): ?array {
+    if (preg_match('/^([0-9a-fA-F]{6})(?:-(\d{1,3}))?(?:-(h|f|a))?$/', $suffix, $matches)) {
       $hex = $matches[1];
-      $alpha = isset($matches[2]) ? min((int) $matches[2], 100) / 100 : 1;
+      $alpha = isset($matches[2]) && $matches[2] !== '' ? min((int) $matches[2], 100) / 100 : 1;
+      $pseudoState = $matches[3] ?? NULL;
 
       if ($alpha < 1) {
         $r = hexdec(substr($hex, 0, 2));
         $g = hexdec(substr($hex, 2, 2));
         $b = hexdec(substr($hex, 4, 2));
-        return "rgba($r, $g, $b, $alpha)";
+        return ['color' => "rgba($r, $g, $b, $alpha)", 'pseudoState' => $pseudoState];
       }
-      return "#$hex";
+      return ['color' => "#$hex", 'pseudoState' => $pseudoState];
     }
 
-    if (preg_match('/^([0-9a-fA-F]{3})(?:-(\d{1,3}))?$/', $suffix, $matches)) {
+    if (preg_match('/^([0-9a-fA-F]{3})(?:-(\d{1,3}))?(?:-(h|f|a))?$/', $suffix, $matches)) {
       $hex = str_split($matches[1]);
       $hex = $hex[0] . $hex[0] . $hex[1] . $hex[1] . $hex[2] . $hex[2];
-      $alpha = isset($matches[2]) ? min((int) $matches[2], 100) / 100 : 1;
+      $alpha = isset($matches[2]) && $matches[2] !== '' ? min((int) $matches[2], 100) / 100 : 1;
+      $pseudoState = $matches[3] ?? NULL;
 
       if ($alpha < 1) {
         $r = hexdec(substr($hex, 0, 2));
         $g = hexdec(substr($hex, 2, 2));
         $b = hexdec(substr($hex, 4, 2));
-        return "rgba($r, $g, $b, $alpha)";
+        return ['color' => "rgba($r, $g, $b, $alpha)", 'pseudoState' => $pseudoState];
       }
-      return "#$hex";
+      return ['color' => "#$hex", 'pseudoState' => $pseudoState];
     }
 
     return NULL;
@@ -1115,155 +1149,6 @@ class UtilikitCssGenerator {
     }
 
     return $tokens;
-  }
-
-  /**
-   * Add this to a Drush command or test class.
-   */
-  public function testGridParser(): void {
-    $tests = [
-      // ==========================================
-      // LEVEL 1: BASIC VALUES
-      // ==========================================
-      'uk-gc--auto-auto' => 'grid-template-columns: auto auto;',
-      'uk-gc--200px-1fr' => 'grid-template-columns: 200px 1fr;',
-      'uk-gc--1fr-auto-2fr' => 'grid-template-columns: 1fr auto 2fr;',
-      'uk-gc--100px-1fr-100px' => 'grid-template-columns: 100px 1fr 100px;',
-      'uk-gc--1fr-2fr-0.5fr' => 'grid-template-columns: 1fr 2fr 0.5fr;',
-      'uk-gr--auto-1fr-auto' => 'grid-template-rows: auto 1fr auto;',
-
-      // ==========================================
-      // LEVEL 2: SIMPLE FUNCTIONS
-      // ==========================================
-      // 2A: Simple repeat()
-      'uk-gc--repeat-3-1fr' => 'grid-template-columns: repeat(3, 1fr);',
-      'uk-gc--repeat-2-200px' => 'grid-template-columns: repeat(2, 200px);',
-      'uk-gc--repeat-4-1fr' => 'grid-template-columns: repeat(4, 1fr);',
-
-      // 2B: Simple minmax()
-      'uk-gc--minmax-100px-1fr' => 'grid-template-columns: minmax(100px, 1fr);',
-      'uk-gc--minmax-200px-1fr' => 'grid-template-columns: minmax(200px, 1fr);',
-      'uk-gc--minmax-50pr-2fr' => 'grid-template-columns: minmax(50%, 2fr);',
-      'uk-gc--minmax-10rem-1fr' => 'grid-template-columns: minmax(10rem, 1fr);',
-
-      // 2C: Simple fit-content()
-      'uk-gc--fitc-200px' => 'grid-template-columns: fit-content(200px);',
-      'uk-gc--fitc-50pr' => 'grid-template-columns: fit-content(50%);',
-
-      // ==========================================
-      // LEVEL 3: NESTED FUNCTIONS
-      // ==========================================
-      'uk-gc--repeat-3-minmax-200px-1fr' => 'grid-template-columns: repeat(3, minmax(200px, 1fr));',
-      'uk-gc--repeat-2-minmax-100px-1fr' => 'grid-template-columns: repeat(2, minmax(100px, 1fr));',
-
-      // ==========================================
-      // LEVEL 4: AUTO-RESPONSIVE PATTERNS
-      // ==========================================
-      // 4A: auto-fit with minmax
-      'uk-gc--repeat-auto-fit-minmax-280px-1fr' => 'grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));',
-      'uk-gc--repeat-auto-fit-minmax-200px-1fr' => 'grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));',
-      'uk-gc--repeat-auto-fit-minmax-250px-1fr' => 'grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));',
-      'uk-gc--repeat-auto-fit-minmax-300px-1fr' => 'grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));',
-
-      // 4B: auto-fill with minmax
-      'uk-gc--repeat-auto-fill-minmax-250px-1fr' => 'grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));',
-      'uk-gc--repeat-auto-fill-minmax-200px-1fr' => 'grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));',
-      'uk-gc--repeat-auto-fill-minmax-150px-1fr' => 'grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));',
-
-      // 4C: auto-fit/fill with fixed sizes
-      'uk-gc--repeat-auto-fit-250px' => 'grid-template-columns: repeat(auto-fit, 250px);',
-      'uk-gc--repeat-auto-fill-200px' => 'grid-template-columns: repeat(auto-fill, 200px);',
-
-      // ==========================================
-      // LEVEL 5: MIXED PATTERNS
-      // ==========================================
-      'uk-gc--fitc-300px-1fr' => 'grid-template-columns: fit-content(300px) 1fr;',
-      'uk-gc--1fr-fitc-250px' => 'grid-template-columns: 1fr fit-content(250px);',
-
-      // ==========================================
-      // EXISTING COMPLEX PATTERNS (Keep)
-      // ==========================================
-      // Spacing shorthand with decimals
-      'uk-pd--1d5rem' => 'padding-top: 1.5rem; padding-right: 1.5rem; padding-bottom: 1.5rem; padding-left: 1.5rem;',
-      'uk-pd--0d5rem-1rem' => 'padding-top: 0.5rem; padding-right: 1rem; padding-bottom: 0.5rem; padding-left: 1rem;',
-      'uk-mg--0d5rem-auto' => 'margin-top: 0.5rem; margin-right: auto; margin-bottom: 0.5rem; margin-left: auto;',
-      'uk-pd--1d25rem-2d5rem-0d75rem-1rem' => 'padding-top: 1.25rem; padding-right: 2.5rem; padding-bottom: 0.75rem; padding-left: 1rem;',
-
-      // Grid templates with decimals.
-      'uk-gc--1fr-2d5fr-0d5fr' => 'grid-template-columns: 1fr 2.5fr 0.5fr;',
-      'uk-gc--repeat-3-1d5fr' => 'grid-template-columns: repeat(3, 1.5fr);',
-      'uk-gc--minmax-0d5rem-2fr' => 'grid-template-columns: minmax(0.5rem, 2fr);',
-      'uk-gc--repeat-auto-fit-minmax-12d5rem-1fr' => 'grid-template-columns: repeat(auto-fit, minmax(12.5rem, 1fr));',
-      'uk-gr--0d75fr-1fr-0d25fr' => 'grid-template-rows: 0.75fr 1fr 0.25fr;',
-
-      // Complex grid with decimals (has typo - extra parenthesis)
-      'uk-gc--100px-1d5fr-minmax-7d5rem-1fr)' => 'grid-template-columns: 100px 1.5fr minmax(7.5rem, 1fr);',
-    ];
-
-    // Run tests with complexity logging.
-    echo " Testing PHP Grid Parser (Organized by Complexity):\n";
-    echo " Test Distribution:\n";
-    echo "  Level 1 (Basic Values): 5 tests\n";
-    echo "  Level 2 (Simple Functions): 7 tests\n";
-    echo "  Level 3 (Nested Functions): 2 tests\n";
-    echo "  Level 4 (Auto-Responsive): 9 tests\n";
-    echo "  Level 5 (Mixed + Decimals): 11 tests\n";
-    echo "  Total: 34 comprehensive test cases\n\n";
-
-    $passed = 0;
-    $failed = 0;
-    $testCount = 0;
-
-    foreach ($tests as $input => $expected) {
-      $rule = ['css' => 'gridTemplateColumns', 'isGridTrackList' => TRUE];
-      $result = $this->parseGridTrackList($input, $rule);
-      $success = $result === $expected;
-
-      if ($success) {
-        $passed++;
-      }
-      else {
-        $failed++;
-      }
-
-      // Determine complexity level for logging.
-      if ($testCount < 5) {
-        $level = '1';
-      }
-      elseif ($testCount < 12) {
-        $level = '2';
-      }
-      elseif ($testCount < 14) {
-        $level = '3';
-      }
-      elseif ($testCount < 23) {
-        $level = '4';
-      }
-      else {
-        $level = '5';
-      }
-
-      $this->logger->info(sprintf(
-        '%s [L%s] %s | Expected: %s | Got: %s',
-        $success ? '✅' : '❌',
-        $level,
-        $input,
-        $expected,
-        $result ?: 'null'
-      ));
-
-      $testCount++;
-    }
-
-    $successRate = round(($passed / count($tests)) * 100);
-    $this->logger->info("Results: $passed passed, $failed failed ({$successRate}% success rate)");
-
-    if ($failed > 0) {
-      $this->logger->warning('Some tests failed - check parser logic for failed patterns');
-    }
-    else {
-      $this->logger->info('All grid parser tests passed!');
-    }
   }
 
 }

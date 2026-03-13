@@ -77,7 +77,7 @@ class UtilikitService {
    *   The rendering mode ('inline' or 'static'), defaults to 'inline'.
    */
   public function getRenderingMode(): string {
-    return $this->getValidatedConfig('rendering_mode', 'inline', ['inline', 'static']);
+    return $this->getValidatedConfig('rendering_mode', 'inline', ['inline', 'static', 'head']);
   }
 
   /**

@@ -3,7 +3,7 @@
  * Placeholder CSS file for UtiliKit static mode.
  *
  * This file is replaced dynamically via hook_library_info_alter()
- * with the actual generated CSS file from public://css/utilikit/generated.css
+ * with the actual generated CSS file from public://utilikit/utilikit-static-style.css
  *
  * The weight 999 ensures UtiliKit utility classes load LAST,
  * overriding any other styles on the page.

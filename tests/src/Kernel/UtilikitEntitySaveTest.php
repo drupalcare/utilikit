@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Kernel;
 
+use Drupal\user\Entity\User;
+use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\node\Entity\Node;
 use Drupal\node\Entity\NodeType;
 use Drupal\block_content\Entity\BlockContent;
 use Drupal\block_content\Entity\BlockContentType;
-use Drupal\paragraphs\Entity\Paragraph;
-use Drupal\paragraphs\Entity\ParagraphsType;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\utilikit\Service\UtilikitConstants;
@@ -33,8 +33,6 @@ class UtilikitEntitySaveTest extends KernelTestBase {
     'text',
     'filter',
     'block_content',
-    'paragraphs',
-    'entity_reference_revisions',
     'file',
     'utilikit',
   ];
@@ -83,7 +81,6 @@ class UtilikitEntitySaveTest extends KernelTestBase {
     // Install schemas.
     $this->installEntitySchema('node');
     $this->installEntitySchema('block_content');
-    $this->installEntitySchema('paragraph');
     $this->installEntitySchema('user');
     $this->installSchema('node', ['node_access']);
     $this->installConfig(['node', 'filter', 'utilikit']);
@@ -125,15 +122,6 @@ class UtilikitEntitySaveTest extends KernelTestBase {
 
     // Add body field to block.
     $this->createBodyField('block_content', 'basic');
-
-    // Create paragraph type.
-    ParagraphsType::create([
-      'id' => 'text',
-      'label' => 'Text paragraph',
-    ])->save();
-
-    // Add text field to paragraph.
-    $this->createBodyField('paragraph', 'text', 'field_text');
   }
 
   /**
@@ -259,28 +247,29 @@ class UtilikitEntitySaveTest extends KernelTestBase {
   }
 
   /**
-   * Tests paragraph save with auto-update.
+   * Tests node save with flexbox classes and auto-update.
    */
-  public function testParagraphSave() {
-    // Enable auto-update for paragraphs.
+  public function testNodeSaveWithFlexboxClasses() {
+    // Enable auto-update for nodes.
     $config = $this->configFactory->getEditable('utilikit.settings');
-    $config->set('update_on_paragraph_save', TRUE);
+    $config->set('update_on_node_save', TRUE);
     $config->save();
 
     // Clear any existing classes.
     $this->state->delete(UtilikitConstants::STATE_KNOWN_CLASSES);
 
-    // Create paragraph with UtiliKit classes.
-    $paragraph = Paragraph::create([
-      'type' => 'text',
-      'field_text' => [
-        'value' => '<div class="utilikit uk-dp--flex uk-jc--center">Paragraph content</div>',
+    // Create node with flexbox UtiliKit classes.
+    $node = Node::create([
+      'type' => 'article',
+      'title' => 'Flexbox test',
+      'body' => [
+        'value' => '<div class="utilikit uk-dp--flex uk-jc--center">Flexbox content</div>',
         'format' => 'full_html',
       ],
     ]);
 
-    // Save the paragraph.
-    $paragraph->save();
+    // Save the node.
+    $node->save();
 
     // Verify classes were added.
     $knownClasses = $this->state->get(UtilikitConstants::STATE_KNOWN_CLASSES, []);
@@ -328,8 +317,12 @@ class UtilikitEntitySaveTest extends KernelTestBase {
     $config->set('update_on_node_save', TRUE);
     $config->save();
 
-    // Acquire the lock to simulate another process updating CSS.
-    $this->lock->acquire(UtilikitConstants::LOCK_CSS_UPDATE, 5);
+    // Mock the lock service so acquire() always returns FALSE, simulating
+    // another process holding the lock. DatabaseLockBackend allows re-entrant
+    // locks from the same process, so we must mock it.
+    $mockLock = $this->createMock(LockBackendInterface::class);
+    $mockLock->method('acquire')->willReturn(FALSE);
+    $this->container->set('lock', $mockLock);
 
     // Create node with UtiliKit classes.
     $node = Node::create([
@@ -353,9 +346,6 @@ class UtilikitEntitySaveTest extends KernelTestBase {
     $this->assertNotFalse($item);
     $this->assertEquals(['uk-pd--50'], $item->data['classes']);
     $this->assertEquals('node', $item->data['entity_type']);
-
-    // Release lock.
-    $this->lock->release(UtilikitConstants::LOCK_CSS_UPDATE);
 
     // Clean up.
     $queue->deleteItem($item);
@@ -472,8 +462,11 @@ class UtilikitEntitySaveTest extends KernelTestBase {
     $config->set('update_on_node_save', TRUE);
     $config->save();
 
-    // Create a user (non-fieldable in our test setup)
-    $user = $this->createUser();
+    // Create user directly (not available via helper).
+    $user = User::create([
+      'name' => 'testuser',
+      'mail' => 'test@example.com',
+    ]);
 
     // This should not trigger any errors.
     $user->save();

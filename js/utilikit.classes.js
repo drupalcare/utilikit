@@ -172,9 +172,9 @@
             let min = tokens[i + 1];
             let max = tokens[i + 2];
 
-            // Convert 'd' to '.' for decimal values (e.g., '0d5fr' -> '0.5fr')
-            min = min.replace(/d/g, '.');
-            max = max.replace(/d/g, '.');
+            // Convert decimal notation only (e.g. '0d5fr' -> '0.5fr'); avoid replacing 'd' in keywords.
+            min = min.replace(/(\d)d(\d)/g, '$1.$2');
+            max = max.replace(/(\d)d(\d)/g, '$1.$2');
 
             // Convert 'pr' suffix to '%' for percentage values
             min = min.replace('pr', '%');
@@ -190,8 +190,8 @@
           // Simple repeat with single value
           let value = keywords[tokens[i]] || tokens[i];
 
-          // Apply value transformations
-          value = value.replace(/d/g, '.');
+          // Apply value transformations (decimal notation only; do not replace 'd' in keywords).
+          value = value.replace(/(\d)d(\d)/g, '$1.$2');
           value = value.replace('pr', '%');
 
           parsed.push(`repeat(${count}, ${value})`);
@@ -252,167 +252,6 @@
     const property = isColumns ? 'grid-template-columns' : 'grid-template-rows';
 
     return `${property}: ${cssValue};`;
-  };
-
-  /**
-   * Development utility for testing and validating the grid parser.
-   *
-   * This function runs a comprehensive test suite against the grid template
-   * parser to ensure correct parsing of various CSS Grid syntax patterns.
-   * It's designed for development and debugging purposes to validate parser
-   * behavior and catch regressions.
-   *
-   * Test Coverage:
-   * - Simple fractional and fixed unit combinations
-   * - Repeat functions with various count types
-   * - Minmax functions with different unit types
-   * - Fit-content functions and mixed patterns
-   * - Auto-fit and auto-fill responsive patterns
-   * - Responsive breakpoint prefixes
-   * - Edge cases and error conditions
-   *
-   * @example
-   * // Run the test suite (development mode only)
-   * if (drupalSettings.utilikit.devMode) {
-   *   Drupal.utilikit.testGridParser();
-   * }
-   */
-  Drupal.utilikit.testGridParser = function() {
-    const tests = [
-      // Basic fractional and fixed unit patterns
-      {
-        input: 'uk-gc--repeat-auto-fit-minmax-280px-1fr',
-        expected: 'grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));'
-      },
-      {
-        input: 'uk-gc--repeat-auto-fill-minmax-250px-1fr',
-        expected: 'grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));'
-      },
-      {
-        input: 'uk-gc--1fr-2fr-0.5fr',
-        expected: 'grid-template-columns: 1fr 2fr 0.5fr;'
-      },
-      {
-        input: 'uk-gc--repeat-3-1fr',
-        expected: 'grid-template-columns: repeat(3, 1fr);'
-      },
-      {
-        input: 'uk-gc--minmax-50pr-2fr',
-        expected: 'grid-template-columns: minmax(50%, 2fr);'
-      },
-      {
-        input: 'uk-gr--auto-1fr-auto',
-        expected: 'grid-template-rows: auto 1fr auto;'
-      },
-      // Fit-content function patterns
-      {
-        input: 'uk-gc--fitc-200px',
-        expected: 'grid-template-columns: fit-content(200px);'
-      },
-      {
-        input: 'uk-gc--fitc-300px-1fr',
-        expected: 'grid-template-columns: fit-content(300px) 1fr;'
-      },
-      {
-        input: 'uk-gc--1fr-fitc-250px',
-        expected: 'grid-template-columns: 1fr fit-content(250px);'
-      },
-      {
-        input: 'uk-gc--fitc-50pr',
-        expected: 'grid-template-columns: fit-content(50%);'
-      },
-      {
-        input: 'uk-gc--200px-1fr',
-        expected: 'grid-template-columns: 200px 1fr;'
-      },
-      {
-        input: 'uk-gc--auto-auto',
-        expected: 'grid-template-columns: auto auto;'
-      },
-      {
-        input: 'uk-gc--1fr-auto-2fr',
-        expected: 'grid-template-columns: 1fr auto 2fr;'
-      },
-      {
-        input: 'uk-gc--100px-1fr-100px',
-        expected: 'grid-template-columns: 100px 1fr 100px;'
-      },
-      {
-        input: 'uk-gc--repeat-2-200px',
-        expected: 'grid-template-columns: repeat(2, 200px);'
-      },
-      {
-        input: 'uk-gc--repeat-4-1fr',
-        expected: 'grid-template-columns: repeat(4, 1fr);'
-      },
-      {
-        input: 'uk-gc--minmax-100px-1fr',
-        expected: 'grid-template-columns: minmax(100px, 1fr);'
-      },
-      {
-        input: 'uk-gc--minmax-200px-1fr',
-        expected: 'grid-template-columns: minmax(200px, 1fr);'
-      },
-      {
-        input: 'uk-gc--minmax-10rem-1fr',
-        expected: 'grid-template-columns: minmax(10rem, 1fr);'
-      },
-      {
-        input: 'uk-gc--repeat-3-minmax-200px-1fr',
-        expected: 'grid-template-columns: repeat(3, minmax(200px, 1fr));'
-      },
-      {
-        input: 'uk-gc--repeat-2-minmax-100px-1fr',
-        expected: 'grid-template-columns: repeat(2, minmax(100px, 1fr));'
-      },
-      {
-        input: 'uk-gc--repeat-auto-fit-minmax-200px-1fr',
-        expected: 'grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));'
-      },
-      {
-        input: 'uk-gc--repeat-auto-fit-minmax-300px-1fr',
-        expected: 'grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));'
-      },
-      {
-        input: 'uk-gc--repeat-auto-fill-minmax-200px-1fr',
-        expected: 'grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));'
-      },
-      {
-        input: 'uk-gc--repeat-auto-fill-minmax-150px-1fr',
-        expected: 'grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));'
-      },
-      {
-        input: 'uk-gc--repeat-auto-fill-minmax-250px-1fr',
-        expected: 'grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));'
-      },
-      {
-        input: 'uk-gc--repeat-auto-fit-250px',
-        expected: 'grid-template-columns: repeat(auto-fit, 250px);'
-      },
-      {
-        input: 'uk-gc--repeat-auto-fill-200px',
-        expected: 'grid-template-columns: repeat(auto-fill, 200px);'
-      },
-      {
-        input: 'uk-md-gc--repeat-2-1fr',
-        expected: 'grid-template-columns: repeat(2, 1fr);'
-      },
-      {
-        input: 'uk-lg-gc--repeat-auto-fit-minmax-250px-1fr',
-        expected: 'grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));'
-      }
-    ];
-
-    console.log('Testing Grid Parser:');
-    tests.forEach(test => {
-      const result = Drupal.utilikit.parseGridTemplateClass(test.input);
-      const passed = result === test.expected;
-      console.log(
-        `${passed ? '✅' : '❌'} ${test.input}`,
-        `\n   Expected: ${test.expected}`,
-        `\n   Got:      ${result}`
-      );
-    });
   };
 
   /**

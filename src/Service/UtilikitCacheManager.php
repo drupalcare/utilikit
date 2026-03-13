@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Drupal\utilikit\Service;
 
+use Psr\Log\NullLogger;
+use Drupal\Core\Asset\AssetCollectionOptimizerInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
-use Drupal\Core\State\StateInterface;
 use Drupal\Core\Theme\Registry;
-use Drupal\Core\Asset\AssetCollectionOptimizerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Manages cache operations for Utilikit utility classes and CSS.
@@ -21,60 +22,11 @@ use Drupal\Core\Asset\AssetCollectionOptimizerInterface;
 class UtilikitCacheManager implements UtilikitCacheManagerInterface {
 
   /**
-   * The render cache backend service.
+   * The logger service.
    *
-   * @var \Drupal\Core\Cache\CacheBackendInterface
+   * @var \Psr\Log\LoggerInterface
    */
-  protected CacheBackendInterface $renderCache;
-
-  /**
-   * The cache tags invalidator service.
-   *
-   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface
-   */
-  protected CacheTagsInvalidatorInterface $cacheTagsInvalidator;
-
-  /**
-   * The state service for persistent data storage.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected StateInterface $state;
-
-  /**
-   * The theme registry service.
-   *
-   * @var \Drupal\Core\Theme\Registry
-   */
-  protected Registry $themeRegistry;
-
-  /**
-   * The CSS asset collection optimizer service.
-   *
-   * @var \Drupal\Core\Asset\AssetCollectionOptimizerInterface
-   */
-  protected AssetCollectionOptimizerInterface $cssOptimizer;
-
-  /**
-   * The JS asset collection optimizer service.
-   *
-   * @var \Drupal\Core\Asset\AssetCollectionOptimizerInterface
-   */
-  protected AssetCollectionOptimizerInterface $jsOptimizer;
-
-  /**
-   * The page cache backend service (optional).
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface|null
-   */
-  protected ?CacheBackendInterface $pageCache;
-
-  /**
-   * The dynamic page cache backend service (optional).
-   *
-   * @var \Drupal\Core\Cache\CacheBackendInterface|null
-   */
-  protected ?CacheBackendInterface $dynamicPageCache;
+  protected readonly LoggerInterface $logger;
 
   /**
    * Constructs a new UtilikitCacheManager object.
@@ -83,8 +35,8 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
    *   The render cache backend service.
    * @param \Drupal\Core\Cache\CacheTagsInvalidatorInterface $cacheTagsInvalidator
    *   The cache tags invalidator service.
-   * @param \Drupal\Core\State\StateInterface $state
-   *   The state service for persistent data storage.
+   * @param \Drupal\utilikit\Service\UtilikitStateManager $stateManager
+   *   The UtiliKit state manager for Utilikit-specific state data.
    * @param \Drupal\Core\Theme\Registry $themeRegistry
    *   The theme registry service.
    * @param \Drupal\Core\Asset\AssetCollectionOptimizerInterface $cssOptimizer
@@ -95,25 +47,21 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
    *   The page cache backend service (optional).
    * @param \Drupal\Core\Cache\CacheBackendInterface|null $dynamicPageCache
    *   The dynamic page cache backend service (optional).
+   * @param \Psr\Log\LoggerInterface|null $logger
+   *   The logger service for recording cache operations.
    */
   public function __construct(
-    CacheBackendInterface $renderCache,
-    CacheTagsInvalidatorInterface $cacheTagsInvalidator,
-    StateInterface $state,
-    Registry $themeRegistry,
-    AssetCollectionOptimizerInterface $cssOptimizer,
-    AssetCollectionOptimizerInterface $jsOptimizer,
-    ?CacheBackendInterface $pageCache = NULL,
-    ?CacheBackendInterface $dynamicPageCache = NULL,
+    protected readonly CacheBackendInterface $renderCache,
+    protected readonly CacheTagsInvalidatorInterface $cacheTagsInvalidator,
+    protected readonly UtilikitStateManager $stateManager,
+    protected readonly Registry $themeRegistry,
+    protected readonly AssetCollectionOptimizerInterface $cssOptimizer,
+    protected readonly AssetCollectionOptimizerInterface $jsOptimizer,
+    protected readonly ?CacheBackendInterface $pageCache = NULL,
+    protected readonly ?CacheBackendInterface $dynamicPageCache = NULL,
+    ?LoggerInterface $logger = NULL,
   ) {
-    $this->renderCache = $renderCache;
-    $this->cacheTagsInvalidator = $cacheTagsInvalidator;
-    $this->state = $state;
-    $this->themeRegistry = $themeRegistry;
-    $this->cssOptimizer = $cssOptimizer;
-    $this->jsOptimizer = $jsOptimizer;
-    $this->pageCache = $pageCache;
-    $this->dynamicPageCache = $dynamicPageCache;
+    $this->logger = $logger ?? new NullLogger();
   }
 
   /**
@@ -130,7 +78,6 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
     $this->updateCssTimestamp();
     $this->invalidateUtilikitTags();
     $this->themeRegistry->reset();
-    drupal_flush_all_caches();
   }
 
   /**
@@ -160,10 +107,7 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
    * other cache layers.
    */
   public function clearTrackedData(): void {
-    $this->state->deleteMultiple([
-      UtilikitConstants::STATE_GENERATED_CSS,
-      UtilikitConstants::STATE_KNOWN_CLASSES,
-    ]);
+    $this->stateManager->clearUtilikitData();
   }
 
   /**
@@ -184,22 +128,18 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
   public function clearCachesWithStrategy(array $options = []): void {
     $strategy = $options['strategy'] ?? 'standard';
 
-    switch ($strategy) {
-      case 'conservative':
-        $this->clearRenderCache();
-        $this->updateCssTimestamp();
-        break;
-
-      case 'aggressive':
-        $this->clearAllCaches();
-        if (!($options['preserve_static_css'] ?? FALSE)) {
-          $this->clearTrackedData();
-        }
-        break;
-
-      default:
-        $this->clearCssCaches();
-        break;
+    if ($strategy === 'conservative') {
+      $this->clearRenderCache();
+      $this->updateCssTimestamp();
+    }
+    elseif ($strategy === 'aggressive') {
+      $this->clearAllCaches();
+      if (!($options['preserve_static_css'] ?? FALSE)) {
+        $this->clearTrackedData();
+      }
+    }
+    else {
+      $this->clearCssCaches();
     }
   }
 
@@ -235,7 +175,7 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
    * and tracking when CSS was last modified.
    */
   public function updateCssTimestamp(): void {
-    $this->state->set(UtilikitConstants::STATE_CSS_TIMESTAMP, time());
+    $this->stateManager->updateCssTimestamp();
   }
 
   /**
@@ -252,16 +192,7 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
    *   - css_timestamp: Timestamp of last CSS update
    */
   public function getCacheStatistics(): array {
-    $knownClasses = $this->state->get(UtilikitConstants::STATE_KNOWN_CLASSES, []);
-    $generatedCss = $this->state->get(UtilikitConstants::STATE_GENERATED_CSS, '');
-    $lastCleanup = $this->state->get(UtilikitConstants::STATE_LAST_CLEANUP, 0);
-
-    return [
-      'known_classes_count' => count($knownClasses),
-      'generated_css_size' => strlen($generatedCss),
-      'last_cleanup' => $lastCleanup,
-      'css_timestamp' => $this->state->get(UtilikitConstants::STATE_CSS_TIMESTAMP, 0),
-    ];
+    return $this->stateManager->getStateStatistics();
   }
 
   /**
@@ -299,7 +230,9 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
       $this->renderCache->invalidateAll();
     }
     catch (\Exception $e) {
-      // Continue silently.
+      $this->logger->warning('Failed to clear render cache: @message', [
+        '@message' => $e->getMessage(),
+      ]);
     }
   }
 
@@ -347,7 +280,9 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
       $this->jsOptimizer->deleteAll();
     }
     catch (\Exception $e) {
-      // Continue silently.
+      $this->logger->warning('Failed to clear asset caches: @message', [
+        '@message' => $e->getMessage(),
+      ]);
     }
   }
 

@@ -1,42 +1,15 @@
 {#
-/**
- * @file
- * UtiliKit Playground template - Interactive utility class testing interface.
- *
- * Provides a comprehensive playground environment for testing and learning
- * UtiliKit utility classes. Features a two-panel layout with input controls
- * on the left and live preview/output on the right.
- *
- * Features:
- * - Preset examples for quick start
- * - Basic and advanced input modes
- * - Visual class builder interface
- * - Responsive design testing
- * - Color picker and palette
- * - Live preview with viewport controls
- * - Style inspector for debugging
- * - Copy-to-clipboard functionality
- * - Interactive tutorial overlay
- *
- * Variables:
- * - elements: Render element array passed from controller
- */
-#}
+ # UtiliKit Playground - Interactive utility class testing interface.
+ #
+ # Variables:
+ # - elements: Render element array passed from controller
+ #}
 
 <div class="utilikit-playground-wrapper layout-container">
 
-  {#
-    LEFT PANEL: INPUT CONTROLS
-    Contains all user input interfaces including presets, form controls,
-    visual builders, and helper tools for creating UtiliKit classes.
-  #}
+  {# LEFT PANEL #}
   <div class="utilikit-column utilikit-input-panel region region-sidebar-first">
 
-    {#
-      PRESET EXAMPLES SECTION
-      Quick-start buttons that load predefined HTML and class combinations
-      for common UI patterns like cards, hero sections, forms, etc.
-    #}
     <div class="preset-examples block">
       <h3 class="block-title">Quick Start Examples</h3>
       <div class="preset-grid">
@@ -67,136 +40,333 @@
       </div>
     </div>
 
-    {#
-      MAIN PREVIEW FORM
-      Primary form for entering UtiliKit classes or HTML, with mode switching
-      between basic class input and advanced HTML editing.
-    #}
     <form id="utilikit-preview-form" class="utilikit-preview-form" novalidate>
 
-      {#
-        QUICK ACTION BUTTONS
-        Toggle buttons for additional tools like visual builder,
-        responsive helper, and tutorial overlay.
-      #}
-      <div class="quick-actions form-actions js-form-wrapper form-wrapper">
-        <button type="button" class="quick-action-btn button js-form-submit form-submit" data-action="builder">🔧 Visual Builder</button>
-        <button type="button" class="quick-action-btn button js-form-submit form-submit" data-action="responsive">📱 Responsive Helper</button>
-        <button type="button" class="quick-action-btn button js-form-submit form-submit" data-action="tutorial">📚 Show Tutorial</button>
+      {# Tab bar #}
+      <div class="playground-tabs">
+        <button type="button" class="playground-tab active" data-tab="classes">Classes</button>
+        <button type="button" class="playground-tab" data-tab="html">HTML Editor</button>
+        <button type="button" class="playground-tab playground-tab--help" id="tutorial-btn" data-action="tutorial" title="Show Tutorial">?</button>
       </div>
 
-      {#
-        MODE SELECTION
-        Switch between basic (class-only) and advanced (full HTML) input modes.
-        Controls visibility of different input sections.
-      #}
-      <div class="form-item js-form-item js-form-type-select form-type-select">
-        <label class="form-item__label js-form-required form-required" for="utilikit-mode"><strong>Select Mode:</strong></label>
+      {# Classes tab #}
+      <div class="playground-tab-content active" id="tab-classes" data-tab-content="classes">
         <p class="utilikit-description description">
-          Choose <strong>Basic</strong> to enter only utility classes. Choose <strong>Advanced</strong> to enter a complete HTML structure with UtiliKit classes.
-        </p>
-        <select id="utilikit-mode" class="form-select form-element form-element--type-select form-element--api-select">
-          <option value="basic">Basic (Class-based)</option>
-          <option value="advanced">Advanced (Full HTML)</option>
-        </select>
-      </div>
-
-      {#
-        BASIC INPUT MODE
-        Simple text input for entering space-separated UtiliKit utility classes.
-        Includes autocomplete functionality for class suggestions.
-      #}
-      <div id="utilikit-basic-input-group" class="form-item js-form-item js-form-type-textfield form-type-textfield">
-        <label for="utilikit-class-input" class="js-form-required form-required"><strong>Enter Utility Classes:</strong></label>
-        <p class="utilikit-description description">
-          Start typing a utility class like <code>uk-pd</code>, <code>uk-mg</code>, or <code>uk-bg</code> to see autocomplete suggestions. Separate multiple classes with spaces.
+          Type utility classes separated by spaces. Start with <code>uk-</code> to see suggestions.
         </p>
         <div class="input-wrapper">
           <input type="text"
                  id="utilikit-class-input"
                  class="utilikit-text-input form-text form-element form-element--type-text form-element--api-textfield required"
-                 placeholder="e.g., up uk-pd--24 uk-mg--16 uk-bw--2 uk-bs--solid uk-bc--3b82f6 uk-br--8 uk-bg--f0f9ff uk-tc--1e40af uk-fs--18"
+                 placeholder="e.g., uk-pd--24 uk-bg--f0f9ff uk-tc--1e40af uk-br--8 uk-bs--solid uk-bw--2 uk-bc--3b82f6"
                  autocomplete="off" />
-          {# Autocomplete dropdown container (hidden by default) #}
           <div class="class-autocomplete" id="class-autocomplete" style="display: none;"></div>
         </div>
+
+        <details class="playground-details" id="class-builder">
+          <summary>Visual Builder</summary>
+          <div class="builder-sections">
+            <div class="builder-section">
+              <h4>Spacing</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-pd--8">pd 8</span>
+                <span class="builder-chip" data-class="uk-pd--16">pd 16</span>
+                <span class="builder-chip" data-class="uk-pd--24">pd 24</span>
+                <span class="builder-chip" data-class="uk-pd--32">pd 32</span>
+                <span class="builder-chip" data-class="uk-pd--48">pd 48</span>
+                <span class="builder-chip" data-class="uk-mg--8">mg 8</span>
+                <span class="builder-chip" data-class="uk-mg--16">mg 16</span>
+                <span class="builder-chip" data-class="uk-mg--24">mg 24</span>
+                <span class="builder-chip" data-class="uk-mg--auto">mg auto</span>
+                <span class="builder-chip" data-class="uk-mg--0-auto">mg 0 auto</span>
+                <span class="builder-chip" data-class="uk-gp--8">gap 8</span>
+                <span class="builder-chip" data-class="uk-gp--16">gap 16</span>
+                <span class="builder-chip" data-class="uk-gp--24">gap 24</span>
+                <span class="builder-chip" data-class="uk-pd--t-12">pd top 12</span>
+                <span class="builder-chip" data-class="uk-pd--12-24-12-24">pd 12 24 12 24</span>
+                <span class="builder-chip" data-class="uk-mg--b-0">mg bottom 0</span>
+                <span class="builder-chip" data-class="uk-pd--2rem">pd 2rem</span>
+                <span class="builder-chip" data-class="uk-pd--1d5em">pd 1.5em</span>
+                <span class="builder-chip" data-class="uk-gp--1rem">gap 1rem</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Typography</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-fs--12">12px</span>
+                <span class="builder-chip" data-class="uk-fs--14">14px</span>
+                <span class="builder-chip" data-class="uk-fs--16">16px</span>
+                <span class="builder-chip" data-class="uk-fs--18">18px</span>
+                <span class="builder-chip" data-class="uk-fs--24">24px</span>
+                <span class="builder-chip" data-class="uk-fs--32">32px</span>
+                <span class="builder-chip" data-class="uk-fs--48">48px</span>
+                <span class="builder-chip" data-class="uk-fw--400">Regular</span>
+                <span class="builder-chip" data-class="uk-fw--600">Semibold</span>
+                <span class="builder-chip" data-class="uk-fw--700">Bold</span>
+                <span class="builder-chip" data-class="uk-fw--900">Black</span>
+                <span class="builder-chip" data-class="uk-lh--1d4">Line 1.4</span>
+                <span class="builder-chip" data-class="uk-lh--1d6">Line 1.6</span>
+                <span class="builder-chip" data-class="uk-lh--1d8">Line 1.8</span>
+                <span class="builder-chip" data-class="uk-ta--left">Left</span>
+                <span class="builder-chip" data-class="uk-ta--center">Center</span>
+                <span class="builder-chip" data-class="uk-ta--right">Right</span>
+                <span class="builder-chip" data-class="uk-ls--1">Spacing 1</span>
+                <span class="builder-chip" data-class="uk-ls--2">Spacing 2</span>
+                <span class="builder-chip" data-class="uk-lh--1d2">Line 1.2</span>
+                <span class="builder-chip" data-class="uk-fs--1d5rem">fs 1.5rem</span>
+                <span class="builder-chip" data-class="uk-fs--2em">fs 2em</span>
+                <span class="builder-chip" data-class="uk-fs--5vw">fs 5vw</span>
+                <span class="builder-chip" data-class="uk-ta--justify">Justify</span>
+                <span class="builder-chip" data-class="uk-ls--0d5em">ls 0.5em</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Colors</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-bg--007bff">Blue BG</span>
+                <span class="builder-chip" data-class="uk-bg--28a745">Green BG</span>
+                <span class="builder-chip" data-class="uk-bg--dc3545">Red BG</span>
+                <span class="builder-chip" data-class="uk-bg--ffc107">Yellow BG</span>
+                <span class="builder-chip" data-class="uk-bg--f8f9fa">Light BG</span>
+                <span class="builder-chip" data-class="uk-bg--343a40">Dark BG</span>
+                <span class="builder-chip" data-class="uk-bg--ffffff">White BG</span>
+                <span class="builder-chip" data-class="uk-tc--ffffff">White Text</span>
+                <span class="builder-chip" data-class="uk-tc--000000">Black Text</span>
+                <span class="builder-chip" data-class="uk-tc--6c757d">Gray Text</span>
+                <span class="builder-chip" data-class="uk-tc--007bff">Blue Text</span>
+                <span class="builder-chip" data-class="uk-tc--dc3545">Red Text</span>
+                <span class="builder-chip" data-class="uk-bc--dee2e6">Gray Border</span>
+                <span class="builder-chip" data-class="uk-bc--007bff">Blue Border</span>
+                <span class="builder-chip" data-class="uk-bg--000000-50">Black 50% Alpha</span>
+                <span class="builder-chip" data-class="uk-tc--dc3545-80">Red 80% Alpha</span>
+                <span class="builder-chip" data-class="uk-bg--007bff-h">Hover Blue BG</span>
+                <span class="builder-chip" data-class="uk-bg--28a745-f">Focus Green BG</span>
+                <span class="builder-chip" data-class="uk-bg--dc3545-a">Active Red BG</span>
+                <span class="builder-chip" data-class="uk-tc--007bff-h">Hover Blue Text</span>
+                <span class="builder-chip" data-class="uk-tc--dc3545-h">Hover Red Text</span>
+                <span class="builder-chip" data-class="uk-bg--007bff-50-h">Hover Blue 50%</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Layout</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-dp--flex">Flex</span>
+                <span class="builder-chip" data-class="uk-dp--inline-flex">Inline Flex</span>
+                <span class="builder-chip" data-class="uk-dp--grid">Grid</span>
+                <span class="builder-chip" data-class="uk-dp--block">Block</span>
+                <span class="builder-chip" data-class="uk-dp--inline-block">Inline Block</span>
+                <span class="builder-chip" data-class="uk-dp--none">None</span>
+                <span class="builder-chip" data-class="uk-fd--row">Row</span>
+                <span class="builder-chip" data-class="uk-fd--column">Column</span>
+                <span class="builder-chip" data-class="uk-fd--row-reverse">Row Reverse</span>
+                <span class="builder-chip" data-class="uk-jc--center">Justify Center</span>
+                <span class="builder-chip" data-class="uk-jc--space-between">Space Between</span>
+                <span class="builder-chip" data-class="uk-jc--space-around">Space Around</span>
+                <span class="builder-chip" data-class="uk-jc--flex-end">Justify End</span>
+                <span class="builder-chip" data-class="uk-ai--center">Align Center</span>
+                <span class="builder-chip" data-class="uk-ai--stretch">Stretch</span>
+                <span class="builder-chip" data-class="uk-ai--flex-start">Align Start</span>
+                <span class="builder-chip" data-class="uk-ai--flex-end">Align End</span>
+                <span class="builder-chip" data-class="uk-fx--wrap">Wrap</span>
+                <span class="builder-chip" data-class="uk-fx--nowrap">No Wrap</span>
+                <span class="builder-chip" data-class="uk-ac--space-between">Content Between</span>
+                <span class="builder-chip" data-class="uk-fd--column-reverse">Col Reverse</span>
+                <span class="builder-chip" data-class="uk-dp--inline">Inline</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Sizing</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-wd--100pr">W 100%</span>
+                <span class="builder-chip" data-class="uk-wd--50pr">W 50%</span>
+                <span class="builder-chip" data-class="uk-wd--auto">W Auto</span>
+                <span class="builder-chip" data-class="uk-ht--100pr">H 100%</span>
+                <span class="builder-chip" data-class="uk-ht--100vh">H 100vh</span>
+                <span class="builder-chip" data-class="uk-xw--480">Max 480</span>
+                <span class="builder-chip" data-class="uk-xw--768">Max 768</span>
+                <span class="builder-chip" data-class="uk-xw--1200">Max 1200</span>
+                <span class="builder-chip" data-class="uk-nw--200">Min 200</span>
+                <span class="builder-chip" data-class="uk-nw--300">Min 300</span>
+                <span class="builder-chip" data-class="uk-xh--400">Max H 400</span>
+                <span class="builder-chip" data-class="uk-nh--200">Min H 200</span>
+                <span class="builder-chip" data-class="uk-wd--33pr">W 33%</span>
+                <span class="builder-chip" data-class="uk-wd--20rem">W 20rem</span>
+                <span class="builder-chip" data-class="uk-ht--50vh">H 50vh</span>
+                <span class="builder-chip" data-class="uk-xw--90vw">Max W 90vw</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Border &amp; Radius</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-bs--solid">Solid</span>
+                <span class="builder-chip" data-class="uk-bs--dashed">Dashed</span>
+                <span class="builder-chip" data-class="uk-bs--dotted">Dotted</span>
+                <span class="builder-chip" data-class="uk-bs--none">None</span>
+                <span class="builder-chip" data-class="uk-bw--1">Width 1</span>
+                <span class="builder-chip" data-class="uk-bw--2">Width 2</span>
+                <span class="builder-chip" data-class="uk-bw--3">Width 3</span>
+                <span class="builder-chip" data-class="uk-br--4">Radius 4</span>
+                <span class="builder-chip" data-class="uk-br--8">Radius 8</span>
+                <span class="builder-chip" data-class="uk-br--16">Radius 16</span>
+                <span class="builder-chip" data-class="uk-br--32">Radius 32</span>
+                <span class="builder-chip" data-class="uk-br--50pr">Circle</span>
+                <span class="builder-chip" data-class="uk-bs--b-dashed">Bottom Dashed</span>
+                <span class="builder-chip" data-class="uk-bw--b-3">Bottom W 3</span>
+                <span class="builder-chip" data-class="uk-br--t-12">Top Radius 12</span>
+                <span class="builder-chip" data-class="uk-bw--0d5rem">W 0.5rem</span>
+                <span class="builder-chip" data-class="uk-br--1em">Radius 1em</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Positioning</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-ps--relative">Relative</span>
+                <span class="builder-chip" data-class="uk-ps--absolute">Absolute</span>
+                <span class="builder-chip" data-class="uk-ps--fixed">Fixed</span>
+                <span class="builder-chip" data-class="uk-ps--sticky">Sticky</span>
+                <span class="builder-chip" data-class="uk-tp--0">Top 0</span>
+                <span class="builder-chip" data-class="uk-ri--0">Right 0</span>
+                <span class="builder-chip" data-class="uk-bt--0">Bottom 0</span>
+                <span class="builder-chip" data-class="uk-lt--0">Left 0</span>
+                <span class="builder-chip" data-class="uk-zi--1">Z 1</span>
+                <span class="builder-chip" data-class="uk-zi--10">Z 10</span>
+                <span class="builder-chip" data-class="uk-zi--100">Z 100</span>
+                <span class="builder-chip" data-class="uk-tp--50pr">Top 50%</span>
+                <span class="builder-chip" data-class="uk-lt--50pr">Left 50%</span>
+                <span class="builder-chip" data-class="uk-zi---1">Z -1</span>
+                <span class="builder-chip" data-class="uk-tp--2rem">Top 2rem</span>
+                <span class="builder-chip" data-class="uk-ri--1em">Right 1em</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Effects</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-op--100">100%</span>
+                <span class="builder-chip" data-class="uk-op--90">90%</span>
+                <span class="builder-chip" data-class="uk-op--75">75%</span>
+                <span class="builder-chip" data-class="uk-op--50">50%</span>
+                <span class="builder-chip" data-class="uk-op--25">25%</span>
+                <span class="builder-chip" data-class="uk-ov--hidden">Overflow Hidden</span>
+                <span class="builder-chip" data-class="uk-ov--auto">Overflow Auto</span>
+                <span class="builder-chip" data-class="uk-ov--scroll">Overflow Scroll</span>
+                <span class="builder-chip" data-class="uk-cu--pointer">Pointer</span>
+                <span class="builder-chip" data-class="uk-cu--not-allowed">Not Allowed</span>
+                <span class="builder-chip" data-class="uk-us--none">No Select</span>
+                <span class="builder-chip" data-class="uk-op--0">Invisible</span>
+                <span class="builder-chip" data-class="uk-bz--cover">BG Cover</span>
+                <span class="builder-chip" data-class="uk-ar--16-9">Ratio 16:9</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Grid</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-gc--repeat-2-1fr">2 Cols</span>
+                <span class="builder-chip" data-class="uk-gc--repeat-3-1fr">3 Cols</span>
+                <span class="builder-chip" data-class="uk-gc--repeat-4-1fr">4 Cols</span>
+                <span class="builder-chip" data-class="uk-gc--repeat-auto-fit-minmax-200px-1fr">Auto Fit 200</span>
+                <span class="builder-chip" data-class="uk-gc--repeat-auto-fit-minmax-280px-1fr">Auto Fit 280</span>
+                <span class="builder-chip" data-class="uk-gc--1fr-2fr">1fr 2fr</span>
+                <span class="builder-chip" data-class="uk-gc--250px-1fr">250px 1fr</span>
+                <span class="builder-chip" data-class="uk-gr--repeat-2-1fr">2 Rows</span>
+                <span class="builder-chip" data-class="uk-gr--repeat-3-1fr">3 Rows</span>
+                <span class="builder-chip" data-class="uk-gl--1-3">Col Span 1-3</span>
+                <span class="builder-chip" data-class="uk-gw--1-2">Row Span 1-2</span>
+                <span class="builder-chip" data-class="uk-gc--1fr-1fr-2fr">1fr 1fr 2fr</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Flexbox</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-fg--0">Grow 0</span>
+                <span class="builder-chip" data-class="uk-fg--1">Grow 1</span>
+                <span class="builder-chip" data-class="uk-fk--0">Shrink 0</span>
+                <span class="builder-chip" data-class="uk-fk--1">Shrink 1</span>
+                <span class="builder-chip" data-class="uk-fb--0">Basis 0</span>
+                <span class="builder-chip" data-class="uk-fb--auto">Basis Auto</span>
+                <span class="builder-chip" data-class="uk-or--0">Order 0</span>
+                <span class="builder-chip" data-class="uk-or--1">Order 1</span>
+                <span class="builder-chip" data-class="uk-or--2">Order 2</span>
+                <span class="builder-chip" data-class="uk-or---1">Order -1</span>
+                <span class="builder-chip" data-class="uk-fg--0d5">Grow 0.5</span>
+                <span class="builder-chip" data-class="uk-fb--200">Basis 200px</span>
+                <span class="builder-chip" data-class="uk-fk--0d5">Shrink 0.5</span>
+                <span class="builder-chip" data-class="uk-fb--50pr">Basis 50%</span>
+                <span class="builder-chip" data-class="uk-fb--15rem">Basis 15rem</span>
+              </div>
+            </div>
+            <div class="builder-section">
+              <h4>Transform</h4>
+              <div class="builder-options">
+                <span class="builder-chip" data-class="uk-rt--0">Rotate 0</span>
+                <span class="builder-chip" data-class="uk-rt--45">Rotate 45</span>
+                <span class="builder-chip" data-class="uk-rt--90">Rotate 90</span>
+                <span class="builder-chip" data-class="uk-rt--180">Rotate 180</span>
+                <span class="builder-chip" data-class="uk-rt---45">Rotate -45</span>
+                <span class="builder-chip" data-class="uk-sc--50">Scale 50%</span>
+                <span class="builder-chip" data-class="uk-sc--75">Scale 75%</span>
+                <span class="builder-chip" data-class="uk-sc--100">Scale 100%</span>
+                <span class="builder-chip" data-class="uk-sc--125">Scale 125%</span>
+                <span class="builder-chip" data-class="uk-sc--150">Scale 150%</span>
+                <span class="builder-chip" data-class="uk-rt---90">Rotate -90</span>
+                <span class="builder-chip" data-class="uk-sc--0">Scale 0</span>
+              </div>
+            </div>
+          </div>
+        </details>
       </div>
 
-      {#
-        VISUAL CLASS BUILDER
-        Interactive interface for building UtiliKit classes by clicking chips
-        organized into categories. Hidden by default, toggled by quick action.
-      #}
-      <div class="class-builder details-wrapper" id="class-builder" style="display: none;">
-        <h3 class="details-title">Visual Class Builder</h3>
-
-        {# SPACING UTILITIES SECTION #}
-        <div class="builder-section">
-          <h4><span class="builder-icon">📦</span> Spacing</h4>
-          <div class="builder-options">
-            <span class="builder-chip" data-class="uk-pd--20">Padding 20</span>
-            <span class="builder-chip" data-class="uk-pd--40">Padding 40</span>
-            <span class="builder-chip" data-class="uk-mg--20">Margin 20</span>
-            <span class="builder-chip" data-class="uk-mg--auto">Margin Auto</span>
-            <span class="builder-chip" data-class="uk-gp--16">Gap 16</span>
-            <span class="builder-chip" data-class="uk-gp--24">Gap 24</span>
-          </div>
-        </div>
-
-        {# COLOR UTILITIES SECTION #}
-        <div class="builder-section">
-          <h4><span class="builder-icon">🎨</span> Colors</h4>
-          <div class="builder-options">
-            <span class="builder-chip" data-class="uk-bg--007bff">Blue BG</span>
-            <span class="builder-chip" data-class="uk-bg--28a745">Green BG</span>
-            <span class="builder-chip" data-class="uk-bg--dc3545">Red BG</span>
-            <span class="builder-chip" data-class="uk-bg--f8f9fa">Light BG</span>
-            <span class="builder-chip" data-class="uk-tc--ffffff">White Text</span>
-            <span class="builder-chip" data-class="uk-tc--000000">Black Text</span>
-            <span class="builder-chip" data-class="uk-bc--dee2e6">Gray Border</span>
-          </div>
-        </div>
-
-        {# LAYOUT UTILITIES SECTION #}
-        <div class="builder-section">
-          <h4><span class="builder-icon">📐</span> Layout</h4>
-          <div class="builder-options">
-            <span class="builder-chip" data-class="uk-dp--flex">Flex</span>
-            <span class="builder-chip" data-class="uk-dp--grid">Grid</span>
-            <span class="builder-chip" data-class="uk-dp--block">Block</span>
-            <span class="builder-chip" data-class="uk-jc--center">Justify Center</span>
-            <span class="builder-chip" data-class="uk-ai--center">Align Center</span>
-            <span class="builder-chip" data-class="uk-fd--column">Flex Column</span>
-            <span class="builder-chip" data-class="uk-fx--wrap">Flex Wrap</span>
-          </div>
-        </div>
-
-        {# EFFECTS UTILITIES SECTION #}
-        <div class="builder-section">
-          <h4><span class="builder-icon">✨</span> Effects</h4>
-          <div class="builder-options">
-            <span class="builder-chip" data-class="uk-br--8">Border Radius 8</span>
-            <span class="builder-chip" data-class="uk-br--16">Border Radius 16</span>
-            <span class="builder-chip" data-class="uk-bs--solid">Solid Border</span>
-            <span class="builder-chip" data-class="uk-bw--1">Border Width 1</span>
-            <span class="builder-chip" data-class="uk-op--90">90% Opacity</span>
-            <span class="builder-chip" data-class="uk-cu--pointer">Pointer Cursor</span>
-          </div>
-        </div>
-      </div>
-
-      {#
-        RESPONSIVE HELPER TOOL
-        Educational interface explaining responsive breakpoints and providing
-        tools for converting regular classes to responsive variants.
-      #}
-      <div class="responsive-helper" id="responsive-helper" style="display: none;">
-        <h3>Responsive Helper</h3>
-        <p class="utilikit-description">
-          Add breakpoint prefixes to make your classes responsive. Classes apply at the specified breakpoint and larger.
+      {# HTML tab #}
+      <div class="playground-tab-content" id="tab-html" data-tab-content="html" style="display: none;">
+        <p class="utilikit-description description">
+          Write complete HTML with UtiliKit classes. The <code>utilikit</code> class is required on elements.
         </p>
+        <textarea id="utilikit-html-input"
+                  class="utilikit-textarea text-full form-textarea form-element form-element--type-textarea form-element--api-textarea required" rows="16"
+                  placeholder='<div class="utilikit uk-dp--grid uk-gc--repeat-3-1fr uk-gp--16 uk-pd--16">
+  <div class="utilikit uk-bg--3b82f6 uk-pd--20 uk-tc--ffffff uk-br--8">Item 1</div>
+  <div class="utilikit uk-bg--10b981 uk-pd--20 uk-tc--ffffff uk-br--8">Item 2</div>
+  <div class="utilikit uk-bg--f59e0b uk-pd--20 uk-tc--ffffff uk-br--8">Item 3</div>
+</div>'></textarea>
+      </div>
 
-        {# BREAKPOINT REFERENCE INFORMATION #}
+      {# Color tools (always visible) #}
+      <div class="playground-color-tools">
+        <label for="utilikit-color-picker"><strong>Color Picker</strong></label>
+        <p class="utilikit-description description">
+          Get a HEX color for <code>uk-bg--</code>, <code>uk-tc--</code>, or <code>uk-bc--</code> classes.
+        </p>
+        <div class="color-wrapper">
+          <input type="color" id="utilikit-color-picker" class="form-element form-element--type-color form-element--api-color" value="#007bff" />
+          <input type="text" id="utilikit-color-value" class="form-text form-element form-element--type-text" value="#007bff" readonly title="Click to copy" />
+        </div>
+        <div class="color-palette">
+          <div class="color-palette-title">Quick Colors (click to copy hex)</div>
+          <div class="color-swatches">
+            <div class="color-swatch" data-color="#000000" style="background-color: #000000" title="#000000"></div>
+            <div class="color-swatch" data-color="#343a40" style="background-color: #343a40" title="#343a40"></div>
+            <div class="color-swatch" data-color="#6c757d" style="background-color: #6c757d" title="#6c757d"></div>
+            <div class="color-swatch" data-color="#adb5bd" style="background-color: #adb5bd" title="#adb5bd"></div>
+            <div class="color-swatch" data-color="#dee2e6" style="background-color: #dee2e6" title="#dee2e6"></div>
+            <div class="color-swatch" data-color="#f8f9fa" style="background-color: #f8f9fa" title="#f8f9fa"></div>
+            <div class="color-swatch" data-color="#ffffff" style="background-color: #ffffff" title="#ffffff"></div>
+            <div class="color-swatch" data-color="#dc3545" style="background-color: #dc3545" title="#dc3545"></div>
+            <div class="color-swatch" data-color="#fd7e14" style="background-color: #fd7e14" title="#fd7e14"></div>
+            <div class="color-swatch" data-color="#ffc107" style="background-color: #ffc107" title="#ffc107"></div>
+            <div class="color-swatch" data-color="#28a745" style="background-color: #28a745" title="#28a745"></div>
+            <div class="color-swatch" data-color="#17a2b8" style="background-color: #17a2b8" title="#17a2b8"></div>
+            <div class="color-swatch" data-color="#007bff" style="background-color: #007bff" title="#007bff"></div>
+            <div class="color-swatch" data-color="#6610f2" style="background-color: #6610f2" title="#6610f2"></div>
+            <div class="color-swatch" data-color="#e83e8c" style="background-color: #e83e8c" title="#e83e8c"></div>
+          </div>
+        </div>
+      </div>
+
+      {# Responsive reference (collapsible) #}
+      <details class="playground-details" id="responsive-helper">
+        <summary>Responsive Breakpoints</summary>
+        <p class="utilikit-description">
+          Add breakpoint prefixes to make classes responsive. They apply at the specified breakpoint and larger.
+        </p>
         <div class="breakpoint-info">
           <div class="breakpoint-item">
             <span class="breakpoint-badge">base</span>
@@ -229,212 +399,97 @@
             <span class="breakpoint-desc">Extra extra large</span>
           </div>
         </div>
-
-        {# RESPONSIVE USAGE EXAMPLES #}
         <div class="responsive-example">
           <h4>Example Pattern:</h4>
           <div class="example-code">
-            <code>uk-pd--20</code> → Padding on all screen sizes<br>
-            <code>uk-md-pd--40</code> → Padding on medium screens and up<br>
-            <code>uk-lg-dp--flex</code> → Flex display on large screens and up
+            <code>uk-pd--20</code> &rarr; Padding on all screens<br>
+            <code>uk-md-pd--40</code> &rarr; Padding on medium+ screens<br>
+            <code>uk-lg-dp--flex</code> &rarr; Flex on large+ screens
           </div>
         </div>
-
-        {# RESPONSIVE CLASS CONVERTER TOOL #}
         <div class="responsive-converter">
-          <h4>Convert Your Classes:</h4>
+          <h4>Convert a Class:</h4>
           <input type="text"
                  id="responsive-input"
                  class="text-full form-text form-element form-element--type-text form-element--api-textfield"
                  placeholder="Enter a class like uk-pd--20">
           <div class="responsive-output" id="responsive-output"></div>
         </div>
-      </div>
-
-      {#
-        ADVANCED INPUT MODE
-        Textarea for entering complete HTML structures with UtiliKit classes.
-        Hidden by default, shown when advanced mode is selected.
-      #}
-      <div id="utilikit-advanced-input-group" class="form-item js-form-item js-form-type-textarea form-type-textarea" style="display: none;">
-        <label for="utilikit-html-input" class="js-form-required form-required"><strong>Enter Full HTML Structure:</strong></label>
-        <p class="utilikit-description description">
-          Write complete HTML with UtiliKit classes. The <code>utilikit</code> class will be added automatically.
-        </p>
-        <textarea id="utilikit-html-input"
-                 class="text-full form-textarea form-element form-element--type-textarea form-element--api-textarea required" rows="16"
-                  placeholder='<div class="utilikit uk-dp--grid uk-gc--1fr uk-md-gc--repeat-2-1fr uk-lg-gc--repeat-3-1fr uk-gp--16 uk-bg--fee2e2 uk-pd--16 uk-mg--t-16"><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 1</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 2</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 3</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 4</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 5</div><div class="uk-bg--ef4444 uk-pd--20 uk-tc--ffffff">Item 6</div></div>'></textarea>
-      </div>
-
-      {#
-        COLOR PICKER TOOL
-        HTML5 color input with text display for getting hex values
-        to use in UtiliKit color utility classes.
-      #}
-      <div class="form-item js-form-item js-form-type-color form-type-color">
-        <label for="utilikit-color-picker" class="js-form-required form-required"><strong>Pick a Color:</strong></label>
-        <p class="utilikit-description description">
-          Use this to get a HEX color for classes like <code>uk-bg--</code>, <code>uk-tc--</code>, or <code>uk-bc--</code>.
-        </p>
-        <div class="color-wrapper">
-          <input type="color" id="utilikit-color-picker" class="form-element form-element--type-color form-element--api-color" value="#007bff" />
-          <input type="text" id="utilikit-color-value" class="form-text form-element form-element--type-text" value="#007bff" readonly title="Click to copy" />
-        </div>
-      </div>
-
-      {#
-        COLOR PALETTE SWATCHES
-        Pre-defined color swatches for quick selection and copying.
-        Includes common grays, brand colors, and semantic colors.
-      #}
-      <div class="color-palette">
-        <div class="color-palette-title">Quick Colors (click to copy hex)</div>
-        <div class="color-swatches">
-          <div class="color-swatch" data-color="#000000" style="background-color: #000000" title="#000000"></div>
-          <div class="color-swatch" data-color="#343a40" style="background-color: #343a40" title="#343a40"></div>
-          <div class="color-swatch" data-color="#6c757d" style="background-color: #6c757d" title="#6c757d"></div>
-          <div class="color-swatch" data-color="#adb5bd" style="background-color: #adb5bd" title="#adb5bd"></div>
-          <div class="color-swatch" data-color="#dee2e6" style="background-color: #dee2e6" title="#dee2e6"></div>
-          <div class="color-swatch" data-color="#f8f9fa" style="background-color: #f8f9fa" title="#f8f9fa"></div>
-          <div class="color-swatch" data-color="#ffffff" style="background-color: #ffffff" title="#ffffff"></div>
-          <div class="color-swatch" data-color="#dc3545" style="background-color: #dc3545" title="#dc3545"></div>
-          <div class="color-swatch" data-color="#fd7e14" style="background-color: #fd7e14" title="#fd7e14"></div>
-          <div class="color-swatch" data-color="#ffc107" style="background-color: #ffc107" title="#ffc107"></div>
-          <div class="color-swatch" data-color="#28a745" style="background-color: #28a745" title="#28a745"></div>
-          <div class="color-swatch" data-color="#17a2b8" style="background-color: #17a2b8" title="#17a2b8"></div>
-          <div class="color-swatch" data-color="#007bff" style="background-color: #007bff" title="#007bff"></div>
-          <div class="color-swatch" data-color="#6610f2" style="background-color: #6610f2" title="#6610f2"></div>
-          <div class="color-swatch" data-color="#e83e8c" style="background-color: #e83e8c" title="#e83e8c"></div>
-        </div>
-      </div>
+      </details>
 
     </form>
   </div>
 
-  {#
-    RIGHT PANEL: OUTPUT AND PREVIEW
-    Contains live preview, style inspector, and code output sections
-    for visualizing and copying the results.
-  #}
+  {# RIGHT PANEL #}
   <div class="utilikit-column utilikit-output-panel region region-content">
 
-    {#
-      LIVE PREVIEW SECTION
-      Interactive preview container with viewport simulation controls
-      for testing responsive behavior at different screen sizes.
-    #}
     <div class="preview-container block">
       <div class="preview-controls">
         <h3 class="block-title">Live Preview</h3>
-        {# VIEWPORT SIMULATION CONTROLS #}
         <div class="viewport-selector">
-          <button type="button" class="viewport-btn active button js-form-submit form-submit" data-viewport="desktop">
-            <span class="viewport-icon">💻</span> Desktop
-          </button>
-          <button type="button" class="viewport-btn button js-form-submit form-submit" data-viewport="tablet">
-            <span class="viewport-icon">📱</span> Tablet
-          </button>
-          <button type="button" class="viewport-btn button js-form-submit form-submit" data-viewport="mobile">
-            <span class="viewport-icon">📱</span> Mobile
-          </button>
-         </div>
-        </div>
-        {# PREVIEW FRAME WITH SIZE INDICATOR #}
-        <div class="preview-frame-wrapper">
-          <div class="viewport-size-indicator">1200px</div>
-          <div id="utilikit-preview-box" class="preview-frame desktop utilikit-preview-output"></div>
+          <button type="button" class="viewport-btn active button js-form-submit form-submit" data-viewport="desktop">Desktop</button>
+          <button type="button" class="viewport-btn button js-form-submit form-submit" data-viewport="tablet">Tablet</button>
+          <button type="button" class="viewport-btn button js-form-submit form-submit" data-viewport="mobile">Mobile</button>
         </div>
       </div>
+      <div class="preview-frame-wrapper">
+        <div class="viewport-size-indicator">1200px</div>
+        <div id="utilikit-preview-box" class="preview-frame desktop utilikit-preview-output"></div>
+      </div>
+    </div>
 
-    {#
-      STYLE INSPECTOR
-      Real-time analysis of applied styles with render/reset controls.
-      Shows computed styles and class effects for debugging.
-    #}
     <div class="style-inspector block">
       <div class="utilikit-buttons-wrapper">
-      <h3 class="block-title">Style Inspector <span class="inspector-badge badge">Live</span></h3>
-        {# PRIMARY ACTION BUTTONS #}
+        <h3 class="block-title">Style Inspector <span class="inspector-badge badge">Live</span></h3>
         <div class="buttons-wrapper form-actions js-form-wrapper form-wrapper">
-          <button type="submit" form="utilikit-preview-form" class="utilikit-button utilikit-button-render button button--primary js-form-submit form-submit">
-            Render
-          </button>
-          <button type="reset" id="utilikit-reset-btn" class="utilikit-button utilikit-button-reset button js-form-submit form-submit">
-            Reset
-          </button>
+          <button type="submit" form="utilikit-preview-form" class="utilikit-button utilikit-button-render button button--primary js-form-submit form-submit">Render</button>
+          <button type="button" id="utilikit-reset-btn" class="utilikit-button utilikit-button-reset button button--danger js-form-submit form-submit">Reset All</button>
         </div>
       </div>
-      {# DYNAMIC STYLE BREAKDOWN DISPLAY #}
       <div id="style-breakdown">
         <p class="utilikit-description">Render content to see applied styles</p>
       </div>
     </div>
 
-    {#
-      HTML CODE OUTPUT
-      Displays the raw HTML that should be copied to user's project.
-      Includes copy-to-clipboard functionality.
-    #}
     <section class="form-item js-form-item">
-      <label for="utilikit-output-code" class="js-form-required form-required"><strong>Copy This HTML:</strong></label>
+      <label for="utilikit-output-code"><strong>Copy This HTML:</strong></label>
       <p class="utilikit-description description">
         This is the HTML you should copy and paste into your project.
       </p>
       <pre id="utilikit-output-code" class="utilikit-code-block"></pre>
-      <button type="button" id="utilikit-copy-btn" class="utilikit-button utilikit-button-copy button button--primary js-form-submit form-submit">
-        📋 Copy HTML
-      </button>
+      <button type="button" id="utilikit-copy-btn" class="utilikit-button utilikit-button-copy button button--primary js-form-submit form-submit">Copy HTML</button>
     </section>
 
-    {#
-      RENDERED HTML OUTPUT
-      Shows the final HTML after UtiliKit engine has processed and
-      applied inline styles, useful for debugging and understanding.
-    #}
     <section class="form-item js-form-item">
-      <label for="utilikit-rendered-html" class="js-form-required form-required"><strong>What the Browser Sees:</strong></label>
+      <label for="utilikit-rendered-html"><strong>What the Browser Sees:</strong></label>
       <p class="utilikit-description description">
         This shows the HTML after UtiliKit has applied inline styles.
       </p>
       <pre id="utilikit-rendered-html" class="utilikit-code-block"></pre>
     </section>
 
-    </div>
-
   </div>
 
 </div>
 
-{#
-  HIDDEN CLIPBOARD FALLBACK
-  Hidden textarea element used as fallback for copy-to-clipboard
-  functionality in browsers without Clipboard API support.
-#}
 <textarea id="utilikit-hidden-copy" class="visually-hidden" style="position: absolute; left: -9999px;" tabindex="-1" aria-hidden="true"></textarea>
 
-{#
-  TUTORIAL OVERLAY
-  Welcome modal that appears on first visit to guide users through
-  the playground features. Can be reopened via quick action button.
-#}
+{# Tutorial overlay #}
 <div class="tutorial-overlay" id="tutorial-overlay">
   <div class="tutorial-content">
-    <button type="button" class="tutorial-close button" id="tutorial-close">×</button>
-    <h2>Welcome to UtiliKit Playground! 🎨</h2>
+    <button type="button" class="tutorial-close button" id="tutorial-close">&times;</button>
+    <h2>Welcome to UtiliKit Playground!</h2>
     <p>This interactive playground helps you learn and experiment with UtiliKit utility classes.</p>
-
     <h3>Quick Tips:</h3>
     <ul>
       <li><strong>Preset Examples:</strong> Click any preset to see real-world examples</li>
-      <li><strong>Visual Builder:</strong> Build classes visually without typing</li>
-      <li><strong>Auto-complete:</strong> Start typing "uk-" to see suggestions</li>
-      <li><strong>Color Palette:</strong> Click any color to use it in your classes</li>
-      <li><strong>Responsive Preview:</strong> Test your design at different screen sizes</li>
-      <li><strong>Style Inspector:</strong> See exactly what styles are being applied</li>
+      <li><strong>Classes Tab:</strong> Type classes with autocomplete, or use the Visual Builder</li>
+      <li><strong>HTML Tab:</strong> Write full HTML structures with UtiliKit classes</li>
+      <li><strong>Color Palette:</strong> Click any color to copy its hex value</li>
+      <li><strong>Responsive Preview:</strong> Test at different screen sizes</li>
+      <li><strong>Style Inspector:</strong> See exactly what styles are applied</li>
     </ul>
-
     <p>Try starting with a preset example or type <code>uk-pd--20</code> to begin!</p>
-
     <button type="button" class="button button--primary js-form-submit form-submit" id="tutorial-start">Get Started</button>
   </div>
 </div>

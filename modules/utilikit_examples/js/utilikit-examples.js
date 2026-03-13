@@ -49,6 +49,25 @@
           Drupal.utilikit.applyClasses(elements);
         }
       }
+
+      // Attach hover class-swap behavior via data attributes (CSP-safe,
+      // replaces inline onmouseover/onmouseout handlers).
+      once('utilikit-hover-demo', '[data-hover-class][data-default-class]', context).forEach(function (el) {
+        el.addEventListener('mouseover', function () {
+          this.className = this.dataset.hoverClass;
+          if (typeof Drupal.utilikit !== 'undefined' &&
+              typeof Drupal.utilikit.applyClasses === 'function') {
+            Drupal.utilikit.applyClasses([this]);
+          }
+        });
+        el.addEventListener('mouseout', function () {
+          this.className = this.dataset.defaultClass;
+          if (typeof Drupal.utilikit !== 'undefined' &&
+              typeof Drupal.utilikit.applyClasses === 'function') {
+            Drupal.utilikit.applyClasses([this]);
+          }
+        });
+      });
     }
   };
 

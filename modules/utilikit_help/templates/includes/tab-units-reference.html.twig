@@ -1,0 +1,1246 @@
+        <div class="tab-content" id="units-reference" role="tabpanel">
+        <h2>📏 Supported Units Reference</h2>
+        <p class="intro-text">
+        Complete reference guide for all CSS properties in UtiliKit and their supported measurement units.
+        Know exactly which units you can use with each property.
+        </p>
+
+        <div class="units-guide">
+        <div class="quick-reference">
+        <h3>Quick Unit Reference</h3>
+        <div class="units-grid">
+        <div class="unit-item">
+        <code>(none)</code> → <span>px (default)</span>
+        </div>
+        <div class="unit-item">
+        <code>pr</code> → <span>% (percentage)</span>
+        </div>
+        <div class="unit-item">
+        <code>em</code> → <span>em (relative to parent)</span>
+        </div>
+        <div class="unit-item">
+        <code>rem</code> → <span>rem (relative to root)</span>
+        </div>
+        <div class="unit-item">
+        <code>vh</code> → <span>vh (viewport height)</span>
+        </div>
+        <div class="unit-item">
+        <code>vw</code> → <span>vw (viewport width)</span>
+        </div>
+        </div>
+        </div>
+
+
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Units
+        </th>
+        <th>
+        Additional Support
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Padding</strong>
+        </td>
+        <td>
+        <code>uk-pd</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        Sides (t,r,b,l) + Shorthand
+        </td>
+        <td>
+        <code>uk-pd--20</code>, <code>uk-pd--t-15</code>, <code>uk-pd--10-20-30-40</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Margin</strong>
+        </td>
+        <td>
+        <code>uk-mg</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        Sides (t,r,b,l) + Shorthand
+        </td>
+        <td>
+        <code>uk-mg--15</code>, <code>uk-mg--r-auto</code>, <code>uk-mg--10-20</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Border Width</strong>
+        </td>
+        <td>
+        <code>uk-bw</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        Sides (t,r,b,l) + Shorthand
+        </td>
+        <td>
+        <code>uk-bw--2</code>, <code>uk-bw--t-1</code>, <code>uk-bw--1-2-1-2</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Border Radius</strong>
+        </td>
+        <td>
+        <code>uk-br</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        Corners (t,r,b,l) + Shorthand
+        </td>
+        <td>
+        <code>uk-br--10</code>, <code>uk-br--t-5</code>, <code>uk-br--5-10-15-20</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <h3>
+        Sizing Properties (Dimensions)
+        </h3>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Units
+        </th>
+        <th>
+        Additional Support
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Width</strong>
+        </td>
+        <td>
+        <code>uk-wd</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>, <code>vh</code>, <code>vw</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-wd--200</code>, <code>uk-wd--50pr</code>, <code>uk-wd--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Height</strong>
+        </td>
+        <td>
+        <code>uk-ht</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>, <code>vh</code>, <code>vw</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-ht--150</code>, <code>uk-ht--100vh</code>, <code>uk-ht--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Max Width</strong>
+        </td>
+        <td>
+        <code>uk-xw</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>, <code>vh</code>, <code>vw</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-xw--400</code>, <code>uk-xw--80pr</code>, <code>uk-xw--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Max Height</strong>
+        </td>
+        <td>
+        <code>uk-xh</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>, <code>vh</code>, <code>vw</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-xh--300</code>, <code>uk-xh--50vh</code>, <code>uk-xh--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Min Width</strong>
+        </td>
+        <td>
+        <code>uk-nw</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>, <code>vh</code>, <code>vw</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-nw--100</code>, <code>uk-nw--25pr</code>, <code>uk-nw--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Min Height</strong>
+        </td>
+        <td>
+        <code>uk-nh</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>, <code>vh</code>, <code>vw</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-nh--50</code>, <code>uk-nh--20vh</code>, <code>uk-nh--auto</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <h3>
+        Typography Properties
+        </h3>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Units
+        </th>
+        <th>
+        Additional Support
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Font Size</strong>
+        </td>
+        <td>
+        <code>uk-fs</code>
+        </td>
+        <td>
+        <code>px</code>, <code>em</code>, <code>rem</code>, <code>vh</code>, <code>vw</code>
+        </td>
+        <td>
+        —
+        </td>
+        <td>
+        <code>uk-fs--16</code>, <code>uk-fs--1d2rem</code>, <code>uk-fs--4vw</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Line Height</strong>
+        </td>
+        <td>
+        <code>uk-lh</code>
+        </td>
+        <td>
+        <code>px</code>, <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        —
+        </td>
+        <td>
+        <code>uk-lh--24</code>, <code>uk-lh--1d50em</code>, <code>uk-lh--1d4rem</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Letter Spacing</strong>
+        </td>
+        <td>
+        <code>uk-ls</code>
+        </td>
+        <td>
+        <code>px</code>, <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        —
+        </td>
+        <td>
+        <code>uk-ls--1</code>, <code>uk-ls--0d1em</code>, <code>uk-ls--0d05rem</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Font Weight</strong>
+        </td>
+        <td>
+        <code>uk-fw</code>
+        </td>
+        <td>
+        <strong>Integer only</strong>
+        </td>
+        <td>
+        —
+        </td>
+        <td>
+        <code>uk-fw--400</code>, <code>uk-fw--700</code>, <code>uk-fw--900</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <h3>
+        Positioning Properties
+        </h3>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Units
+        </th>
+        <th>
+        Additional Support
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Top</strong>
+        </td>
+        <td>
+        <code>uk-tp</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-tp--20</code>, <code>uk-tp--50pr</code>, <code>uk-tp--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Right</strong>
+        </td>
+        <td>
+        <code>uk-ri</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-ri--15</code>, <code>uk-ri--25pr</code>, <code>uk-ri--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Bottom</strong>
+        </td>
+        <td>
+        <code>uk-bt</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-bt--10</code>, <code>uk-bt--30pr</code>, <code>uk-bt--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Left</strong>
+        </td>
+        <td>
+        <code>uk-lt</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-lt--5</code>, <code>uk-lt--10pr</code>, <code>uk-lt--auto</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <h3>
+        Layout Properties
+        </h3>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Units
+        </th>
+        <th>
+        Additional Support
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Gap</strong>
+        </td>
+        <td>
+        <code>uk-gp</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (p suffix)
+        </td>
+        <td>
+        Two values (row-col)
+        </td>
+        <td>
+        <code>uk-gp--20</code>, <code>uk-gp--10p</code>, <code>uk-gp--16-32</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Flex Grow</strong>
+        </td>
+        <td>
+        <code>uk-fg</code>
+        </td>
+        <td>
+        <strong>Decimal only</strong>
+        </td>
+        <td>
+        —
+        </td>
+        <td>
+        <code>uk-fg--1</code>, <code>uk-fg--1d500</code>, <code>uk-fg--2d25</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Flex Shrink</strong>
+        </td>
+        <td>
+        <code>uk-fk</code>
+        </td>
+        <td>
+        <strong>Decimal only</strong>
+        </td>
+        <td>
+        —
+        </td>
+        <td>
+        <code>uk-fk--0</code>, <code>uk-fk--1d00</code>, <code>uk-fk--0d50</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Flex Basis</strong>
+        </td>
+        <td>
+        <code>uk-fb</code>
+        </td>
+        <td>
+        <code>px</code>, <code>%</code> (pr), <code>em</code>, <code>rem</code>
+        </td>
+        <td>
+        <code>auto</code>
+        </td>
+        <td>
+        <code>uk-fb--200</code>, <code>uk-fb--50pr</code>, <code>uk-fb--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Order</strong>
+        </td>
+        <td>
+        <code>uk-or</code>
+        </td>
+        <td>
+        <strong>Integer only</strong>
+        </td>
+        <td>
+        Negative values
+        </td>
+        <td>
+        <code>uk-or--1</code>, <code>uk-or---1</code>, <code>uk-or--3</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <h3>
+        Color Properties
+        </h3>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Units
+        </th>
+        <th>
+        Additional Support
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Background Color</strong>
+        </td>
+        <td>
+        <code>uk-bg</code>
+        </td>
+        <td>
+        <strong>Hex colors only</strong>
+        </td>
+        <td>
+        Optional opacity (0-100)
+        </td>
+        <td>
+        <code>uk-bg--ff0000</code>, <code>uk-bg--f00</code>, <code>uk-bg--ff0000-50</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Text Color</strong>
+        </td>
+        <td>
+        <code>uk-tc</code>
+        </td>
+        <td>
+        <strong>Hex colors only</strong>
+        </td>
+        <td>
+        Optional opacity (0-100)
+        </td>
+        <td>
+        <code>uk-tc--000000</code>, <code>uk-tc--333</code>, <code>uk-tc--000000-80</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Border Color</strong>
+        </td>
+        <td>
+        <code>uk-bc</code>
+        </td>
+        <td>
+        <strong>Hex colors only</strong>
+        </td>
+        <td>
+        Optional opacity (0-100)
+        </td>
+        <td>
+        <code>uk-bc--cccccc</code>, <code>uk-bc--ccc</code>, <code>uk-bc--cccccc-30</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <h3>
+        Transform Properties
+        </h3>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Units
+        </th>
+        <th>
+        Additional Support
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Rotate</strong>
+        </td>
+        <td>
+        <code>uk-rt</code>
+        </td>
+        <td>
+        <strong>Degrees only</strong>
+        </td>
+        <td>
+        0-360
+        </td>
+        <td>
+        <code>uk-rt--45</code>, <code>uk-rt--90</code>, <code>uk-rt--180</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Scale</strong>
+        </td>
+        <td>
+        <code>uk-sc</code>
+        </td>
+        <td>
+        <strong>Percentage only</strong>
+        </td>
+        <td>
+        100 = 1x
+        </td>
+        <td>
+        <code>uk-sc--120</code>, <code>uk-sc--150</code>, <code>uk-sc--80</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <h3>
+        Special Properties
+        </h3>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Units
+        </th>
+        <th>
+        Additional Support
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Opacity</strong>
+        </td>
+        <td>
+        <code>uk-op</code>
+        </td>
+        <td>
+        <strong>0-100 (converts to 0-1)</strong>
+        </td>
+        <td>
+        —
+        </td>
+        <td>
+        <code>uk-op--50</code>, <code>uk-op--75</code>, <code>uk-op--100</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Z-Index</strong>
+        </td>
+        <td>
+        <code>uk-zi</code>
+        </td>
+        <td>
+        <strong>Integer only</strong>
+        </td>
+        <td>
+        Negative values
+        </td>
+        <td>
+        <code>uk-zi--10</code>, <code>uk-zi---1</code>, <code>uk-zi--9999</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Aspect Ratio</strong>
+        </td>
+        <td>
+        <code>uk-ar</code>
+        </td>
+        <td>
+        <strong>Ratio format</strong>
+        </td>
+        <td>
+        width-height
+        </td>
+        <td>
+        <code>uk-ar--16-9</code>, <code>uk-ar--4-3</code>, <code>uk-ar--1-1</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <h3>
+        Keyword-Only Properties
+        </h3>
+        <p>
+        These properties only accept CSS keywords (no units):
+        </p>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Values
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Display</strong>
+        </td>
+        <td>
+        <code>uk-dp</code>
+        </td>
+        <td>
+        <code>block</code>, <code>flex</code>, <code>grid</code>, <code>none</code>, etc.
+        </td>
+        <td>
+        <code>uk-dp--flex</code>, <code>uk-dp--grid</code>, <code>uk-dp--none</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Position</strong>
+        </td>
+        <td>
+        <code>uk-ps</code>
+        </td>
+        <td>
+        <code>relative</code>, <code>absolute</code>, <code>fixed</code>, etc.
+        </td>
+        <td>
+        <code>uk-ps--relative</code>, <code>uk-ps--absolute</code>, <code>uk-ps--fixed</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Text Align</strong>
+        </td>
+        <td>
+        <code>uk-ta</code>
+        </td>
+        <td>
+        <code>left</code>, <code>center</code>, <code>right</code>, <code>justify</code>
+        </td>
+        <td>
+        <code>uk-ta--center</code>, <code>uk-ta--left</code>, <code>uk-ta--right</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Overflow</strong>
+        </td>
+        <td>
+        <code>uk-ov</code>
+        </td>
+        <td>
+        <code>hidden</code>, <code>auto</code>, <code>scroll</code>, <code>visible</code>
+        </td>
+        <td>
+        <code>uk-ov--hidden</code>, <code>uk-ov--auto</code>, <code>uk-ov--scroll</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Cursor</strong>
+        </td>
+        <td>
+        <code>uk-cu</code>
+        </td>
+        <td>
+        <code>pointer</code>, <code>default</code>, <code>help</code>, etc.
+        </td>
+        <td>
+        <code>uk-cu--pointer</code>, <code>uk-cu--help</code>, <code>uk-cu--default</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Background Size</strong>
+        </td>
+        <td>
+        <code>uk-bz</code>
+        </td>
+        <td>
+        <code>cover</code>, <code>contain</code>, <code>auto</code>
+        </td>
+        <td>
+        <code>uk-bz--cover</code>, <code>uk-bz--contain</code>, <code>uk-bz--auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Border Style</strong>
+        </td>
+        <td>
+        <code>uk-bs</code>
+        </td>
+        <td>
+        <code>solid</code>, <code>dashed</code>, <code>dotted</code>, <code>none</code>
+        </td>
+        <td>
+        <code>uk-bs--solid</code>, <code>uk-bs--dashed</code>, <code>uk-bs--b-dashed</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Flex Direction</strong>
+        </td>
+        <td>
+        <code>uk-fd</code>
+        </td>
+        <td>
+        <code>row</code>, <code>column</code>, <code>row-reverse</code>, <code>column-reverse</code>
+        </td>
+        <td>
+        <code>uk-fd--row</code>, <code>uk-fd--column</code>, <code>uk-fd--row-reverse</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Justify Content</strong>
+        </td>
+        <td>
+        <code>uk-jc</code>
+        </td>
+        <td>
+        <code>center</code>, <code>flex-start</code>, <code>flex-end</code>, <code>space-between</code>, <code>space-around</code>, <code>space-evenly</code>
+        </td>
+        <td>
+        <code>uk-jc--center</code>, <code>uk-jc--space-between</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Align Items</strong>
+        </td>
+        <td>
+        <code>uk-ai</code>
+        </td>
+        <td>
+        <code>center</code>, <code>flex-start</code>, <code>flex-end</code>, <code>stretch</code>, <code>baseline</code>
+        </td>
+        <td>
+        <code>uk-ai--center</code>, <code>uk-ai--stretch</code>, <code>uk-ai--baseline</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Align Content</strong>
+        </td>
+        <td>
+        <code>uk-ac</code>
+        </td>
+        <td>
+        <code>center</code>, <code>flex-start</code>, <code>flex-end</code>, <code>stretch</code>, <code>space-between</code>, <code>space-around</code>
+        </td>
+        <td>
+        <code>uk-ac--center</code>, <code>uk-ac--space-between</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Flex Wrap</strong>
+        </td>
+        <td>
+        <code>uk-fx</code>
+        </td>
+        <td>
+        <code>wrap</code>, <code>nowrap</code>, <code>wrap-reverse</code>
+        </td>
+        <td>
+        <code>uk-fx--wrap</code>, <code>uk-fx--nowrap</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Float</strong>
+        </td>
+        <td>
+        <code>uk-fl</code>
+        </td>
+        <td>
+        <code>left</code>, <code>right</code>, <code>none</code>
+        </td>
+        <td>
+        <code>uk-fl--left</code>, <code>uk-fl--right</code>, <code>uk-fl--none</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Clear</strong>
+        </td>
+        <td>
+        <code>uk-cl</code>
+        </td>
+        <td>
+        <code>left</code>, <code>right</code>, <code>both</code>, <code>none</code>
+        </td>
+        <td>
+        <code>uk-cl--both</code>, <code>uk-cl--left</code>, <code>uk-cl--none</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>User Select</strong>
+        </td>
+        <td>
+        <code>uk-us</code>
+        </td>
+        <td>
+        <code>none</code>, <code>auto</code>, <code>text</code>, <code>all</code>
+        </td>
+        <td>
+        <code>uk-us--none</code>, <code>uk-us--auto</code>, <code>uk-us--text</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <h3>
+        Grid Template Properties
+        </h3>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Property
+        </th>
+        <th>
+        Prefix
+        </th>
+        <th>
+        Supported Units
+        </th>
+        <th>
+        Additional Support
+        </th>
+        <th>
+        Example Classes
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>Grid Columns</strong>
+        </td>
+        <td>
+        <code>uk-gc</code>
+        </td>
+        <td>
+        <strong>Grid track list</strong>
+        </td>
+        <td>
+        <code>repeat()</code>, <code>minmax()</code>, <code>fr</code>
+        </td>
+        <td>
+        <code>uk-gc--repeat-3-1fr</code>, <code>uk-gc--200px-1fr-auto</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Grid Rows</strong>
+        </td>
+        <td>
+        <code>uk-gr</code>
+        </td>
+        <td>
+        <strong>Grid track list</strong>
+        </td>
+        <td>
+        <code>repeat()</code>, <code>minmax()</code>, <code>fr</code>
+        </td>
+        <td>
+        <code>uk-gr--100px-auto-1fr</code>, <code>uk-gr--repeat-2-minmax-100px-1fr</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Grid Column</strong>
+        </td>
+        <td>
+        <code>uk-gl</code>
+        </td>
+        <td>
+        <strong>Range format</strong>
+        </td>
+        <td>
+        start-end positions
+        </td>
+        <td>
+        <code>uk-gl--1-3</code>, <code>uk-gl--2-4</code>, <code>uk-gl--1-span-2</code>
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>Grid Row</strong>
+        </td>
+        <td>
+        <code>uk-gw</code>
+        </td>
+        <td>
+        <strong>Range format</strong>
+        </td>
+        <td>
+        start-end positions
+        </td>
+        <td>
+        <code>uk-gw--1-2</code>, <code>uk-gw--3-5</code>, <code>uk-gw--2-span-3</code>
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <hr>
+        <h3>
+        Unit Reference Guide
+        </h3>
+        <table class="table">
+        <thead>
+        <tr>
+        <th>
+        Unit Code
+        </th>
+        <th>
+        Actual CSS Unit
+        </th>
+        <th>
+        Usage Example
+        </th>
+        <th>
+        Description
+        </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+        <td>
+        <strong>(none)</strong>
+        </td>
+        <td>
+        <code>px</code>
+        </td>
+        <td>
+        <code>uk-pd--20</code> → <code>padding: 20px</code>
+        </td>
+        <td>
+        Default unit (pixels)
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>pr</strong>
+        </td>
+        <td>
+        <code>%</code>
+        </td>
+        <td>
+        <code>uk-wd--50pr</code> → <code>width: 50%</code>
+        </td>
+        <td>
+        Percentage
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>em</strong>
+        </td>
+        <td>
+        <code>em</code>
+        </td>
+        <td>
+        <code>uk-fs--1d50em</code> → <code>font-size: 1.5em</code>
+        </td>
+        <td>
+        Relative to parent font size
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>rem</strong>
+        </td>
+        <td>
+        <code>rem</code>
+        </td>
+        <td>
+        <code>uk-fs--1d2rem</code> → <code>font-size: 1.2rem</code>
+        </td>
+        <td>
+        Relative to root font size
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>vh</strong>
+        </td>
+        <td>
+        <code>vh</code>
+        </td>
+        <td>
+        <code>uk-ht--100vh</code> → <code>height: 100vh</code>
+        </td>
+        <td>
+        Viewport height
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>vw</strong>
+        </td>
+        <td>
+        <code>vw</code>
+        </td>
+        <td>
+        <code>uk-wd--50vw</code> → <code>width: 50vw</code>
+        </td>
+        <td>
+        Viewport width
+        </td>
+        </tr>
+        <tr>
+        <td>
+        <strong>p</strong>
+        </td>
+        <td>
+        <code>%</code>
+        </td>
+        <td>
+        <code>uk-gp--20p</code> → <code>gap: 20%</code>
+        </td>
+        <td>
+        Percentage (gap only)
+        </td>
+        </tr>
+        </tbody>
+        </table>
+        <hr>
+        <div class="usage-notes">
+        <h3>Usage Notes</h3>
+        <ul class="notes-list">
+        <li>
+        <strong>Default Unit</strong>: When no unit is specified, <code>px</code> is used
+        </li>
+        <li>
+        <strong>Viewport Units</strong>: Only available for sizing and font-size properties
+        </li>
+        <li>
+        <strong>Auto Support</strong>: Available for sizing and positioning properties where applicable
+        </li>
+        <li>
+        <strong>Shorthand Support</strong>: Available for padding, margin, border-width, and border-radius
+        </li>
+        <li>
+        <strong>Responsive</strong>: All properties support responsive prefixes (<code>uk-sm-</code>, <code>uk-md-</code>, <code>uk-lg-</code>, <code>uk-xl-</code>, <code>uk-xxl-</code>)
+        </li>
+        <li>
+        <strong>Color Format</strong>: Use 3-digit (<code>f00</code>) or 6-digit (<code>ff0000</code>) hex without <code>#</code>
+        </li>
+        <li>
+        <strong>Opacity</strong>: Add <code>-50</code> suffix for 50% opacity on color properties
+        </li>
+        </ul>
+        </div>
+        </div>
+        </div>

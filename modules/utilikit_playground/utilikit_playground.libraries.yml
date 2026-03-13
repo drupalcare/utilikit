@@ -1,8 +1,7 @@
 playground:
   css:
     theme:
-      css/utilikit.admin-preview.css: {}
-      css/utilikit.playground-enhanced.css: {}
+      css/utilikit.playground.css: {}
   js:
     js/utilikit.admin-preview.js: {}
     js/utilikit.playground-enhanced.js: {}

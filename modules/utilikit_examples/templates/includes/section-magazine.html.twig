@@ -1,0 +1,111 @@
+<!-- ================================================================== -->
+<!-- SECTION 11: MAGAZINE ARTICLE                                       -->
+<!-- Rich content layout with typography, floats, blockquote            -->
+<!-- Demonstrates: float, clear, line-height, letter-spacing, max-width -->
+<!-- ================================================================== -->
+<div class="utilikit uk-pd--32-20 uk-sm-pd--40-24 uk-bg--f8fafc">
+  <div class="utilikit uk-xw--900 uk-mg--auto uk-mg--b-24">
+    <p class="utilikit uk-fs--14 uk-fw--600 uk-tc--3b82f6 uk-ls--0d05em uk-mg--b-8">EDITORIAL</p>
+    <h2 class="utilikit uk-fs--24 uk-sm-fs--28 uk-md-fs--32 uk-fw--700 uk-tc--1f2937 uk-mg--b-8">Magazine Article Layout</h2>
+    <p class="utilikit uk-fs--15 uk-tc--64748b uk-lh--1d6">Long-form content with hero header, lead paragraph, floated images with captions, pull quotes, two-column sections, sidebar callouts, and author bio. Showcases advanced typography control.</p>
+  </div>
+</div>
+
+<article class="utilikit uk-bg--ffffff uk-xw--1200 uk-mg--auto">
+  <!-- Hero Section -->
+  <header class="utilikit uk-ps--relative uk-bg--1f2937 uk-ht--300 uk-sm-ht--400 uk-md-ht--500 uk-ov--hidden">
+    <div class="utilikit uk-ps--absolute uk-tp--0 uk-lt--0 uk-wd--100pr uk-ht--100pr uk-bg--000000-40"></div>
+    <div class="utilikit uk-ps--relative uk-zi--10 uk-pd--20 uk-sm-pd--32 uk-md-pd--48 uk-dp--flex uk-fd--column uk-jc--end">
+      <div class="utilikit uk-xw--800">
+        <p class="utilikit uk-tc--f59e0b uk-fs--12 uk-sm-fs--14 uk-fw--600 uk-ls--2 uk-mg--b-8">TECHNOLOGY</p>
+        <h1 class="utilikit uk-tc--ffffff uk-fs--28 uk-sm-fs--36 uk-md-fs--48 uk-lg-fs--56 uk-fw--800 uk-lh--1d1 uk-ls--0 uk-mg--b-16">
+          The Future of Web Development: A Deep Dive into Modern Technologies
+        </h1>
+        <div class="utilikit uk-tc--e5e7eb uk-fs--14 uk-sm-fs--16">
+          By Sarah Johnson &bull; December 15, 2025 &bull; 12 min read
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Article Body -->
+  <div class="utilikit uk-pd--20 uk-sm-pd--32 uk-md-pd--48 uk-lg-pd--64">
+    <!-- Lead Paragraph -->
+    <div class="utilikit uk-xw--800 uk-mg--auto uk-mg--b-32 uk-sm-mg--b-48">
+      <p class="utilikit uk-fs--18 uk-sm-fs--20 uk-md-fs--24 uk-lh--44 uk-tc--374151 uk-fw--300">
+        In an era where digital transformation is reshaping every industry, web development stands at the forefront of innovation. From AI-powered tools to revolutionary frameworks, the landscape is evolving at an unprecedented pace.
+      </p>
+    </div>
+
+    <div class="utilikit uk-xw--800 uk-mg--auto">
+      <!-- Chapter 1 with floated image -->
+      <section class="utilikit uk-mg--b-32 uk-sm-mg--b-48">
+        <h2 class="utilikit uk-fs--24 uk-sm-fs--28 uk-md-fs--32 uk-fw--700 uk-tc--1f2937 uk-mg--b-16 uk-ls--0">
+          Chapter 1: The Rise of Component-Based Architecture
+        </h2>
+        <div class="utilikit uk-cl--both">
+          <figure class="utilikit uk-fl--none uk-sm-fl--right uk-sm-wd--300 uk-md-wd--350 uk-mg--0 uk-sm-mg--l-24 uk-sm-mg--b-16">
+            <div class="utilikit uk-bg--f3f4f6 uk-ar--16-9 uk-br--8 uk-dp--flex uk-ai--center uk-jc--center uk-tc--9ca3af">
+              <span class="utilikit uk-fs--48">&#x1F4CA;</span>
+            </div>
+            <figcaption class="utilikit uk-fs--12 uk-sm-fs--14 uk-tc--6b7280 uk-ta--center uk-mg--t-8">
+              Figure 1: Component architecture diagram
+            </figcaption>
+          </figure>
+          <p class="utilikit uk-fs--16 uk-sm-fs--18 uk-lh--28 uk-tc--374151 uk-mg--b-16">
+            The shift towards component-based architecture has fundamentally changed how we approach web development. No longer are we building monolithic applications; instead, we're crafting modular, reusable pieces that can be combined in countless ways.
+          </p>
+          <p class="utilikit uk-fs--16 uk-sm-fs--18 uk-lh--28 uk-tc--374151 uk-mg--b-16">
+            This approach brings numerous benefits: improved maintainability, better testing capabilities, and enhanced collaboration among team members.
+          </p>
+        </div>
+        <div class="utilikit uk-cl--both"></div>
+      </section>
+
+      <!-- Pull Quote -->
+      <blockquote class="utilikit uk-mg--32-0 uk-sm-mg--48-0 uk-pd--24 uk-sm-pd--32 uk-bw--l-4 uk-bs--solid uk-bc--3b82f6 uk-bg--f0f9ff">
+        <p class="utilikit uk-fs--20 uk-sm-fs--24 uk-md-fs--28 uk-fw--300 uk-tc--1e40af uk-lh--40 uk-ta--center">
+          "The best code is no code at all. Every new line of code you willingly bring into the world is code that has to be debugged, code that has to be maintained."
+        </p>
+        <cite class="utilikit uk-dp--block uk-ta--center uk-mg--t-16 uk-fs--14 uk-sm-fs--16 uk-tc--64748b">
+          &mdash; Jeff Atwood, Co-founder of Stack Overflow
+        </cite>
+      </blockquote>
+
+      <!-- Two Column Layout -->
+      <section class="utilikit uk-mg--b-32 uk-sm-mg--b-48">
+        <h2 class="utilikit uk-fs--24 uk-sm-fs--28 uk-md-fs--32 uk-fw--700 uk-tc--1f2937 uk-mg--b-16 uk-ls--0">
+          Chapter 2: Performance Optimization
+        </h2>
+        <div class="utilikit uk-dp--block uk-md-dp--grid uk-md-gc--1fr-1fr uk-gp--32 uk-mg--b-24">
+          <div>
+            <h3 class="utilikit uk-fs--18 uk-sm-fs--20 uk-fw--600 uk-tc--1f2937 uk-mg--b-12">Client-Side Optimization</h3>
+            <p class="utilikit uk-fs--16 uk-lh--28 uk-tc--374151">
+              Modern web applications demand lightning-fast performance. Code splitting, lazy loading, and tree shaking are essential tools in every developer's arsenal.
+            </p>
+          </div>
+          <div>
+            <h3 class="utilikit uk-fs--18 uk-sm-fs--20 uk-fw--600 uk-tc--1f2937 uk-mg--b-12">Server-Side Rendering</h3>
+            <p class="utilikit uk-fs--16 uk-lh--28 uk-tc--374151">
+              SSR and static site generation offer significant performance benefits, especially for content-heavy sites with dramatic impact on user engagement.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Author Bio -->
+      <div class="utilikit uk-mg--t-48 uk-pd--24 uk-bg--f9fafb uk-br--8 uk-dp--flex uk-fd--column uk-sm-fd--row uk-gp--20">
+        <div class="utilikit uk-wd--80 uk-ht--80 uk-bg--3b82f6 uk-br--50pr uk-fk--0 uk-dp--flex uk-ai--center uk-jc--center">
+          <span class="utilikit uk-tc--ffffff uk-fs--24 uk-fw--700">SJ</span>
+        </div>
+        <div class="utilikit uk-fg--1">
+          <h3 class="utilikit uk-fs--18 uk-fw--600 uk-mg--b-4">Sarah Johnson</h3>
+          <p class="utilikit uk-fs--14 uk-tc--6b7280 uk-mg--b-8">Senior Tech Writer & Developer Advocate</p>
+          <p class="utilikit uk-fs--14 uk-tc--374151">
+            Sarah has been writing about web technologies for over a decade, helping developers navigate the ever-changing landscape of modern web development.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</article>

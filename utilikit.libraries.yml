@@ -222,7 +222,7 @@ utilikit.static.css:
       css/utilikit-static-placeholder.css: { weight: 999 }
 
 # =============================================================================
-# CUSTOM LIBRARY FOR SETTINGTS FORM
+# CUSTOM LIBRARY FOR SETTINGS FORM
 # =============================================================================
 utilikit-settings:
   css:

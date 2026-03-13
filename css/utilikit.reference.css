@@ -189,29 +189,6 @@ html .example-preview {
   transition: all 0.3s ease;
 }
 
-/* Copy buttons */
-html body .copy-btn {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  padding: 4px 8px;
-  font-size: 11px;
-  background: #007bff!important;
-  color: white!important;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.syntax-item:hover .copy-btn {
-  opacity: 1;
-}
-
-html body .copy-btn:hover {
-  background: #0056b3!important;
-}
 
 /* Table improvements */
 .utilikit-admin-reference {
@@ -226,7 +203,7 @@ html .utilikit-admin-reference th {
   background: #007bff!important;
   color: white;
   padding: 15px;
-  text-align: left;
+  text-align: start;
   font-weight: 600;
   font-size: 14px;
   text-transform: uppercase;
@@ -300,31 +277,98 @@ html .interactive-example code:hover {
   font-size: 14px;
 }
 
-/* Tooltips */
-.tooltip-wrapper {
-  position: relative;
-  display: inline-block;
+/* Expand panel — shown inline below clicked syntax item */
+.syntax-item {
+  cursor: pointer;
 }
 
-html .tooltip-content {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #343a40!important;
-  color: white!important;
-  padding: 8px 12px;
+.syntax-item.is-expanded {
+  background: #e2e6ea;
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+}
+
+.expand-panel {
+  width: 100%;
+  background: #343a40;
+  color: #fff;
   border-radius: 6px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  margin-bottom: 5px;
+  padding: 8px 12px;
+  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  line-height: 1.6;
 }
 
-.tooltip-wrapper:hover .tooltip-content {
-  opacity: 1;
+.expand-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 0;
+}
+
+html .expand-label {
+  color: #adb5bd!important;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+html .expand-class {
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size: 12px;
+  color: #69db7c!important;
+  background: rgba(255, 255, 255, 0.1)!important;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+html .expand-class:hover {
+  background: #007bff!important;
+  color: #fff!important;
+}
+
+html .expand-class.copied {
+  background: #28a745!important;
+  color: #fff!important;
+}
+
+.expand-copy-all {
+  width: 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  padding: 4px 0;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.1);
+  color: #adb5bd;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+html .expand-copy-all:hover {
+  background: #007bff!important;
+  color: #fff!important;
+}
+
+html .expand-copy-all.copied {
+  background: #28a745!important;
+  color: #fff!important;
+}
+
+@media (max-width: 768px) {
+  .expand-panel {
+    flex-direction: column;
+    gap: 2px;
+  }
 }
 
 /* Legend */
@@ -413,33 +457,6 @@ html .syntax-legend {
 
 .success-pulse {
   animation: success-pulse 0.3s ease-in-out;
-}
-/* Copy group button */
-.copy-group-btn {
-  margin-left: auto;
-  padding: 4px 12px;
-  font-size: 12px;
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-html .copy-group-btn:hover {
-  background: #0056b3!important;
-}
-
-.syntax-group-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-html .copy-group-btn.copied,
-.copy-btn.copied {
-  background: #28a745!important;
 }
 
 html .utilikit-reference-page h3 {

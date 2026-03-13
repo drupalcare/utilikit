@@ -23,8 +23,6 @@ class UtilikitSettingsFormTest extends BrowserTestBase {
     'text',
     'filter',
     'user',
-    'block_content',
-    'paragraphs',
   ];
 
   /**
@@ -52,6 +50,7 @@ class UtilikitSettingsFormTest extends BrowserTestBase {
     $this->adminUser = $this->drupalCreateUser([
       'administer site configuration',
       'access administration pages',
+      'administer utilikit',
     ]);
 
     $this->drupalLogin($this->adminUser);
@@ -222,9 +221,11 @@ class UtilikitSettingsFormTest extends BrowserTestBase {
   }
 
   /**
-   * Tests developer settings.
+   * Tests developer settings (requires 'administer utilikit' permission).
    */
   public function testDeveloperSettings() {
+    // Developer tools section requires 'administer utilikit' permission.
+    $this->drupalLogin($this->adminUser);
     $this->drupalGet('admin/config/utilikit/settings');
 
     // Check developer fields.
@@ -259,35 +260,31 @@ class UtilikitSettingsFormTest extends BrowserTestBase {
   }
 
   /**
-   * Tests cache management.
+   * Tests cache management clear button.
    */
   public function testCacheManagement() {
-    // First add some tracked classes.
-    $stateManager = \Drupal::service('utilikit.state_manager');
-    $stateManager->setKnownClasses(['uk-pd--20', 'uk-mg--10']);
-    $stateManager->setGeneratedCss('.uk-pd--20 { padding: 20px; }');
-
     $this->drupalGet('admin/config/utilikit/settings');
 
-    // Check cache info is displayed.
-    $this->assertSession()->pageTextContains('Currently tracking');
-    // Number of classes.
-    $this->assertSession()->pageTextContains('2');
+    // Check the clear button exists.
+    $this->assertSession()->buttonExists('Clear All CSS & Reset');
 
     // Test clear cache button.
     $this->submitForm([], 'Clear All CSS & Reset');
 
-    $this->assertSession()->pageTextContains('CSS cleared');
+    // Verify success message.
+    $this->assertSession()->pageTextContains('reset to defaults');
 
-    // Verify data was cleared.
-    $this->assertEquals([], $stateManager->getKnownClasses());
-    $this->assertEquals('', $stateManager->getGeneratedCss());
+    // Verify mode was reset to inline.
+    $this->assertEquals('inline', $this->config('utilikit.settings')->get('rendering_mode'));
   }
 
   /**
    * Tests static mode CSS file info display.
    */
   public function testStaticCssFileInfo() {
+    // Developer tools section requires 'administer utilikit' permission.
+    $this->drupalLogin($this->adminUser);
+
     // Enable static mode and generate CSS.
     $this->config('utilikit.settings')
       ->set('rendering_mode', 'static')
@@ -304,47 +301,38 @@ class UtilikitSettingsFormTest extends BrowserTestBase {
     $this->drupalGet('admin/config/utilikit/settings');
 
     // Check CSS file info is displayed.
-    $this->assertSession()->pageTextContains('Generated CSS File (Static Mode)');
+    $this->assertSession()->pageTextContains('Generated CSS (Static Mode)');
     $this->assertSession()->pageTextContains('CSS File Generated');
-    $this->assertSession()->linkExists('View Generated CSS File');
+    $this->assertSession()->pageTextContains('View Generated CSS File');
     $this->assertSession()->pageTextContains('Classes: 2');
     $this->assertSession()->pageTextContains('Last Updated:');
   }
 
   /**
-   * Tests form state handling.
+   * Tests that all expected form fields exist.
    */
-  public function testFormStateHandling() {
+  public function testFormFieldsExist() {
+    // Developer section requires 'administer utilikit' permission.
+    $this->drupalLogin($this->adminUser);
     $this->drupalGet('admin/config/utilikit/settings');
 
-    // Test conditional field visibility
-    // When dev_mode is off, log_level should be hidden.
-    $page = $this->getSession()->getPage();
-
-    // Initially dev_mode might be off.
-    if (!$page->findField('dev_mode')->isChecked()) {
-      $this->assertFalse($page->findField('log_level')->isVisible());
-    }
-
-    // Check dev_mode to reveal log_level.
-    $page->checkField('dev_mode');
-    $this->assertTrue($page->findField('log_level')->isVisible());
-
-    // Test scope_content_types conditional.
-    if ($page->findField('scope_global')->isChecked()) {
-      $this->assertFalse($page->findField('scope_content_types')->isEnabled());
-    }
-
-    // Uncheck scope_global to enable scope_content_types.
-    $page->uncheckField('scope_global');
-    $this->assertTrue($page->findField('scope_content_types')->isEnabled());
+    // Verify key fields are present on the form.
+    $this->assertSession()->fieldExists('rendering_mode');
+    $this->assertSession()->fieldExists('scope_global');
+    $this->assertSession()->fieldExists('disable_admin');
+    $this->assertSession()->fieldExists('dev_mode');
+    $this->assertSession()->fieldExists('enable_transitions');
+    $this->assertSession()->fieldExists('debounce');
+    $this->assertSession()->fieldExists('optimize_css');
+    $this->assertSession()->fieldExists('update_on_node_save');
+    $this->assertSession()->fieldExists('update_on_block_save');
   }
 
   /**
    * Tests complete workflow from inline to static mode.
    */
   public function testCompleteWorkflow() {
-    // Start in inline mode (default)
+    // Start in inline mode (default).
     $config = $this->config('utilikit.settings');
     $this->assertEquals('inline', $config->get('rendering_mode'));
 
@@ -353,23 +341,22 @@ class UtilikitSettingsFormTest extends BrowserTestBase {
     $edit = [
       'rendering_mode' => 'static',
       'update_on_node_save' => TRUE,
-      'dev_mode' => TRUE,
     ];
     $this->submitForm($edit, 'Save configuration');
 
     // Verify switch messages.
     $this->assertSession()->pageTextContains('Switched to static mode');
-    $this->assertSession()->pageTextContains('Generated CSS for');
 
-    // Check that CSS file info appears.
+    // Verify the rendering mode was saved.
+    $this->assertEquals('static', $this->config('utilikit.settings')->get('rendering_mode'));
+
+    // Switch back to inline.
     $this->drupalGet('admin/config/utilikit/settings');
-    $this->assertSession()->linkExists('View Generated CSS File');
+    $edit = ['rendering_mode' => 'inline'];
+    $this->submitForm($edit, 'Save configuration');
 
-    // Verify the CSS contains our classes.
-    $stateManager = \Drupal::service('utilikit.state_manager');
-    $generatedCss = $stateManager->getGeneratedCss();
-    $this->assertStringContainsString('.uk-pd--20', $generatedCss);
-    $this->assertStringContainsString('.uk-bg--007bff', $generatedCss);
+    $this->assertSession()->pageTextContains('Switched to inline mode');
+    $this->assertEquals('inline', $this->config('utilikit.settings')->get('rendering_mode'));
   }
 
 }

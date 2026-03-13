@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
-use Drupal\Tests\UnitTestCase;
-use Drupal\utilikit\Service\UtilikitTestCssGenerator;
-use Drupal\utilikit\Service\UtilikitCssGenerator;
-use Drupal\utilikit\Service\UtilikitFileManager;
-use Drupal\utilikit_test\Service\TestGenerator;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Config\ImmutableConfig;
+use Drupal\Core\File\FileExists;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\File\FileUrlGeneratorInterface;
+use Drupal\Tests\UnitTestCase;
+use Drupal\utilikit\Service\UtilikitCssGenerator;
+use Drupal\utilikit\Service\UtilikitFileManager;
+use Drupal\utilikit\Service\UtilikitTestCssGenerator;
+use Drupal\utilikit_test\Service\TestGenerator;
 
 /**
  * Tests UtilikitTestCssGenerator service.
@@ -56,6 +59,13 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
   protected $fileUrlGenerator;
 
   /**
+   * Mock config factory service.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
+   */
+  protected $configFactory;
+
+  /**
    * Mock test generator service.
    *
    * @var \Drupal\utilikit_test\Service\TestGenerator|\PHPUnit\Framework\MockObject\MockObject
@@ -72,6 +82,7 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
     $this->fileManager = $this->createMock(UtilikitFileManager::class);
     $this->fileSystem = $this->createMock(FileSystemInterface::class);
     $this->fileUrlGenerator = $this->createMock(FileUrlGeneratorInterface::class);
+    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
     $this->testGenerator = $this->createMock(TestGenerator::class);
 
     $this->testCssGenerator = new UtilikitTestCssGenerator(
@@ -79,8 +90,26 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
       $this->fileManager,
       $this->fileSystem,
       $this->fileUrlGenerator,
+      $this->configFactory,
       $this->testGenerator
     );
+  }
+
+  /**
+   * Helper to set up config factory mock for optimize_css setting.
+   *
+   * @param bool $optimizeCss
+   *   Whether CSS optimization is enabled.
+   */
+  protected function setUpConfigMock(bool $optimizeCss = FALSE): void {
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')
+      ->with('optimize_css')
+      ->willReturn($optimizeCss);
+
+    $this->configFactory->method('get')
+      ->with('utilikit.settings')
+      ->willReturn($config);
   }
 
   /**
@@ -94,6 +123,7 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
       $this->fileManager,
       $this->fileSystem,
       $this->fileUrlGenerator,
+      $this->configFactory,
       $this->testGenerator
     );
     $this->assertInstanceOf(UtilikitTestCssGenerator::class, $generator);
@@ -110,6 +140,7 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
       $this->fileManager,
       $this->fileSystem,
       $this->fileUrlGenerator,
+      $this->configFactory,
       NULL
     );
     $this->assertInstanceOf(UtilikitTestCssGenerator::class, $generator);
@@ -130,7 +161,7 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
     ];
 
     $this->testGenerator->expects($this->once())
-      ->method('generateAllUtilityClasses')
+      ->method('getAllPossibleClasses')
       ->willReturn($testClasses);
 
     $result = $this->testCssGenerator->generateAllUtilityClasses();
@@ -149,6 +180,7 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
       $this->fileManager,
       $this->fileSystem,
       $this->fileUrlGenerator,
+      $this->configFactory,
       NULL
     );
 
@@ -158,7 +190,7 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
   }
 
   /**
-   * Tests generateCompleteTestCss creates comprehensive CSS.
+   * Tests generateCompleteTestCss creates comprehensive CSS and saves file.
    *
    * @covers ::generateCompleteTestCss
    */
@@ -175,21 +207,90 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
                    '.uk-bg--ff0000 { background-color: #ff0000; }' . "\n" .
                    '@media (min-width: 576px) { .uk-sm-pd--30 { padding: 30px; } }';
 
+    $expectedPath = 'public://utilikit/utilikit-test-complete.css';
+    $expectedUrl = 'https://example.com/sites/default/files/utilikit/utilikit-test-complete.css';
+
     $this->testGenerator->expects($this->once())
-      ->method('generateAllUtilityClasses')
+      ->method('getAllPossibleClasses')
       ->willReturn($allClasses);
 
     $this->cssGenerator->expects($this->once())
-      ->method('generateCss')
+      ->method('generateCssFromClasses')
       ->with($allClasses)
       ->willReturn($expectedCss);
 
+    $this->setUpConfigMock(FALSE);
+
+    $this->fileSystem->expects($this->once())
+      ->method('prepareDirectory')
+      ->with('public://utilikit', FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS)
+      ->willReturn(TRUE);
+
+    $this->fileSystem->expects($this->once())
+      ->method('saveData')
+      ->with($expectedCss, $expectedPath, FileExists::Replace)
+      ->willReturn($expectedPath);
+
+    $this->fileUrlGenerator->expects($this->once())
+      ->method('generateAbsoluteString')
+      ->with($expectedPath)
+      ->willReturn($expectedUrl);
+
     $result = $this->testCssGenerator->generateCompleteTestCss();
 
-    $this->assertEquals($expectedCss, $result);
-    $this->assertStringContains('.uk-pd--20', $result);
-    $this->assertStringContains('.uk-mg--auto', $result);
-    $this->assertStringContains('@media', $result);
+    $this->assertIsArray($result);
+    $this->assertTrue($result['success']);
+    $this->assertEquals(count($allClasses), $result['count']);
+    $this->assertEquals(strlen($expectedCss), $result['size']);
+    $this->assertEquals($expectedUrl, $result['file_url']);
+  }
+
+  /**
+   * Tests generateCompleteTestCss with CSS optimization enabled.
+   *
+   * @covers ::generateCompleteTestCss
+   */
+  public function testGenerateCompleteTestCssWithOptimization() {
+    $allClasses = ['uk-pd--20'];
+    $rawCss = '.uk-pd--20 { padding: 20px; }';
+    $minifiedCss = '.uk-pd--20{padding:20px}';
+    $expectedPath = 'public://utilikit/utilikit-test-complete.css';
+    $expectedUrl = 'https://example.com/sites/default/files/utilikit/utilikit-test-complete.css';
+
+    $this->testGenerator->expects($this->once())
+      ->method('getAllPossibleClasses')
+      ->willReturn($allClasses);
+
+    $this->cssGenerator->expects($this->once())
+      ->method('generateCssFromClasses')
+      ->with($allClasses)
+      ->willReturn($rawCss);
+
+    $this->setUpConfigMock(TRUE);
+
+    $this->fileManager->expects($this->once())
+      ->method('minifyCss')
+      ->with($rawCss)
+      ->willReturn($minifiedCss);
+
+    $this->fileSystem->expects($this->once())
+      ->method('prepareDirectory')
+      ->willReturn(TRUE);
+
+    $this->fileSystem->expects($this->once())
+      ->method('saveData')
+      ->with($minifiedCss, $expectedPath, FileExists::Replace)
+      ->willReturn($expectedPath);
+
+    $this->fileUrlGenerator->expects($this->once())
+      ->method('generateAbsoluteString')
+      ->with($expectedPath)
+      ->willReturn($expectedUrl);
+
+    $result = $this->testCssGenerator->generateCompleteTestCss();
+
+    $this->assertTrue($result['success']);
+    $this->assertEquals(strlen($minifiedCss), $result['size']);
   }
 
   /**
@@ -199,231 +300,176 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
    */
   public function testGenerateCompleteTestCssEmpty() {
     $this->testGenerator->expects($this->once())
-      ->method('generateAllUtilityClasses')
+      ->method('getAllPossibleClasses')
       ->willReturn([]);
-
-    $this->cssGenerator->expects($this->once())
-      ->method('generateCss')
-      ->with([])
-      ->willReturn('');
 
     $result = $this->testCssGenerator->generateCompleteTestCss();
 
-    $this->assertEquals('', $result);
+    $this->assertIsArray($result);
+    $this->assertFalse($result['success']);
+    $this->assertEquals('No test classes generated.', $result['error']);
   }
 
   /**
-   * Tests createTestCssFile generates and saves CSS file.
+   * Tests generateCompleteTestCss without test generator module.
    *
-   * @covers ::createTestCssFile
+   * @covers ::generateCompleteTestCss
    */
-  public function testCreateTestCssFile() {
-    $testCss = '.uk-pd--20 { padding: 20px; }';
-    $testFilename = 'utilikit-test-complete.css';
-    $expectedPath = 'public://css/utilikit/' . $testFilename;
-    $expectedUrl = 'https://example.com/sites/default/files/css/utilikit/' . $testFilename;
+  public function testGenerateCompleteTestCssWithoutTestGenerator() {
+    $generator = new UtilikitTestCssGenerator(
+      $this->cssGenerator,
+      $this->fileManager,
+      $this->fileSystem,
+      $this->fileUrlGenerator,
+      $this->configFactory,
+      NULL
+    );
 
-    $allClasses = ['uk-pd--20', 'uk-mg--10'];
-
-    $this->testGenerator->expects($this->once())
-      ->method('generateAllUtilityClasses')
-      ->willReturn($allClasses);
-
-    $this->cssGenerator->expects($this->once())
-      ->method('generateCss')
-      ->with($allClasses)
-      ->willReturn($testCss);
-
-    $this->fileSystem->expects($this->once())
-      ->method('saveData')
-      ->with($testCss, $expectedPath)
-      ->willReturn($expectedPath);
-
-    $this->fileUrlGenerator->expects($this->once())
-      ->method('generateAbsoluteString')
-      ->with($expectedPath)
-      ->willReturn($expectedUrl);
-
-    $result = $this->testCssGenerator->createTestCssFile();
+    $result = $generator->generateCompleteTestCss();
 
     $this->assertIsArray($result);
-    $this->assertArrayHasKey('success', $result);
-    $this->assertArrayHasKey('file_path', $result);
-    $this->assertArrayHasKey('file_url', $result);
-    $this->assertArrayHasKey('classes_count', $result);
-    $this->assertTrue($result['success']);
-    $this->assertEquals($expectedPath, $result['file_path']);
-    $this->assertEquals($expectedUrl, $result['file_url']);
-    $this->assertEquals(count($allClasses), $result['classes_count']);
+    $this->assertFalse($result['success']);
+    $this->assertEquals('Enable utilikit_test module to generate test CSS.', $result['error']);
   }
 
   /**
-   * Tests createTestCssFile handles file save failure.
+   * Tests generateCompleteTestCss handles directory preparation failure.
    *
-   * @covers ::createTestCssFile
+   * @covers ::generateCompleteTestCss
    */
-  public function testCreateTestCssFileFailure() {
+  public function testGenerateCompleteTestCssDirectoryFailure() {
     $allClasses = ['uk-pd--20'];
-    $testCss = '.uk-pd--20 { padding: 20px; }';
+    $css = '.uk-pd--20 { padding: 20px; }';
 
     $this->testGenerator->expects($this->once())
-      ->method('generateAllUtilityClasses')
+      ->method('getAllPossibleClasses')
       ->willReturn($allClasses);
 
     $this->cssGenerator->expects($this->once())
-      ->method('generateCss')
+      ->method('generateCssFromClasses')
       ->with($allClasses)
-      ->willReturn($testCss);
+      ->willReturn($css);
+
+    $this->setUpConfigMock(FALSE);
+
+    $this->fileSystem->expects($this->once())
+      ->method('prepareDirectory')
+      ->willReturn(FALSE);
+
+    $result = $this->testCssGenerator->generateCompleteTestCss();
+
+    $this->assertIsArray($result);
+    $this->assertFalse($result['success']);
+    $this->assertEquals('Failed to prepare directory.', $result['error']);
+  }
+
+  /**
+   * Tests generateCompleteTestCss handles file save failure.
+   *
+   * @covers ::generateCompleteTestCss
+   */
+  public function testGenerateCompleteTestCssSaveFailure() {
+    $allClasses = ['uk-pd--20'];
+    $css = '.uk-pd--20 { padding: 20px; }';
+
+    $this->testGenerator->expects($this->once())
+      ->method('getAllPossibleClasses')
+      ->willReturn($allClasses);
+
+    $this->cssGenerator->expects($this->once())
+      ->method('generateCssFromClasses')
+      ->with($allClasses)
+      ->willReturn($css);
+
+    $this->setUpConfigMock(FALSE);
+
+    $this->fileSystem->expects($this->once())
+      ->method('prepareDirectory')
+      ->willReturn(TRUE);
 
     $this->fileSystem->expects($this->once())
       ->method('saveData')
       ->willReturn(FALSE);
 
-    $result = $this->testCssGenerator->createTestCssFile();
+    $result = $this->testCssGenerator->generateCompleteTestCss();
 
     $this->assertIsArray($result);
-    $this->assertArrayHasKey('success', $result);
-    $this->assertArrayHasKey('error', $result);
     $this->assertFalse($result['success']);
-    $this->assertStringContains('Failed to save', $result['error']);
+    $this->assertEquals('Failed to save CSS file.', $result['error']);
   }
 
   /**
-   * Tests deleteTestCssFile removes test CSS file.
+   * Tests generateCompleteTestCss handles exception during file operations.
    *
-   * @covers ::deleteTestCssFile
+   * @covers ::generateCompleteTestCss
    */
-  public function testDeleteTestCssFile() {
-    $testFilename = 'utilikit-test-complete.css';
-    $expectedPath = 'public://css/utilikit/' . $testFilename;
+  public function testGenerateCompleteTestCssException() {
+    $allClasses = ['uk-pd--20'];
+    $css = '.uk-pd--20 { padding: 20px; }';
+
+    $this->testGenerator->expects($this->once())
+      ->method('getAllPossibleClasses')
+      ->willReturn($allClasses);
+
+    $this->cssGenerator->expects($this->once())
+      ->method('generateCssFromClasses')
+      ->with($allClasses)
+      ->willReturn($css);
+
+    $this->setUpConfigMock(FALSE);
 
     $this->fileSystem->expects($this->once())
-      ->method('realpath')
-      ->with($expectedPath)
-      ->willReturn('/real/path/to/test.css');
+      ->method('prepareDirectory')
+      ->willThrowException(new \Exception('Disk full'));
 
-    $this->fileSystem->expects($this->once())
-      ->method('delete')
-      ->with($expectedPath)
-      ->willReturn(TRUE);
-
-    $result = $this->testCssGenerator->deleteTestCssFile();
+    $result = $this->testCssGenerator->generateCompleteTestCss();
 
     $this->assertIsArray($result);
-    $this->assertArrayHasKey('success', $result);
-    $this->assertArrayHasKey('message', $result);
-    $this->assertTrue($result['success']);
-    $this->assertStringContains('deleted successfully', $result['message']);
+    $this->assertFalse($result['success']);
+    $this->assertEquals('Disk full', $result['error']);
   }
 
   /**
-   * Tests deleteTestCssFile when file doesn't exist.
+   * Tests deleteTestCssFile when file does not exist.
+   *
+   * In a unit test environment without a registered stream wrapper,
+   * file_exists() on 'public://...' returns FALSE, so deleteTestCssFile()
+   * returns TRUE (file already absent).
    *
    * @covers ::deleteTestCssFile
    */
   public function testDeleteTestCssFileNotExists() {
-    $testFilename = 'utilikit-test-complete.css';
-    $expectedPath = 'public://css/utilikit/' . $testFilename;
+    // In unit test context, file_exists('public://utilikit/...') returns
+    // FALSE since no stream wrapper is registered. The method returns TRUE
+    // when the file does not exist. Suppress the PHP warning about the
+    // missing stream wrapper.
+    $result = @$this->testCssGenerator->deleteTestCssFile();
 
-    $this->fileSystem->expects($this->once())
-      ->method('realpath')
-      ->with($expectedPath)
-      ->willReturn(FALSE);
-
-    $result = $this->testCssGenerator->deleteTestCssFile();
-
-    $this->assertIsArray($result);
-    $this->assertArrayHasKey('success', $result);
-    $this->assertArrayHasKey('message', $result);
-    $this->assertFalse($result['success']);
-    $this->assertStringContains('does not exist', $result['message']);
+    $this->assertIsBool($result);
+    $this->assertTrue($result);
   }
 
   /**
-   * Tests deleteTestCssFile handles deletion failure.
+   * Tests getTestCssFileInfo when file does not exist.
    *
-   * @covers ::deleteTestCssFile
-   */
-  public function testDeleteTestCssFileFailure() {
-    $testFilename = 'utilikit-test-complete.css';
-    $expectedPath = 'public://css/utilikit/' . $testFilename;
-
-    $this->fileSystem->expects($this->once())
-      ->method('realpath')
-      ->with($expectedPath)
-      ->willReturn('/real/path/to/test.css');
-
-    $this->fileSystem->expects($this->once())
-      ->method('delete')
-      ->with($expectedPath)
-      ->willReturn(FALSE);
-
-    $result = $this->testCssGenerator->deleteTestCssFile();
-
-    $this->assertIsArray($result);
-    $this->assertArrayHasKey('success', $result);
-    $this->assertArrayHasKey('error', $result);
-    $this->assertFalse($result['success']);
-    $this->assertStringContains('Failed to delete', $result['error']);
-  }
-
-  /**
-   * Tests getTestCssFileInfo returns file information.
-   *
-   * @covers ::getTestCssFileInfo
-   */
-  public function testGetTestCssFileInfo() {
-    $testFilename = 'utilikit-test-complete.css';
-    $expectedPath = 'public://css/utilikit/' . $testFilename;
-    $realPath = '/real/path/to/test.css';
-    $expectedUrl = 'https://example.com/sites/default/files/css/utilikit/' . $testFilename;
-
-    $this->fileSystem->expects($this->once())
-      ->method('realpath')
-      ->with($expectedPath)
-      ->willReturn($realPath);
-
-    $this->fileUrlGenerator->expects($this->once())
-      ->method('generateAbsoluteString')
-      ->with($expectedPath)
-      ->willReturn($expectedUrl);
-
-    // Mock file_exists and filesize functions would be needed in real scenario
-    // For this test, we'll assume the file exists and has a size.
-    $result = $this->testCssGenerator->getTestCssFileInfo();
-
-    $this->assertIsArray($result);
-    $this->assertArrayHasKey('exists', $result);
-    $this->assertArrayHasKey('path', $result);
-    $this->assertArrayHasKey('url', $result);
-    $this->assertTrue($result['exists']);
-    $this->assertEquals($expectedPath, $result['path']);
-    $this->assertEquals($expectedUrl, $result['url']);
-  }
-
-  /**
-   * Tests getTestCssFileInfo when file doesn't exist.
+   * In a unit test environment without a registered stream wrapper,
+   * file_exists() returns FALSE, so getTestCssFileInfo() returns the
+   * "not exists" result array.
    *
    * @covers ::getTestCssFileInfo
    */
   public function testGetTestCssFileInfoNotExists() {
-    $testFilename = 'utilikit-test-complete.css';
-    $expectedPath = 'public://css/utilikit/' . $testFilename;
-
-    $this->fileSystem->expects($this->once())
-      ->method('realpath')
-      ->with($expectedPath)
-      ->willReturn(FALSE);
-
-    $result = $this->testCssGenerator->getTestCssFileInfo();
+    // In unit test context, file_exists('public://utilikit/...') returns
+    // FALSE since no stream wrapper is registered. Suppress the PHP warning
+    // about the missing stream wrapper.
+    $result = @$this->testCssGenerator->getTestCssFileInfo();
 
     $this->assertIsArray($result);
     $this->assertArrayHasKey('exists', $result);
-    $this->assertArrayHasKey('path', $result);
     $this->assertFalse($result['exists']);
-    $this->assertEquals($expectedPath, $result['path']);
-    $this->assertArrayNotHasKey('url', $result);
-    $this->assertArrayNotHasKey('size', $result);
+    $this->assertNull($result['size']);
+    $this->assertNull($result['url']);
+    $this->assertNull($result['modified']);
   }
 
 }

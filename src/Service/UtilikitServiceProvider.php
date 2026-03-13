@@ -24,62 +24,6 @@ use Psr\Log\LoggerInterface;
 class UtilikitServiceProvider {
 
   /**
-   * The CSS generator service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitCssGenerator
-   */
-  protected UtilikitCssGenerator $cssGenerator;
-
-  /**
-   * The file manager service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitFileManager
-   */
-  protected UtilikitFileManager $fileManager;
-
-  /**
-   * The content scanner service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitContentScanner
-   */
-  protected UtilikitContentScanner $contentScanner;
-
-  /**
-   * The state manager service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitStateManager
-   */
-  protected UtilikitStateManager $stateManager;
-
-  /**
-   * The cache manager service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitCacheManagerInterface
-   */
-  protected UtilikitCacheManagerInterface $cacheManager;
-
-  /**
-   * The logger service.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
-   * The test CSS generator service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitTestCssGenerator|null
-   */
-  protected ?UtilikitTestCssGenerator $testCssGenerator;
-
-  /**
-   * The configuration factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected ConfigFactoryInterface $configFactory;
-
-  /**
    * Constructs a new UtilikitServiceProvider.
    *
    * @param \Drupal\utilikit\Service\UtilikitCssGenerator $cssGenerator
@@ -100,24 +44,15 @@ class UtilikitServiceProvider {
    *   The test generator service for creating all possible CSS classes.
    */
   public function __construct(
-    UtilikitCssGenerator $cssGenerator,
-    UtilikitFileManager $fileManager,
-    UtilikitContentScanner $contentScanner,
-    UtilikitStateManager $stateManager,
-    UtilikitCacheManagerInterface $cacheManager,
-    LoggerInterface $logger,
-    ConfigFactoryInterface $configFactory,
-    ?UtilikitTestCssGenerator $testCssGenerator = NULL,
-  ) {
-    $this->cssGenerator = $cssGenerator;
-    $this->fileManager = $fileManager;
-    $this->contentScanner = $contentScanner;
-    $this->stateManager = $stateManager;
-    $this->cacheManager = $cacheManager;
-    $this->logger = $logger;
-    $this->configFactory = $configFactory;
-    $this->testCssGenerator = $testCssGenerator;
-  }
+    protected readonly UtilikitCssGenerator $cssGenerator,
+    protected readonly UtilikitFileManager $fileManager,
+    protected readonly UtilikitContentScanner $contentScanner,
+    protected readonly UtilikitStateManager $stateManager,
+    protected readonly UtilikitCacheManagerInterface $cacheManager,
+    protected readonly LoggerInterface $logger,
+    protected readonly ConfigFactoryInterface $configFactory,
+    protected readonly ?UtilikitTestCssGenerator $testCssGenerator = NULL,
+  ) {}
 
   /**
    * Gets the CSS generator service.
@@ -247,6 +182,12 @@ class UtilikitServiceProvider {
         '@count' => $classCount,
       ]);
 
+      // Invalidate the CSS generator cache so settings changes (use_important,
+      // optimize_css) produce fresh output instead of returning stale cache.
+      // This must happen BEFORE generating CSS but note: clearCssCaches()
+      // calls cssOptimizer->deleteAll() which wipes public://css/.
+      $this->cacheManager->clearCssCaches();
+
       // Generate CSS from all known classes.
       $css = $this->cssGenerator->generateCssFromClasses($knownClasses);
 
@@ -258,7 +199,7 @@ class UtilikitServiceProvider {
       // Store the generated CSS in state.
       $this->stateManager->setGeneratedCss($css);
 
-      // Ensure the static CSS file is created/updated.
+      // Create the static CSS file AFTER cache clearing so it survives.
       $fileResult = $this->fileManager->ensureStaticCssFile();
 
       if (!$fileResult) {
@@ -266,10 +207,7 @@ class UtilikitServiceProvider {
         return FALSE;
       }
 
-      // Update timestamp and clear caches after successful file creation.
-      // Use conservative strategy to avoid deleting the file we just created.
       $this->stateManager->updateCssTimestamp();
-      $this->cacheManager->clearCachesWithStrategy(['strategy' => 'conservative']);
 
       $this->logger->info('Static CSS regenerated successfully. Size: @size bytes.', [
         '@size' => strlen($css),
@@ -304,26 +242,38 @@ class UtilikitServiceProvider {
    *   - 'scanned_count': Total number of entities scanned
    */
   public function switchToStaticMode(): array {
+    // Preserve previously known classes before clearing state.
+    $previousClasses = $this->stateManager->getKnownClasses();
+
     $this->stateManager->clearUtilikitData();
     $this->fileManager->cleanupStaticFiles();
 
+    // Clear asset caches BEFORE file generation. cssOptimizer->deleteAll()
+    // wipes public://css/ which would delete our generated file if done after.
+    $this->cacheManager->clearAllCaches();
+
+    // Scan content for utility classes.
     $scanResult = $this->contentScanner->scanAllContent();
-    $knownClasses = $scanResult['classes'];
+    $scannedClasses = $scanResult['classes'];
     $totalScanned = $scanResult['scanned_count'];
+
+    // Merge scanned classes with previously known classes to ensure
+    // nothing is lost when switching modes (inline mode may have tracked
+    // classes that aren't stored in entity fields).
+    $knownClasses = array_values(array_unique(array_merge($previousClasses, $scannedClasses)));
 
     if (!empty($knownClasses)) {
       $this->stateManager->setKnownClasses($knownClasses);
       $css = $this->cssGenerator->generateCssFromClasses($knownClasses);
       $this->stateManager->setGeneratedCss($css);
-      $this->fileManager->ensureStaticCssFile();
     }
     else {
       $this->stateManager->setGeneratedCss('/* Utilikit Static CSS - Add utility classes to your content */');
-      $this->fileManager->ensureStaticCssFile();
     }
 
+    // Create the static CSS file AFTER caches are cleared so it survives.
+    $this->fileManager->ensureStaticCssFile();
     $this->stateManager->updateCssTimestamp();
-    $this->cacheManager->clearAllCaches();
 
     return [
       'classes_count' => count($knownClasses),

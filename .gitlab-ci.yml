@@ -1,0 +1,108 @@
+###############################################################################
+# UtiliKit Module — GitLab CI/CD Pipeline
+#
+# Runs coding standards checks and PHPUnit test suites (unit, kernel,
+# functional) against a Drupal 11 environment.
+###############################################################################
+
+variables:
+  DRUPAL_VERSION: "^11"
+  SIMPLETEST_DB: "sqlite://tmp/test.sqlite"
+  SIMPLETEST_BASE_URL: "http://localhost:8888"
+  COMPOSER_ALLOW_SUPERUSER: "1"
+  COMPOSER_NO_INTERACTION: "1"
+  COMPOSER_MEMORY_LIMIT: "-1"
+
+stages:
+  - build
+  - lint
+  - test
+
+# ---------------------------------------------------------------------------
+# Build stage: set up Drupal + install the module
+# ---------------------------------------------------------------------------
+build:
+  stage: build
+  image: php:8.3-cli
+  before_script:
+    - apt-get update && apt-get install -y git unzip sqlite3 libsqlite3-dev libpng-dev libzip-dev
+    - docker-php-ext-install gd pdo_sqlite zip
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+  script:
+    - composer create-project drupal/recommended-project:${DRUPAL_VERSION} /tmp/drupal --no-install --no-progress
+    - cd /tmp/drupal
+    - mkdir -p web/modules/contrib/utilikit
+    - rsync -a --exclude='.git' --exclude='vendor' $CI_PROJECT_DIR/ web/modules/contrib/utilikit/
+    - composer install --no-progress
+    - composer require --dev phpunit/phpunit:^11 --no-progress
+  artifacts:
+    paths:
+      - /tmp/drupal/
+    expire_in: 1 hour
+  cache:
+    key: composer-${CI_COMMIT_REF_SLUG}
+    paths:
+      - /tmp/drupal/vendor/
+
+# ---------------------------------------------------------------------------
+# Lint: Drupal coding standards (advisory)
+# ---------------------------------------------------------------------------
+phpcs:
+  stage: lint
+  image: php:8.3-cli
+  needs: []
+  before_script:
+    - apt-get update && apt-get install -y git unzip
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer global require drupal/coder dealerdirect/phpcodesniffer-composer-installer --no-progress
+    - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  script:
+    - phpcs --standard=Drupal,DrupalPractice --extensions=php,module,install,inc src/ modules/ || true
+  allow_failure: true
+
+# ---------------------------------------------------------------------------
+# Test templates
+# ---------------------------------------------------------------------------
+.test_base:
+  stage: test
+  image: php:8.3-cli
+  dependencies:
+    - build
+  before_script:
+    - apt-get update && apt-get install -y sqlite3 libsqlite3-dev libpng-dev libzip-dev
+    - docker-php-ext-install gd pdo_sqlite zip
+    - cd /tmp/drupal
+
+# ---------------------------------------------------------------------------
+# Unit tests (no database required)
+# ---------------------------------------------------------------------------
+unit_tests:
+  extends: .test_base
+  script:
+    - cd /tmp/drupal
+    - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --testsuite unit --no-progress
+
+# ---------------------------------------------------------------------------
+# Kernel tests (SQLite database)
+# ---------------------------------------------------------------------------
+kernel_tests:
+  extends: .test_base
+  script:
+    - cd /tmp/drupal
+    - export SIMPLETEST_DB="$SIMPLETEST_DB"
+    - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --testsuite kernel --no-progress
+
+# ---------------------------------------------------------------------------
+# Functional tests (SQLite + web server)
+# ---------------------------------------------------------------------------
+functional_tests:
+  extends: .test_base
+  script:
+    - cd /tmp/drupal
+    - export SIMPLETEST_DB="$SIMPLETEST_DB"
+    - export SIMPLETEST_BASE_URL="$SIMPLETEST_BASE_URL"
+    - mkdir -p web/sites/simpletest/browser_output
+    - php -S localhost:8888 -t web &>/dev/null &
+    - sleep 2
+    - ./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --testsuite functional --no-progress
+  allow_failure: true

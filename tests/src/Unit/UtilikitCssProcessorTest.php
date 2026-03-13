@@ -6,8 +6,10 @@ namespace Drupal\Tests\utilikit\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Plugin\QueueWorker\UtilikitCssProcessor;
-use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Service\UtilikitCacheManager;
+use Drupal\utilikit\Service\UtilikitContentScanner;
+use Drupal\utilikit\Service\UtilikitServiceProvider;
+use Drupal\utilikit\Service\UtilikitStateManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 
@@ -34,7 +36,7 @@ class UtilikitCssProcessorTest extends UnitTestCase {
   protected UtilikitServiceProvider&MockObject $serviceProvider;
 
   /**
-   * Mock cache manager.
+   * Mock cache manager (returned by serviceProvider->getCacheManager()).
    *
    * @var \Drupal\utilikit\Service\UtilikitCacheManager&\PHPUnit\Framework\MockObject\MockObject
    */
@@ -69,214 +71,213 @@ class UtilikitCssProcessorTest extends UnitTestCase {
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $this->serviceProvider,
-      $this->cacheManager,
-      $this->logger
+      $this->logger,
+      $this->serviceProvider
     );
   }
 
   /**
-   * Tests processItem with valid data.
+   * Tests processItem with valid data and new classes.
    *
    * @covers ::processItem
    */
   public function testProcessItemValid(): void {
     $data = [
-      'action' => 'add',
       'classes' => ['uk-pd--20', 'uk-mg--10'],
-      'user_id' => 1,
-      'timestamp' => time(),
     ];
 
-    $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
+    $contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $contentScanner->expects($this->once())
+      ->method('validateUtilityClasses')
       ->with(['uk-pd--20', 'uk-mg--10'])
-      ->willReturn([
-        'added' => ['uk-pd--20', 'uk-mg--10'],
-        'duplicates' => [],
-        'errors' => [],
-      ]);
+      ->willReturn(['uk-pd--20', 'uk-mg--10']);
 
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem with remove action.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemRemove(): void {
-    $data = [
-      'action' => 'remove',
-      'classes' => ['uk-pd--20', 'uk-mg--10'],
-      'user_id' => 1,
-      'timestamp' => time(),
-    ];
+    $stateManager = $this->createMock(UtilikitStateManager::class);
+    $stateManager->expects($this->once())
+      ->method('getKnownClasses')
+      ->willReturn([]);
 
     $this->serviceProvider->expects($this->once())
-      ->method('removeClasses')
+      ->method('getContentScanner')
+      ->willReturn($contentScanner);
+    $this->serviceProvider->expects($this->once())
+      ->method('getStateManager')
+      ->willReturn($stateManager);
+    $this->serviceProvider->expects($this->once())
+      ->method('updateCssAndFile')
       ->with(['uk-pd--20', 'uk-mg--10'])
-      ->willReturn([
-        'removed' => ['uk-pd--20', 'uk-mg--10'],
-        'notFound' => [],
-      ]);
-
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem with optimize action.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemOptimize(): void {
-    $data = [
-      'action' => 'optimize',
-      'user_id' => 1,
-      'timestamp' => time(),
-    ];
-
-    $this->serviceProvider->expects($this->once())
-      ->method('optimizeCss')
       ->willReturn(TRUE);
+    $this->serviceProvider->expects($this->once())
+      ->method('getCacheManager')
+      ->willReturn($this->cacheManager);
 
     $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem with rebuild action.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemRebuild(): void {
-    $data = [
-      'action' => 'rebuild',
-      'user_id' => 1,
-      'timestamp' => time(),
-    ];
-
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateAll');
+      ->method('clearCssCaches');
 
     $this->logger->expects($this->once())
       ->method('info')
-      ->with('CSS rebuild completed for user @user', ['@user' => 1]);
+      ->with('Processed queued CSS update with @count new classes', $this->anything());
 
     $this->queueWorker->processItem($data);
   }
 
   /**
-   * Tests processItem with invalid action.
+   * Tests processItem when all classes are already known (no update).
    *
    * @covers ::processItem
    */
-  public function testProcessItemInvalidAction(): void {
+  public function testProcessItemNoNewClasses(): void {
     $data = [
-      'action' => 'invalid',
-      'user_id' => 1,
-      'timestamp' => time(),
+      'classes' => ['uk-pd--20', 'uk-mg--10'],
     ];
+
+    $contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $contentScanner->expects($this->once())
+      ->method('validateUtilityClasses')
+      ->with(['uk-pd--20', 'uk-mg--10'])
+      ->willReturn(['uk-pd--20', 'uk-mg--10']);
+
+    $stateManager = $this->createMock(UtilikitStateManager::class);
+    $stateManager->expects($this->once())
+      ->method('getKnownClasses')
+      ->willReturn(['uk-pd--20', 'uk-mg--10']);
+
+    $this->serviceProvider->expects($this->once())
+      ->method('getContentScanner')
+      ->willReturn($contentScanner);
+    $this->serviceProvider->expects($this->once())
+      ->method('getStateManager')
+      ->willReturn($stateManager);
+    $this->serviceProvider->expects($this->never())
+      ->method('updateCssAndFile');
+    $this->serviceProvider->expects($this->never())
+      ->method('getCacheManager');
+
+    $this->queueWorker->processItem($data);
+  }
+
+  /**
+   * Tests processItem with invalid queue data (missing classes).
+   *
+   * @covers ::processItem
+   */
+  public function testProcessItemMissingClasses(): void {
+    $data = ['user_id' => 1];
+
+    $this->serviceProvider->expects($this->never())
+      ->method('getContentScanner');
 
     $this->logger->expects($this->once())
       ->method('error')
-      ->with($this->stringContains('Unknown action: invalid'));
-
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('Unknown action: invalid');
+      ->with('Invalid queue item data');
 
     $this->queueWorker->processItem($data);
   }
 
   /**
-   * Tests processItem with missing action.
+   * Tests processItem when classes is not an array.
    *
    * @covers ::processItem
    */
-  public function testProcessItemMissingAction(): void {
-    $data = [
-      'classes' => ['uk-pd--20'],
-      'user_id' => 1,
-    ];
+  public function testProcessItemClassesNotArray(): void {
+    $data = ['classes' => 'not-array'];
+
+    $this->serviceProvider->expects($this->never())
+      ->method('getContentScanner');
 
     $this->logger->expects($this->once())
       ->method('error')
-      ->with($this->stringContains('Missing action in queue item'));
-
-    $this->expectException(\InvalidArgumentException::class);
-    $this->expectExceptionMessage('Missing action');
+      ->with('Invalid queue item data');
 
     $this->queueWorker->processItem($data);
   }
 
   /**
-   * Tests processItem with batch processing.
+   * Tests processItem when no valid utility classes after validation.
    *
    * @covers ::processItem
    */
-  public function testProcessItemBatch(): void {
-    $data = [
-      'action' => 'batch_add',
-      'batches' => [
-        ['uk-pd--20', 'uk-pd--30'],
-        ['uk-mg--10', 'uk-mg--20'],
-      ],
-      'user_id' => 1,
-      'timestamp' => time(),
-    ];
+  public function testProcessItemNoValidClasses(): void {
+    $data = ['classes' => ['uk-pd--20', 'invalid']];
 
-    $this->serviceProvider->expects($this->exactly(2))
-      ->method('processNewClasses')
-      ->willReturnOnConsecutiveCalls(
-        [
-          'added' => ['uk-pd--20', 'uk-pd--30'],
-          'duplicates' => [],
-          'errors' => [],
-        ],
-        [
-          'added' => ['uk-mg--10', 'uk-mg--20'],
-          'duplicates' => [],
-          'errors' => [],
-        ]
-      );
+    $contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $contentScanner->expects($this->once())
+      ->method('validateUtilityClasses')
+      ->with(['uk-pd--20', 'invalid'])
+      ->willReturn([]);
 
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
+    $this->serviceProvider->expects($this->once())
+      ->method('getContentScanner')
+      ->willReturn($contentScanner);
+    $this->serviceProvider->expects($this->never())
+      ->method('getStateManager');
+    $this->serviceProvider->expects($this->never())
+      ->method('updateCssAndFile');
+
+    $this->logger->expects($this->once())
+      ->method('warning')
+      ->with('No valid utility classes found in queue item');
 
     $this->queueWorker->processItem($data);
   }
 
   /**
-   * Tests processItem with error handling.
+   * Tests processItem when updateCssAndFile returns FALSE.
+   *
+   * @covers ::processItem
+   */
+  public function testProcessItemUpdateFails(): void {
+    $data = ['classes' => ['uk-pd--20']];
+
+    $contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $contentScanner->expects($this->once())
+      ->method('validateUtilityClasses')
+      ->willReturn(['uk-pd--20']);
+
+    $stateManager = $this->createMock(UtilikitStateManager::class);
+    $stateManager->expects($this->once())
+      ->method('getKnownClasses')
+      ->willReturn([]);
+
+    $this->serviceProvider->expects($this->once())
+      ->method('getContentScanner')
+      ->willReturn($contentScanner);
+    $this->serviceProvider->expects($this->once())
+      ->method('getStateManager')
+      ->willReturn($stateManager);
+    $this->serviceProvider->expects($this->once())
+      ->method('updateCssAndFile')
+      ->willReturn(FALSE);
+    $this->serviceProvider->expects($this->never())
+      ->method('getCacheManager');
+
+    $this->logger->expects($this->once())
+      ->method('error')
+      ->with('Failed to update CSS file during queue processing');
+
+    $this->queueWorker->processItem($data);
+  }
+
+  /**
+   * Tests processItem with exception during processing.
    *
    * @covers ::processItem
    */
   public function testProcessItemErrorHandling(): void {
-    $data = [
-      'action' => 'add',
-      'classes' => ['uk-pd--20'],
-      'user_id' => 1,
-      'timestamp' => time(),
-    ];
+    $data = ['classes' => ['uk-pd--20']];
+
+    $contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $contentScanner->expects($this->once())
+      ->method('validateUtilityClasses')
+      ->willThrowException(new \Exception('Service error'));
 
     $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
-      ->willThrowException(new \Exception('Service error'));
+      ->method('getContentScanner')
+      ->willReturn($contentScanner);
 
     $this->logger->expects($this->once())
       ->method('error')
-      ->with(
-        $this->stringContains('Error processing queue item'),
-        $this->arrayHasKey('exception')
-      );
+      ->with('Failed to process CSS update: @message', $this->anything());
 
     $this->expectException(\Exception::class);
     $this->expectExceptionMessage('Service error');
@@ -285,140 +286,37 @@ class UtilikitCssProcessorTest extends UnitTestCase {
   }
 
   /**
-   * Tests processItem with partial failure.
+   * Tests processItem does not clear cache when updateCssAndFile fails.
    *
    * @covers ::processItem
    */
-  public function testProcessItemPartialFailure(): void {
-    $data = [
-      'action' => 'add',
-      'classes' => ['uk-pd--20', 'uk-invalid--class', 'uk-mg--10'],
-      'user_id' => 1,
-      'timestamp' => time(),
-    ];
+  public function testProcessItemNoCacheClearOnUpdateFailure(): void {
+    $data = ['classes' => ['uk-pd--20']];
+
+    $contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $contentScanner->expects($this->once())
+      ->method('validateUtilityClasses')
+      ->willReturn(['uk-pd--20']);
+
+    $stateManager = $this->createMock(UtilikitStateManager::class);
+    $stateManager->expects($this->once())
+      ->method('getKnownClasses')
+      ->willReturn([]);
 
     $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
-      ->willReturn([
-        'added' => ['uk-pd--20', 'uk-mg--10'],
-        'duplicates' => [],
-        'errors' => ['uk-invalid--class: Invalid format'],
-      ]);
-
-    $this->logger->expects($this->once())
-      ->method('warning')
-      ->with(
-        'Partial failure processing classes: @errors',
-        ['@errors' => 'uk-invalid--class: Invalid format']
-      );
-
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem with metadata.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemWithMetadata(): void {
-    $data = [
-      'action' => 'add',
-      'classes' => ['uk-pd--20'],
-      'user_id' => 1,
-      'timestamp' => time(),
-      'metadata' => [
-        'source' => 'admin_ui',
-        'entity_type' => 'node',
-        'entity_id' => 123,
-      ],
-    ];
-
+      ->method('getContentScanner')
+      ->willReturn($contentScanner);
     $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
-      ->with(['uk-pd--20'])
-      ->willReturn([
-        'added' => ['uk-pd--20'],
-        'duplicates' => [],
-        'errors' => [],
-      ]);
-
-    $this->logger->expects($this->once())
-      ->method('info')
-      ->with(
-        'Processed classes from @source for @entity_type:@entity_id',
-        [
-          '@source' => 'admin_ui',
-          '@entity_type' => 'node',
-          '@entity_id' => 123,
-        ]
-      );
-
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem with priority handling.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemPriority(): void {
-    $data = [
-      'action' => 'add',
-      'classes' => ['uk-pd--20'],
-      'user_id' => 1,
-      'timestamp' => time(),
-      'priority' => 'high',
-    ];
-
+      ->method('getStateManager')
+      ->willReturn($stateManager);
     $this->serviceProvider->expects($this->once())
-      ->method('processNewClasses')
-      ->willReturn([
-        'added' => ['uk-pd--20'],
-        'duplicates' => [],
-        'errors' => [],
-      ]);
-
-    $this->logger->expects($this->once())
-      ->method('info')
-      ->with($this->stringContains('Processing high priority'));
-
-    $this->cacheManager->expects($this->once())
-      ->method('invalidateCssCaches');
-
-    $this->queueWorker->processItem($data);
-  }
-
-  /**
-   * Tests processItem with dry run mode.
-   *
-   * @covers ::processItem
-   */
-  public function testProcessItemDryRun(): void {
-    $data = [
-      'action' => 'add',
-      'classes' => ['uk-pd--20'],
-      'user_id' => 1,
-      'timestamp' => time(),
-      'dry_run' => TRUE,
-    ];
-
-    // Service provider should not be called in dry run mode.
+      ->method('updateCssAndFile')
+      ->willReturn(FALSE);
     $this->serviceProvider->expects($this->never())
-      ->method('processNewClasses');
+      ->method('getCacheManager');
 
-    // Cache should not be invalidated in dry run mode.
     $this->cacheManager->expects($this->never())
-      ->method('invalidateCssCaches');
-
-    $this->logger->expects($this->once())
-      ->method('info')
-      ->with($this->stringContains('Dry run mode'));
+      ->method('clearCssCaches');
 
     $this->queueWorker->processItem($data);
   }

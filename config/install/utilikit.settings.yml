@@ -170,7 +170,7 @@ show_page_errors: false
 # 'off': No console output (production recommended)
 # 'warnings': Errors and warnings only (development default)
 # 'detailed': Comprehensive debug information (troubleshooting)
-log_level: warnings
+log_level: 'off'
 
 # =============================================================================
 # ADVANCED PERFORMANCE SETTINGS
@@ -214,12 +214,17 @@ css_cache_ttl: 3600
 # CSS output directory path within the files directory
 # Must be writable by the web server for static mode operation
 # Recommended: Keep default unless specific infrastructure requirements
-css_directory: 'public://css/utilikit'
+css_directory: 'public://utilikit'
 
 # CSS output filename for generated stylesheets
 # The actual served filename includes cache-busting parameters
-# Example final filename: 'generated.css?v=a1b2c3d4&t=1609459200'
-css_filename: 'generated.css'
+# Example final filename: 'utilikit-static-style.css?v=a1b2c3d4&t=1609459200'
+css_filename: 'utilikit-static-style.css'
+
+# Entity types to scan for utility classes
+# Used by the content scanner to find UtiliKit classes in entity content
+# Default includes common content entity types
+scanning_entity_types: []
 
 # =============================================================================
 # LEGACY/MIGRATION SUPPORT

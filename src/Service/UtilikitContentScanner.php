@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\utilikit\Service;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Field\FieldItemListInterface;
@@ -20,29 +21,10 @@ use Psr\Log\LoggerInterface;
 class UtilikitContentScanner {
 
   /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected EntityTypeManagerInterface $entityTypeManager;
-
-  /**
-   * The logger service.
-   *
-   * @var \Psr\Log\LoggerInterface
-   */
-  protected LoggerInterface $logger;
-
-  /**
-   * The UtiliKit rules service.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitRules
-   */
-  protected UtilikitRules $rulesService;
-
-  /**
    * Constructs a new UtilikitContentScanner object.
    *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The config factory service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    *   The entity type manager service.
    * @param \Psr\Log\LoggerInterface $logger
@@ -51,14 +33,11 @@ class UtilikitContentScanner {
    *   The UtiliKit rules service for validation.
    */
   public function __construct(
-    EntityTypeManagerInterface $entityTypeManager,
-    LoggerInterface $logger,
-    UtilikitRules $rulesService,
-  ) {
-    $this->entityTypeManager = $entityTypeManager;
-    $this->logger = $logger;
-    $this->rulesService = $rulesService;
-  }
+    protected readonly ConfigFactoryInterface $configFactory,
+    protected readonly EntityTypeManagerInterface $entityTypeManager,
+    protected readonly LoggerInterface $logger,
+    protected readonly UtilikitRules $rulesService,
+  ) {}
 
   /**
    * Scans all fieldable entities for UtiliKit utility classes.
@@ -91,7 +70,7 @@ class UtilikitContentScanner {
     $completed = TRUE;
 
     // Get scanning configuration.
-    $config = \Drupal::config('utilikit.settings');
+    $config = $this->configFactory->get('utilikit.settings');
     $scanning_entity_types = $config->get('scanning_entity_types') ?? ['node', 'block_content', 'paragraph'];
 
     // Filter entity types based on configuration.
@@ -241,24 +220,35 @@ class UtilikitContentScanner {
     $classes = [];
     $validAbbreviations = $this->getValidAbbreviations();
 
-    // Find all elements that have both "utilikit" and "uk-" in their
-    // class attribute.
-    $pattern = '/<[^>]+class=["\']([^"\']*utilikit[^"\']*uk-[^"\']*|[^"\']*uk-[^"\']*utilikit[^"\']*)["\'][^>]*>/i';
+    // Use DOMDocument for reliable HTML parsing instead of regex.
+    $dom = new \DOMDocument();
+    // Suppress warnings from malformed HTML and use UTF-8 encoding.
+    $previousUseErrors = libxml_use_internal_errors(TRUE);
+    $dom->loadHTML('<meta charset="utf-8">' . $html, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    libxml_clear_errors();
+    libxml_use_internal_errors($previousUseErrors);
 
-    if (preg_match_all($pattern, $html, $matches)) {
-      foreach ($matches[1] as $classString) {
-        $elementClasses = preg_split('/\s+/', trim($classString));
+    $xpath = new \DOMXPath($dom);
+    // Find all elements with a class attribute containing "utilikit".
+    $nodes = $xpath->query('//*[contains(@class, "utilikit")]');
 
-        // Verify this element has the utilikit marker.
-        if (!in_array('utilikit', $elementClasses, TRUE)) {
-          continue;
-        }
+    if ($nodes === FALSE) {
+      return [];
+    }
 
-        // Check each class in this element.
-        foreach ($elementClasses as $class) {
-          if ($this->isValidUtilityClass($class, $validAbbreviations)) {
-            $classes[] = $class;
-          }
+    foreach ($nodes as $node) {
+      $classAttr = $node->getAttribute('class');
+      $elementClasses = preg_split('/\s+/', trim($classAttr));
+
+      // Verify this element has the utilikit marker.
+      if (!in_array('utilikit', $elementClasses, TRUE)) {
+        continue;
+      }
+
+      // Check each class in this element.
+      foreach ($elementClasses as $class) {
+        if ($this->isValidUtilityClass($class, $validAbbreviations)) {
+          $classes[] = $class;
         }
       }
     }

@@ -1,0 +1,1043 @@
+/**
+ * @file
+ * UtiliKit Playground styles.
+ *
+ * Inherits admin theme colors (Gin/Claro) for backgrounds, text, borders.
+ * Only overrides for playground-specific UI: presets, builder, inspector.
+ *
+ * Variable Priority:
+ * 1. Gin theme variables (--gin-*)
+ * 2. Claro theme variables (--color-*, --space-*)
+ * 3. Hardcoded fallback values
+ */
+
+/* ---------------------------------------------------------------
+   Base layout
+   --------------------------------------------------------------- */
+.utilikit-playground-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-xs, var(--space-xs, 0.5rem));
+  max-width: 1800px;
+  margin: var(--gin-spacing-xs, var(--space-xs, 0.5rem)) auto;
+  padding: var(--gin-spacing-xs, var(--space-xs, 0.5rem));
+  box-sizing: border-box;
+  min-height: calc(100vh - 100px);
+}
+
+.utilikit-playground-wrapper * {
+  box-sizing: border-box;
+}
+
+/* ---------------------------------------------------------------
+   Column layout
+   --------------------------------------------------------------- */
+.utilikit-column {
+  border-radius: var(--gin-border-l, var(--border-radius, 12px));
+  box-shadow: var(--gin-shadow-m, 0 2px 8px rgba(0, 0, 0, 0.08));
+  padding: var(--gin-spacing-m, var(--space-m, 20px));
+}
+
+.utilikit-input-panel {
+  flex: 0 0 33%;
+  min-width: 0;
+}
+
+.utilikit-output-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gin-spacing-xs, var(--space-xs, 0.5rem));
+}
+
+/* ---------------------------------------------------------------
+   Description text
+   --------------------------------------------------------------- */
+.utilikit-description {
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, inherit));
+  font-size: var(--gin-font-size-s, var(--font-size-s, 0.9rem));
+  margin-bottom: var(--gin-spacing-xs, var(--space-xs, 0.5rem));
+}
+
+/* ---------------------------------------------------------------
+   Form inputs
+   --------------------------------------------------------------- */
+.utilikit-select,
+.utilikit-text-input,
+.utilikit-textarea {
+  width: 100%;
+  padding: var(--gin-spacing-xs, var(--space-xs, 0.6rem)) var(--gin-spacing-s, var(--space-s, 0.75rem));
+  border: 1px solid var(--gin-border-color, var(--color-gray-300, currentColor));
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
+  font-size: var(--gin-font-size-s, var(--font-size-base, 1rem));
+  margin-bottom: var(--gin-spacing-m, var(--space-m, 1rem));
+  background-color: var(--gin-bg-layer, var(--color-white, inherit));
+  color: var(--gin-color-text, var(--color-text, inherit));
+}
+
+.utilikit-textarea {
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  resize: vertical;
+}
+
+#utilikit-html-input {
+  width: calc(100% - 24px);
+  min-height: 400px;
+}
+
+/* ---------------------------------------------------------------
+   Buttons row
+   --------------------------------------------------------------- */
+.utilikit-buttons-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.utilikit-buttons-wrapper h3 {
+  margin: 0;
+}
+
+.utilikit-buttons-wrapper .buttons-wrapper {
+  display: flex;
+  gap: var(--gin-spacing-xs, var(--space-xs, 0.5rem));
+}
+
+.utilikit-button-reset {
+  background: #dc3545 !important;
+  color: #fff !important;
+  border-color: #dc3545 !important;
+}
+
+.utilikit-button-reset:hover {
+  background: #c82333 !important;
+  border-color: #bd2130 !important;
+  color: #fff !important;
+}
+
+/* ---------------------------------------------------------------
+   Tabs
+   --------------------------------------------------------------- */
+.playground-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: var(--gin-spacing-m, var(--space-m, 20px));
+  border-bottom: 2px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+}
+
+.playground-tab {
+  padding: 10px 20px !important;
+  background: none !important;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  margin-bottom: -2px !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, #6c757d));
+  transition: all 0.2s ease;
+}
+
+.playground-tab:hover {
+  color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+}
+
+.playground-tab.active {
+  color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  border-bottom-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+}
+
+.playground-tab--help {
+  margin-inline-start: auto !important;
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6)) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14px !important;
+  font-weight: 700;
+  margin-bottom: 4px !important;
+  background: var(--gin-bg-item, var(--color-white, #fff)) !important;
+}
+
+.playground-tab--help:hover {
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  color: #fff !important;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+}
+
+.playground-tab-content {
+  display: none !important;
+}
+
+.playground-tab-content.active {
+  display: block !important;
+}
+
+/* ---------------------------------------------------------------
+   Collapsible details
+   --------------------------------------------------------------- */
+.playground-details {
+  margin-top: var(--gin-spacing-m, var(--space-m, 16px));
+  margin-bottom: var(--gin-spacing-m, var(--space-m, 16px));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+  overflow: hidden;
+}
+
+.playground-details summary {
+  padding: 12px 16px !important;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  list-style: none !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.2s ease;
+  color: var(--gin-color-text, var(--color-text, inherit));
+}
+
+.playground-details summary::-webkit-details-marker {
+  display: none !important;
+}
+
+.playground-details summary::after {
+  content: '+';
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, #6c757d));
+  transition: transform 0.2s ease;
+}
+
+.playground-details[open] summary::after {
+  content: '-';
+}
+
+.playground-details summary:hover {
+  background: var(--gin-bg-item-hover, var(--gin-bg-layer, #f8f9fa));
+}
+
+.playground-details > :not(summary) {
+  padding: 0 16px 16px;
+}
+
+.playground-details .builder-sections {
+  padding: 0 16px 16px;
+}
+
+/* ---------------------------------------------------------------
+   Color tools section
+   --------------------------------------------------------------- */
+.playground-color-tools {
+  margin-top: var(--gin-spacing-m, var(--space-m, 16px));
+  padding-top: var(--gin-spacing-m, var(--space-m, 16px));
+  border-top: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+}
+
+/* ---------------------------------------------------------------
+   Preset examples
+   --------------------------------------------------------------- */
+.preset-examples {
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+  box-shadow: var(--gin-shadow-s, 0 2px 4px rgba(0, 0, 0, 0.05));
+  margin-bottom: var(--gin-spacing-l, var(--space-l, 25px));
+  padding: var(--gin-spacing-s, var(--space-s, 15px));
+}
+
+.preset-examples h3 {
+  margin: 0 0 var(--gin-spacing-s, var(--space-s, 15px)) 0;
+  font-size: var(--gin-font-size-m, var(--font-size-base, 16px));
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gin-spacing-s, var(--space-s, 10px));
+}
+
+.preset-btn {
+  padding: var(--gin-spacing-s, var(--space-s, 10px)) var(--gin-spacing-s, var(--space-s, 15px)) !important;
+  background: var(--gin-bg-item, var(--color-white, #fff)) !important;
+  border: 2px solid var(--gin-border-color, var(--color-gray-200, #dee2e6)) !important;
+  border-radius: var(--gin-border-s, var(--border-radius, 6px)) !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: start !important;
+  font-size: var(--gin-font-size-xs, var(--font-size-s, 13px)) !important;
+  color: var(--gin-color-text, var(--color-text, inherit));
+  margin: 0 !important;
+}
+
+.preset-btn:hover {
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+  background: var(--gin-bg-item-hover, var(--gin-bg-layer, #f8f9fa));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.preset-btn strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.preset-btn small {
+  line-height: 1.3;
+}
+
+.preset-btn.active {
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  color: #fff !important;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.25);
+}
+
+.preset-btn.active:hover {
+  background: var(--gin-color-primary-hover, #0056b3);
+  border-color: var(--gin-color-primary-hover, #0056b3);
+}
+
+.preset-btn.active strong,
+.preset-btn.active small {
+  color: #fff !important;
+}
+
+.preset-btn.active small {
+  opacity: 0.9;
+}
+
+/* ---------------------------------------------------------------
+   Autocomplete
+   --------------------------------------------------------------- */
+.input-wrapper {
+  position: relative;
+}
+
+.class-autocomplete {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border: 2px solid var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.autocomplete-item {
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--gin-color-text, var(--color-text, inherit));
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.selected {
+  background: var(--gin-bg-item-hover, var(--gin-bg-layer, #f8f9fa));
+}
+
+.autocomplete-property {
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, #6c757d));
+  font-size: 11px;
+}
+
+/* ---------------------------------------------------------------
+   Class builder
+   --------------------------------------------------------------- */
+/* class-builder is now inside <details class="playground-details"> */
+
+.builder-section {
+  margin-bottom: var(--gin-spacing-m, var(--space-m, 20px));
+}
+
+.builder-section h4 {
+  margin: 0 0 var(--gin-spacing-xs, var(--space-xs, 12px)) 0;
+  font-size: var(--gin-font-size-s, var(--font-size-s, 14px));
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: var(--gin-spacing-xs, var(--space-xs, 8px));
+}
+
+.builder-icon {
+  width: 24px !important;
+  height: 24px !important;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  color: #fff !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 12px !important;
+  font-weight: bold;
+}
+
+.builder-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gin-spacing-xs, var(--space-xs, 8px));
+}
+
+.builder-chip {
+  padding: var(--gin-spacing-xxs, 6px) var(--gin-spacing-xs, var(--space-xs, 12px)) !important;
+  background: var(--gin-bg-item, var(--color-white, #fff)) !important;
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6)) !important;
+  border-radius: var(--gin-border-xl, 20px) !important;
+  font-size: var(--gin-font-size-xs, var(--font-size-xs, 12px)) !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  color: var(--gin-color-text, var(--color-text, inherit));
+}
+
+.builder-chip:hover {
+  background: var(--gin-bg-item-hover, var(--gin-bg-layer, #f8f9fa));
+  border-color: var(--gin-border-color-dark, var(--color-gray-400, #adb5bd));
+}
+
+.builder-chip.active {
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  color: #fff !important;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+}
+
+/* ---------------------------------------------------------------
+   Color picker & palette
+   --------------------------------------------------------------- */
+.utilikit-preview-form .color-wrapper {
+  display: flex;
+  flex-direction: row;
+}
+
+.utilikit-preview-form .color-wrapper > * {
+  margin: 0;
+  display: inline-flex;
+}
+
+.color-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--gin-spacing-s, var(--space-s, 0.75rem));
+}
+
+#utilikit-color-picker {
+  -webkit-appearance: none;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+  cursor: pointer;
+  padding: 0;
+  box-shadow: var(--gin-shadow-s, 0 2px 6px rgba(0, 0, 0, 0.15));
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#utilikit-color-picker:hover {
+  transform: scale(1.05);
+  box-shadow: var(--gin-shadow-m, 0 4px 10px rgba(0, 0, 0, 0.2));
+}
+
+#utilikit-color-picker::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+}
+
+#utilikit-color-picker::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+}
+
+#utilikit-color-value {
+  border: 1px solid var(--gin-border-color, var(--color-gray-300, #ddd));
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
+  padding: var(--gin-spacing-xs, var(--space-xs, 0.5rem)) var(--gin-spacing-s, var(--space-s, 0.75rem));
+  font-size: var(--gin-font-size-s, var(--font-size-s, 0.9rem));
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  width: 100px;
+  text-align: center;
+  background: var(--gin-bg-input, var(--color-bg, #f9f9f9));
+  color: var(--gin-color-text, var(--color-text, inherit));
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+#utilikit-color-value:hover {
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border-color: var(--gin-border-color-dark, var(--color-gray-400, #bbb));
+}
+
+#utilikit-color-value:active,
+#utilikit-color-value:focus {
+  outline: none;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+}
+
+.color-palette {
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+  box-shadow: var(--gin-shadow-s, 0 2px 4px rgba(0, 0, 0, 0.05));
+  margin-top: 15px;
+  padding: 15px;
+}
+
+.color-palette-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.color-swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
+}
+
+.color-swatch {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  position: relative;
+  transition: transform 0.2s ease;
+  border: 2px solid var(--gin-border-color, var(--color-gray-200, #dee2e6)) !important;
+}
+
+.color-swatch:hover {
+  transform: scale(1.2);
+  border-color: var(--gin-color-text, var(--color-text, inherit));
+}
+
+.color-swatch.selected {
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+}
+
+/* ---------------------------------------------------------------
+   Preview section
+   --------------------------------------------------------------- */
+.utilikit-preview-output,
+.utilikit-code-block {
+  min-height: 50px;
+  padding: var(--gin-spacing-m, var(--space-m, 1rem));
+  border: 1px solid var(--gin-border-color, var(--color-gray-300, #ddd));
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  white-space: pre-wrap;
+  margin: 0;
+  margin-bottom: var(--gin-spacing-l, var(--space-l, 1.5rem));
+  color: var(--gin-color-text, var(--color-text, inherit));
+  transition: all 0.3s ease;
+  opacity: 0.8;
+}
+
+.utilikit-preview-output *,
+.utilikit-code-block * {
+  transition: all 0.3s ease;
+}
+
+.utilikit-preview-output:hover,
+.utilikit-code-block:hover {
+  opacity: 1;
+  padding-bottom: 1.2rem;
+  box-shadow: var(--gin-shadow-m, 0 2px 6px rgba(0, 0, 0, 0.15));
+}
+
+.utilikit-preview-output {
+  border-style: dashed;
+  min-height: 100px;
+}
+
+.preview-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.preview-controls {
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+  box-shadow: var(--gin-shadow-s, 0 2px 4px rgba(0, 0, 0, 0.05));
+  display: flex;
+  gap: 10px;
+  padding: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.viewport-selector {
+  display: flex;
+  gap: 5px;
+  margin-inline-start: auto;
+}
+
+.viewport-btn {
+  padding: 6px 12px !important;
+  background: var(--gin-bg-item, var(--color-white, #fff)) !important;
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6)) !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  color: var(--gin-color-text, var(--color-text, inherit));
+}
+
+.viewport-btn:hover {
+  background: var(--gin-bg-item-hover, var(--gin-bg-layer, #f8f9fa));
+}
+
+.viewport-btn.active {
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  color: #fff !important;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+}
+
+.viewport-icon {
+  font-size: 16px;
+}
+
+.preview-frame-wrapper {
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+  box-shadow: var(--gin-shadow-s, 0 2px 4px rgba(0, 0, 0, 0.05));
+  flex: 1;
+  padding: 30px 20px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: auto;
+  position: relative;
+}
+
+.preview-frame {
+  background: var(--gin-bg-item, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color-light, var(--color-gray-100, #f0f0f0));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
+  transition: all 0.3s ease;
+  width: 100%;
+  min-height: 400px;
+  padding: 20px;
+}
+
+.preview-frame.mobile {
+  max-width: 375px;
+}
+
+.preview-frame.tablet {
+  max-width: 768px;
+}
+
+.preview-frame.desktop {
+  max-width: 1200px;
+}
+
+.viewport-size-indicator {
+  position: absolute !important;
+  top: 5px !important;
+  right: 20px !important;
+  line-height: 1.1;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  color: #fff !important;
+  padding: 4px 8px !important;
+  border-radius: 4px !important;
+  font-size: 11px !important;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+}
+
+/* ---------------------------------------------------------------
+   Style inspector
+   --------------------------------------------------------------- */
+.style-inspector {
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+  box-shadow: var(--gin-shadow-s, 0 2px 4px rgba(0, 0, 0, 0.05));
+  padding: 20px;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+#style-breakdown {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.style-inspector h3 {
+  margin: 0 0 15px 0;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inspector-badge {
+  background: #28a745 !important;
+  color: #fff !important;
+  padding: 2px 8px !important;
+  border-radius: 12px !important;
+  font-size: 11px !important;
+  font-weight: 600;
+}
+
+.style-group {
+  margin-bottom: 20px;
+}
+
+.style-group-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+}
+
+.style-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 13px;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+}
+
+.style-property {
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, #6c757d));
+}
+
+.style-value {
+  font-weight: 500;
+}
+
+/* ---------------------------------------------------------------
+   Class breakdown
+   --------------------------------------------------------------- */
+.class-breakdown {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: 6px;
+}
+
+.class-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--gin-border-color-light, var(--color-gray-100, #f0f0f0));
+}
+
+.class-item:last-child {
+  border-bottom: none;
+}
+
+.class-name {
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  font-weight: 600;
+  color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+}
+
+.class-arrow {
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, #adb5bd));
+}
+
+.class-effect {
+  flex: 1;
+}
+
+/* ---------------------------------------------------------------
+   Responsive helper
+   --------------------------------------------------------------- */
+/* responsive-helper is now inside <details class="playground-details"> */
+
+.breakpoint-info {
+  display: grid;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.breakpoint-item {
+  background: var(--gin-bg-item, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-s, var(--border-radius, 6px));
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+}
+
+.breakpoint-badge {
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  color: #fff !important;
+  padding: 4px 12px !important;
+  border-radius: 4px !important;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  font-size: 12px !important;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+}
+
+.breakpoint-size {
+  color: #28a745 !important;
+  font-weight: 600;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  font-size: 13px;
+  min-width: 80px;
+}
+
+.breakpoint-desc {
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, #6c757d));
+  font-size: 13px;
+}
+
+.responsive-example {
+  background: var(--gin-bg-item, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: 6px;
+  padding: 15px;
+  margin: 20px 0;
+}
+
+.responsive-example h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+}
+
+.example-code {
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.example-code code {
+  background: var(--gin-bg-layer, var(--color-bg, #f8f9fa));
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.responsive-converter {
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: var(--gin-border-m, var(--border-radius, 8px));
+  box-shadow: var(--gin-shadow-s, 0 2px 4px rgba(0, 0, 0, 0.05));
+  padding: 15px;
+}
+
+.responsive-converter h4 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+}
+
+.responsive-converter input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  background: var(--gin-bg-input, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: 6px;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  color: var(--gin-color-text, var(--color-text, inherit));
+}
+
+.responsive-output {
+  display: grid;
+  gap: 8px;
+}
+
+.responsive-variant {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--gin-bg-item, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: 4px;
+  font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.responsive-variant:hover {
+  transform: translateX(5px);
+  background: var(--gin-bg-item-hover, var(--gin-bg-layer, #f8f9fa));
+}
+
+.responsive-variant .prefix {
+  color: var(--gin-color-text-light, var(--color-text-neutral-soft, #6c757d));
+  font-size: 11px;
+  min-width: 50px;
+}
+
+.responsive-variant .class-name {
+  color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+  font-weight: 600;
+}
+
+/* ---------------------------------------------------------------
+   Tutorial overlay
+   --------------------------------------------------------------- */
+.tutorial-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  z-index: 9999 !important;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.tutorial-overlay.active {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.tutorial-content {
+  background: var(--gin-bg-layer, var(--color-white, #fff));
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.tutorial-close {
+  all: unset;
+  position: absolute !important;
+  padding: 8px !important;
+  top: 15px !important;
+  right: 15px !important;
+  width: 30px !important;
+  height: 30px !important;
+  background: var(--gin-bg-item, var(--color-white, #fff)) !important;
+  border: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6)) !important;
+  border-radius: 50% !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px;
+  transition: all 0.2s ease;
+  color: var(--gin-color-text, var(--color-text, inherit));
+}
+
+.tutorial-close:hover {
+  background: var(--gin-bg-item-hover, var(--gin-bg-layer, #f8f9fa));
+  transform: rotate(90deg);
+}
+
+/* ---------------------------------------------------------------
+   Loading & animation states
+   --------------------------------------------------------------- */
+.loading {
+  position: relative;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: utilikit-playground-spin 0.8s linear infinite;
+}
+
+@keyframes utilikit-playground-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.success-flash {
+  animation: utilikit-playground-flash 0.5s ease;
+}
+
+@keyframes utilikit-playground-flash {
+  0%,
+  100% {
+    background: var(--gin-bg-item, var(--color-white, #fff));
+  }
+  50% {
+    background: #d4edda;
+  }
+}
+
+/* ---------------------------------------------------------------
+   Responsive
+   --------------------------------------------------------------- */
+@media (max-width: 62rem) {
+  .utilikit-playground-wrapper {
+    display: grid;
+  }
+
+  .utilikit-input-panel {
+    max-width: none;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .utilikit-output-panel {
+    flex: 1 1 100%;
+  }
+
+  .preset-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .color-swatches {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .breakpoint-item {
+    font-size: 12px;
+  }
+
+  .breakpoint-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+}

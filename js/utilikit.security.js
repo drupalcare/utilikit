@@ -105,26 +105,25 @@
         return this.sanitizeText(html);
       }
 
-      // Create temporary DOM to parse and clean
-      const temp = document.createElement('div');
-      temp.innerHTML = html;
+      // Use DOMParser to parse without executing scripts or event handlers (XSS-safe).
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const root = doc.body;
 
-      // Remove all non-allowed elements
-      const allElements = temp.querySelectorAll('*');
+      // Remove all non-allowed elements (walk in reverse so removal doesn't break iteration)
+      const allElements = Array.from(root.querySelectorAll('*'));
       allElements.forEach(element => {
         if (!allowedTags.includes(element.tagName.toLowerCase())) {
-          // Replace with text content
-          const textNode = document.createTextNode(element.textContent);
+          const textNode = doc.createTextNode(element.textContent);
           element.parentNode.replaceChild(textNode, element);
         } else {
-          // Remove all attributes from allowed elements for safety
           while (element.attributes.length > 0) {
             element.removeAttribute(element.attributes[0].name);
           }
         }
       });
 
-      return temp.innerHTML;
+      return root.innerHTML;
     },
 
     /**
@@ -314,13 +313,13 @@
         element.textContent = textContent;
       }
 
-      // Set safe attributes
-      const allowedAttributes = ['class', 'id', 'title', 'aria-label', 'aria-describedby', 'role'];
+      // Set safe attributes (setAttribute escapes automatically; do not double-encode).
+      const allowedAttributes = ['class', 'id', 'title', 'aria-label', 'aria-describedby', 'aria-live', 'aria-hidden', 'role', 'type'];
       Object.keys(attributes).forEach(attr => {
         if (allowedAttributes.includes(attr.toLowerCase())) {
-          const value = this.sanitizeText(attributes[attr]);
-          if (value) {
-            element.setAttribute(attr, value);
+          const value = attributes[attr];
+          if (value !== undefined && value !== null && value !== '') {
+            element.setAttribute(attr, String(value));
           }
         }
       });
@@ -454,40 +453,40 @@
   /**
    * Security patch for UtiliKit class application system.
    *
-   * Wraps the applyClasses function to validate all elements and their
-   * CSS classes before processing. Filters out elements with invalid
-   * or potentially dangerous class names to prevent CSS injection attacks.
+   * Defers until applyClasses is defined (classes.js loads after security.js),
+   * then wraps it to validate elements and CSS classes before processing.
    */
-  if (Drupal.utilikit && Drupal.utilikit.applyClasses) {
-    const originalApplyClasses = Drupal.utilikit.applyClasses;
-    Drupal.utilikit.applyClasses = function(elements) {
-      try {
-        // Validate all elements and classes before processing
-        const safeElements = Array.from(elements).filter(el => {
-          if (!el || !el.classList) return false;
-
-          // Validate all classes on this element
-          const classes = Array.from(el.classList);
-          return classes.every(className => {
-            return Drupal.utilikit.security.isValidUtilityClass(className) ||
-                   className === 'utilikit' ||
-                   Drupal.utilikit.security.validateClassName(className);
+  (function tryPatchApplyClasses(attempts) {
+    if (Drupal.utilikit && Drupal.utilikit.applyClasses && !Drupal.utilikit.applyClasses._securityWrapped) {
+      const originalApplyClasses = Drupal.utilikit.applyClasses;
+      Drupal.utilikit.applyClasses = function(elements) {
+        try {
+          const safeElements = Array.from(elements).filter(el => {
+            if (!el || !el.classList) return false;
+            const classes = Array.from(el.classList);
+            return classes.every(className => {
+              return Drupal.utilikit.security.isValidUtilityClass(className) ||
+                     className === 'utilikit' ||
+                     Drupal.utilikit.security.validateClassName(className);
+            });
           });
-        });
-
-        if (safeElements.length > 0) {
-          originalApplyClasses.call(this, safeElements);
+          if (safeElements.length > 0) {
+            originalApplyClasses.call(this, safeElements);
+          }
+          if (safeElements.length < elements.length) {
+            console.warn('UtiliKit: Some elements filtered out for security reasons');
+          }
+        } catch (error) {
+          console.error('UtiliKit: Security error in applyClasses:', error);
         }
-
-        if (safeElements.length < elements.length) {
-          console.warn('UtiliKit: Some elements filtered out for security reasons');
-        }
-      } catch (error) {
-        console.error('UtiliKit: Security error in applyClasses:', error);
-        // Fail securely - don't apply any classes
-      }
-    };
-  }
+      };
+      Drupal.utilikit.applyClasses._securityWrapped = true;
+      return;
+    }
+    if (attempts < 50) {
+      setTimeout(function() { tryPatchApplyClasses(attempts + 1); }, 20);
+    }
+  })(0);
 
   /**
    * Security notification for update button functionality.

@@ -49,7 +49,7 @@ trait UtilikitTestCleanupTrait {
 
     if ($stateManager) {
       // Use the service's built-in cleanup method.
-      $stateManager->clearUtiliKitData();
+      $stateManager->clearUtilikitData();
     }
     else {
       // Fallback for tests without the service.

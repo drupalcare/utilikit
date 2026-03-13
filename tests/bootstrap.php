@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Bootstrap file for UtiliKit PHPUnit tests.
+ * Optional bootstrap for standalone test scripts.
  *
- * This file is automatically loaded by PHPUnit before running tests.
- * It sets up the testing environment and autoloading.
+ * Note: phpunit.xml uses web/core/tests/bootstrap.php, so PHPUnit does not
+ * load this file. This file is for manual or alternative test runners only.
  */
 
 declare(strict_types=1);

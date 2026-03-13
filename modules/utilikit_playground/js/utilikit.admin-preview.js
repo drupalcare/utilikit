@@ -3,8 +3,8 @@
  * UtiliKit Admin Preview functionality for Drupal administration.
  *
  * Provides interactive preview capabilities in the admin interface,
- * including live rendering, mode switching, color picker integration,
- * clipboard operations, and comprehensive state management.
+ * including live rendering, tab-based mode switching, color picker
+ * integration, clipboard operations, and comprehensive state management.
  *
  * Filename: utilikit.admin.preview.js
  * Website: https://www.flashwebcenter.com
@@ -14,50 +14,58 @@
 (function(Drupal, once, drupalSettings) {
   'use strict';
 
-  /**
-   * UtiliKit namespace initialization.
-   *
-   * Creates the global UtiliKit namespace if it doesn't exist to ensure
-   * compatibility with other UtiliKit modules and features.
-   *
-   * @namespace
-   */
   Drupal.utilikit = Drupal.utilikit || {};
 
   /**
-   * UtiliKit Preview Drupal behavior.
+   * Sanitizes an HTML string by stripping dangerous elements and attributes.
    *
-   * Initializes the admin preview interface with live rendering, mode
-   * switching, color picker integration, copy-to-clipboard functionality,
-   * and comprehensive reset capabilities. Always uses inline mode for
-   * immediate visual feedback in admin contexts.
-   *
-   * @type {Drupal~behavior}
-   *
-   * @prop {Drupal~behaviorAttach} attach
-   *   Attaches preview functionality to admin interface elements.
+   * @param {string} rawHtml
+   *   The raw HTML string to sanitize.
+   * @returns {Node[]}
+   *   Array of safe DOM nodes.
    */
+  function sanitizeHtml(rawHtml) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(rawHtml, 'text/html');
+
+    // Remove all script, style, iframe, object, embed, link elements.
+    for (const el of doc.body.querySelectorAll('script, style, iframe, object, embed, link, base, meta, form')) {
+      el.remove();
+    }
+
+    // Strip event handler attributes from all elements.
+    for (const el of doc.body.querySelectorAll('*')) {
+      for (const attr of Array.from(el.attributes)) {
+        const name = attr.name.toLowerCase();
+        if (name.startsWith('on') || attr.value.trim().toLowerCase().startsWith('javascript:')) {
+          el.removeAttribute(attr.name);
+        }
+      }
+      // Also strip href/src with javascript: protocol.
+      for (const a of ['href', 'src', 'action', 'formaction', 'xlink:href']) {
+        const val = el.getAttribute(a);
+        if (val?.trim().toLowerCase().startsWith('javascript:')) {
+          el.removeAttribute(a);
+        }
+      }
+    }
+
+    return Array.from(doc.body.childNodes).map((n) => n.cloneNode(true));
+  }
+
   Drupal.behaviors.utilikitPreview = {
-    attach: function(context, settings) {
+    attach(context) {
 
       // Always use inline mode regardless of global settings
       const elements = once('utilikit-playground', '.utilikit', context);
-      if (elements.length > 0) {
-        // Force apply classes using inline engine
-        if (typeof Drupal.utilikit !== 'undefined' && typeof Drupal.utilikit.applyClasses === 'function') {
-          Drupal.utilikit.applyClasses(elements);
-        }
+      if (elements.length > 0 && Drupal.utilikit?.applyClasses) {
+        Drupal.utilikit.applyClasses(elements);
       }
 
       once('utilikit-playground-form', '#utilikit-preview-form', context).forEach(() => {
         const form = document.getElementById('utilikit-preview-form');
 
-        /**
-         * Initialize color picker functionality.
-         *
-         * Sets up two-way binding between color picker input and hex value
-         * field, with click-to-copy functionality for easy color usage.
-         */
+        // Color picker
         const colorPicker = document.getElementById('utilikit-color-picker');
         const colorValue = document.getElementById('utilikit-color-value');
 
@@ -76,20 +84,12 @@
           });
         }
 
-        /**
-         * UI element references for preview interface.
-         *
-         * Centralizes access to all interactive elements in the preview
-         * interface for consistent manipulation and state management.
-         *
-         * @type {Object.<string, Element>}
-         */
+        // UI references
         const ui = {
-          mode: document.getElementById('utilikit-mode'),
           classInput: form.querySelector('#utilikit-class-input'),
           htmlInput: form.querySelector('#utilikit-html-input'),
-          basicGroup: form.querySelector('#utilikit-basic-input-group'),
-          advancedGroup: form.querySelector('#utilikit-advanced-input-group'),
+          tabClasses: document.getElementById('tab-classes'),
+          tabHtml: document.getElementById('tab-html'),
           previewBox: document.getElementById('utilikit-preview-box'),
           outputCode: document.getElementById('utilikit-output-code'),
           renderedHtml: document.getElementById('utilikit-rendered-html'),
@@ -98,51 +98,74 @@
           hiddenCopy: document.getElementById('utilikit-hidden-copy'),
         };
 
-        /**
-         * Handle mode switching between basic and advanced editing.
-         *
-         * Toggles visibility of input groups based on selected mode,
-         * allowing users to switch between simple class input and
-         * full HTML editing capabilities.
-         */
-        ui.mode.addEventListener('change', () => {
-          const isAdvanced = ui.mode.value === 'advanced';
-          ui.basicGroup.style.display = isAdvanced ? 'none' : 'block';
-          ui.advancedGroup.style.display = isAdvanced ? 'block' : 'none';
+        // Tab switching
+        const tabs = form.querySelectorAll('.playground-tab[data-tab]');
+        const tabContents = form.querySelectorAll('.playground-tab-content');
+
+        tabs.forEach(tab => {
+          tab.addEventListener('click', function() {
+            const targetTab = this.dataset.tab;
+
+            // Update tab active states
+            tabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            // Show/hide tab content
+            tabContents.forEach(content => {
+              const isTarget = content.dataset.tabContent === targetTab;
+              content.style.display = isTarget ? 'block' : 'none';
+              content.classList.toggle('active', isTarget);
+            });
+
+            // Clear preview on tab switch
+            ui.previewBox.innerHTML = '';
+            ui.outputCode.textContent = '';
+            ui.renderedHtml.textContent = '';
+
+            const styleBreakdown = document.getElementById('style-breakdown');
+            if (styleBreakdown) {
+              styleBreakdown.innerHTML = '<p class="utilikit-description">Render content to see applied styles</p>';
+            }
+          });
         });
 
         /**
-         * Handle form submission and live preview rendering.
+         * Check which tab is active.
          *
-         * Processes form input based on current mode (basic or advanced),
-         * generates appropriate HTML, renders live preview, and updates
-         * all output displays with proper UtiliKit engine integration.
-         *
-         * @param {Event} e - The form submission event.
+         * @returns {boolean} True if HTML tab is active.
          */
+        function isHtmlMode() {
+          const htmlTab = form.querySelector('.playground-tab[data-tab="html"]');
+          return htmlTab && htmlTab.classList.contains('active');
+        }
+
+        // Form submit
         form.addEventListener('submit', (e) => {
           e.preventDefault();
 
-          let html = '';
-          const isAdvanced = ui.mode.value === 'advanced';
+          ui.previewBox.textContent = '';
 
-          if (isAdvanced) {
-            html = ui.htmlInput.value.trim();
+          if (isHtmlMode()) {
+            const rawHtml = ui.htmlInput.value.trim();
+            ui.outputCode.textContent = rawHtml;
+            // Sanitize: parse into DOM, strip scripts and event handlers.
+            const safeNodes = sanitizeHtml(rawHtml);
+            safeNodes.forEach(node => ui.previewBox.appendChild(node));
           } else {
             const classString = ui.classInput.value.trim();
-            html = `<div class="utilikit ${classString}">This is your styled preview.</div>`;
+            // Validate: only allow valid utility class characters.
+            const safeClasses = classString.split(/\s+/).filter(cls =>
+              /^[a-zA-Z0-9_-]+$/.test(cls)
+            ).join(' ');
+            const div = document.createElement('div');
+            div.className = 'utilikit ' + safeClasses;
+            div.textContent = 'This is your styled preview.';
+            ui.outputCode.textContent = div.outerHTML;
+            ui.previewBox.appendChild(div);
           }
 
-          // Output raw HTML (copied or referenced)
-          ui.outputCode.textContent = html;
-
-          // Render live preview visually
-          ui.previewBox.innerHTML = html;
-
-          // Attach Drupal behaviors so the UtiliKit engine runs on new content
           Drupal.attachBehaviors(ui.previewBox);
 
-          // After engine applies styles, show the fully rendered HTML
           requestAnimationFrame(() => {
             const renderedElement = ui.previewBox.querySelector('[class*="uk-"], .utilikit') || ui.previewBox.firstElementChild;
 
@@ -154,13 +177,7 @@
           });
         });
 
-        /**
-         * Handle copy-to-clipboard functionality.
-         *
-         * Implements robust clipboard copying with fallback for older
-         * browsers, provides visual feedback, and handles both modern
-         * Clipboard API and legacy execCommand methods.
-         */
+        // Copy to clipboard
         ui.copyBtn.addEventListener('click', () => {
           const textToCopy = ui.outputCode.textContent;
 
@@ -172,14 +189,6 @@
             fallbackCopy(textToCopy);
           }
 
-          /**
-           * Fallback copy method for browsers without Clipboard API.
-           *
-           * Uses hidden textarea and execCommand for older browser
-           * compatibility when modern clipboard methods are unavailable.
-           *
-           * @param {string} text - The text content to copy.
-           */
           function fallbackCopy(text) {
             ui.hiddenCopy.value = text;
             ui.hiddenCopy.select();
@@ -187,188 +196,111 @@
             showCopyFeedback(success);
           }
 
-          /**
-           * Displays visual feedback for copy operations.
-           *
-           * Temporarily updates button text and state to indicate
-           * success or failure of clipboard operations.
-           *
-           * @param {boolean} success - Whether the copy operation succeeded.
-           */
           function showCopyFeedback(success) {
-            ui.copyBtn.textContent = success ? '✅ Copied!' : '⚠️ Copy failed';
+            ui.copyBtn.textContent = success ? 'Copied!' : 'Copy failed';
             ui.copyBtn.disabled = true;
             setTimeout(() => {
-              ui.copyBtn.textContent = '📋 Copy HTML';
+              ui.copyBtn.textContent = 'Copy HTML';
               ui.copyBtn.disabled = false;
             }, 1500);
           }
         });
 
-        /**
-         * Handle comprehensive preview interface reset.
-         *
-         * Resets all interface elements to their default state, including
-         * form inputs, displays, interactive components, and external
-         * enhancements from other modules.
-         */
+        // Reset — clears everything on the page back to default state
         ui.resetBtn.addEventListener('click', () => {
-          // 1. Reset form inputs
-          ui.classInput.value = '';
-          ui.htmlInput.value = '';
+          // Native form reset first (clears all native inputs/selects/textareas)
+          form.reset();
 
-          // 2. Reset mode to basic
-          ui.mode.value = 'basic';
-          ui.basicGroup.style.display = 'block';
-          ui.advancedGroup.style.display = 'none';
+          // Explicitly clear every input by ID (belt-and-suspenders)
+          const classInput = document.getElementById('utilikit-class-input');
+          const htmlInput = document.getElementById('utilikit-html-input');
+          const responsiveInput = document.getElementById('responsive-input');
+          const responsiveOutput = document.getElementById('responsive-output');
+          const colorPickerEl = document.getElementById('utilikit-color-picker');
+          const colorValueEl = document.getElementById('utilikit-color-value');
+          const autocomplete = document.getElementById('class-autocomplete');
+          const styleBreakdown = document.getElementById('style-breakdown');
+          const tutorialOverlay = document.getElementById('tutorial-overlay');
+          const previewFrame = document.getElementById('utilikit-preview-box');
+          const sizeIndicator = document.querySelector('.viewport-size-indicator');
+          const copyBtn = document.getElementById('utilikit-copy-btn');
 
-          // 3. Clear all outputs
+          // 1. Clear all text inputs and textareas
+          if (classInput) classInput.value = '';
+          if (htmlInput) htmlInput.value = '';
+          if (responsiveInput) responsiveInput.value = '';
+          if (responsiveOutput) responsiveOutput.innerHTML = '';
+
+          // 2. Reset color picker to default
+          if (colorPickerEl) colorPickerEl.value = '#007bff';
+          if (colorValueEl) colorValueEl.value = '#007bff';
+
+          // 3. Switch to Classes tab
+          tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === 'classes'));
+          tabContents.forEach(c => {
+            const isClasses = c.dataset.tabContent === 'classes';
+            c.style.display = isClasses ? 'block' : 'none';
+            c.classList.toggle('active', isClasses);
+          });
+
+          // 4. Clear all output areas
           ui.outputCode.textContent = '';
           ui.renderedHtml.textContent = '';
           ui.previewBox.innerHTML = '';
 
-          // 4. Reset color picker and value
-          const colorPicker = document.getElementById('utilikit-color-picker');
-          const colorValue = document.getElementById('utilikit-color-value');
-          if (colorPicker) colorPicker.value = '#007bff';
-          if (colorValue) colorValue.value = '#007bff';
-
-          // 5. Clear selected color swatches
-          document.querySelectorAll('.color-swatch.selected').forEach(swatch => {
-            swatch.classList.remove('selected');
-          });
-
-          // 6. Reset viewport to desktop
-          const viewportBtns = document.querySelectorAll('.viewport-btn');
-          const previewFrame = document.getElementById('utilikit-preview-box');
-          const sizeIndicator = document.querySelector('.viewport-size-indicator');
-
-          viewportBtns.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.viewport === 'desktop');
-          });
-
-          if (previewFrame) {
-            previewFrame.className = 'preview-frame desktop utilikit-preview-output';
-          }
-
-          if (sizeIndicator) {
-            sizeIndicator.textContent = '1200px';
-          }
-
-          // 7. Hide and reset visual builder
-          const classBuilder = document.getElementById('class-builder');
-          const builderBtn = document.querySelector('[data-action="builder"]');
-          if (classBuilder) classBuilder.style.display = 'none';
-          if (builderBtn) builderBtn.classList.remove('active');
-
-          // Clear all active builder chips
-          document.querySelectorAll('.builder-chip.active').forEach(chip => {
-            chip.classList.remove('active');
-          });
-
-          // 8. Hide responsive helper
-          const responsiveHelper = document.getElementById('responsive-helper');
-          const responsiveBtn = document.querySelector('[data-action="responsive"]');
-          if (responsiveHelper) responsiveHelper.style.display = 'none';
-          if (responsiveBtn) responsiveBtn.classList.remove('active');
-
-          // Clear responsive helper inputs
-          const responsiveInput = document.getElementById('responsive-input');
-          const responsiveOutput = document.getElementById('responsive-output');
-          if (responsiveInput) responsiveInput.value = '';
-          if (responsiveOutput) responsiveOutput.innerHTML = '<p style="color: #6c757d; font-size: 13px;">Enter a valid UtiliKit class (e.g., uk-pd--20)</p>';
-
-          // 9. Hide autocomplete dropdown
-          const autocomplete = document.getElementById('class-autocomplete');
-          if (autocomplete) autocomplete.style.display = 'none';
-
-          // 10. Reset style inspector
-          const styleBreakdown = document.getElementById('style-breakdown');
+          // 5. Reset style inspector
           if (styleBreakdown) {
             styleBreakdown.innerHTML = '<p class="utilikit-description">Render content to see applied styles</p>';
           }
 
-          // 11. Close any open overlays
-          const tutorialOverlay = document.getElementById('tutorial-overlay');
+          // 6. Reset viewport to desktop
+          document.querySelectorAll('.viewport-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.viewport === 'desktop');
+          });
+          if (previewFrame) {
+            previewFrame.className = 'preview-frame desktop utilikit-preview-output';
+          }
+          if (sizeIndicator) sizeIndicator.textContent = '1200px';
+
+          // 7. Close all <details> panels
+          document.querySelectorAll('.playground-details[open]').forEach(d => {
+            d.removeAttribute('open');
+          });
+
+          // 8. Clear all interactive element states
+          document.querySelectorAll('.builder-chip.active').forEach(el => el.classList.remove('active'));
+          document.querySelectorAll('.preset-btn').forEach(el => el.classList.remove('active', 'success-flash'));
+          document.querySelectorAll('.color-swatch.selected').forEach(el => el.classList.remove('selected'));
+
+          // 9. Clear builder state
+          if (window.utilikitPlaygroundState) {
+            window.utilikitPlaygroundState.selectedClasses.clear();
+            window.utilikitPlaygroundState.autocompleteIndex = -1;
+          }
+
+          // 10. Hide autocomplete dropdown
+          if (autocomplete) autocomplete.style.display = 'none';
+
+          // 11. Close tutorial overlay
           if (tutorialOverlay) tutorialOverlay.classList.remove('active');
 
-          // 12. Reset button states
-          document.querySelectorAll('.quick-action-btn.active').forEach(btn => {
-            if (btn.dataset.action !== 'tutorial') {
-              btn.classList.remove('active');
-            }
-          });
-
-          // 13. Remove any success/error states
-          document.querySelectorAll('.preset-btn.success-flash').forEach(btn => {
-            btn.classList.remove('success-flash');
-          });
-
-          // 14. Reset copy button if needed
-          const copyBtn = document.getElementById('utilikit-copy-btn');
+          // 12. Reset copy button
           if (copyBtn && copyBtn.disabled) {
-            copyBtn.textContent = '📋 Copy HTML';
+            copyBtn.textContent = 'Copy HTML';
             copyBtn.disabled = false;
           }
 
-          // 15. Visual feedback for reset
-          ui.resetBtn.textContent = '✅ Reset!';
-          ui.resetBtn.style.background = '#28a745';
-          ui.resetBtn.style.color = 'white';
-
+          // 13. Visual feedback
+          ui.resetBtn.textContent = 'Done!';
           setTimeout(() => {
-            ui.resetBtn.textContent = 'Reset';
-            ui.resetBtn.style.background = '';
-            ui.resetBtn.style.color = '';
+            ui.resetBtn.textContent = 'Reset All';
           }, 1000);
         });
 
-        /**
-         * Additional reset helper for enhanced features.
-         *
-         * Provides deep reset functionality for advanced components
-         * and data structures that may be added by enhancement modules.
-         * This function should be coordinated with other UtiliKit modules.
-         *
-         * @private
-         */
-        function resetAllEnhancements() {
-          // Reset any Set() or Map() data structures
-          const builder = document.getElementById('class-builder');
-          if (builder && typeof selectedClasses !== 'undefined') {
-            selectedClasses.clear();
-          }
-
-          // Reset any custom data attributes
-          document.querySelectorAll('[data-utilikitProps]').forEach(el => {
-            delete el.dataset.utilikitProps;
-          });
-
-          // Clear any inline styles added by UtiliKit
-          document.querySelectorAll('.utilikit[style]').forEach(el => {
-            el.removeAttribute('style');
-          });
-
-          // Reset any animation states
-          document.querySelectorAll('[style*="transform"]').forEach(el => {
-            el.style.transform = '';
-          });
-        }
-
-        /**
-         * Global reset function for external module integration.
-         *
-         * Exposes the reset functionality globally so other modules
-         * or external scripts can trigger a complete playground reset.
-         *
-         * @global
-         * @function utilikitResetPlayground
-         */
+        // Global reset function
         window.utilikitResetPlayground = function() {
           const resetBtn = document.getElementById('utilikit-reset-btn');
-          if (resetBtn) {
-            resetBtn.click();
-          }
+          if (resetBtn) resetBtn.click();
         };
       });
     }

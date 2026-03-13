@@ -21,27 +21,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 final class UtilikitCommands extends DrushCommands {
 
   /**
-   * The config factory service.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected ConfigFactoryInterface $configFactory;
-
-  /**
-   * The UtiliKit service provider.
-   *
-   * @var \Drupal\utilikit\Service\UtilikitServiceProvider
-   */
-  protected UtilikitServiceProvider $serviceProvider;
-
-  /**
-   * The state service.
-   *
-   * @var \Drupal\Core\State\StateInterface
-   */
-  protected StateInterface $state;
-
-  /**
    * Constructs a UtilikitCommands object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
@@ -52,14 +31,11 @@ final class UtilikitCommands extends DrushCommands {
    *   The state service.
    */
   public function __construct(
-    ConfigFactoryInterface $configFactory,
-    UtilikitServiceProvider $serviceProvider,
-    StateInterface $state,
+    protected readonly ConfigFactoryInterface $configFactory,
+    protected readonly UtilikitServiceProvider $serviceProvider,
+    protected readonly StateInterface $state,
   ) {
     parent::__construct();
-    $this->configFactory = $configFactory;
-    $this->serviceProvider = $serviceProvider;
-    $this->state = $state;
   }
 
   /**
