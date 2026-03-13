@@ -3,6 +3,11 @@
 #
 # Runs coding standards checks and PHPUnit test suites (unit, kernel,
 # functional) against a Drupal 11 environment.
+#
+# If jobs fail with "Insufficient cpu" or "didn't match Pod's node
+# affinity/selector", the cluster has no node with enough CPU for the
+# runner; use a runner with sufficient resources or ask the GitLab
+# admin to scale/relax node affinity.
 ###############################################################################
 
 variables:
@@ -62,6 +67,7 @@ build:
 
 # ---------------------------------------------------------------------------
 # Lint: Drupal coding standards (advisory)
+# Install PHPCS + Coder in a temp dir to avoid global Composer issues in CI.
 # ---------------------------------------------------------------------------
 phpcs:
   stage: lint
@@ -70,10 +76,14 @@ phpcs:
   before_script:
     - apt-get update && apt-get install -y git unzip
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-    - mkdir -p "$HOME/.composer"
-    - composer global require --no-progress drupal/coder:^8.3 dealerdirect/phpcodesniffer-composer-installer:^1.0
-    - export PATH="$HOME/.composer/vendor/bin:$PATH"
-    - phpcs -i
+    - |
+      export PHPCS_DIR=$(mktemp -d)
+      cd "$PHPCS_DIR"
+      composer init -q --name=ci/phpcs
+      composer require --no-progress drupal/coder:^8.3 dealerdirect/phpcodesniffer-composer-installer:^1.0
+      export PATH="$PHPCS_DIR/vendor/bin:$PATH"
+      phpcs -i
+      cd -
   script:
     - phpcs --standard=Drupal,DrupalPractice --extensions=php,module,install,inc src/ modules/ || true
   allow_failure: true

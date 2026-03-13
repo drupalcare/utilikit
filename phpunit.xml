@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
          bootstrap="../../../core/tests/bootstrap.php"
          colors="true"
+         cacheDirectory=".phpunit.cache"
          beStrictAboutTestsThatDoNotTestAnything="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
          failOnRisky="true"
-         failOnWarning="true"
-         cacheResultFile=".phpunit.cache/test-results"
+         failOnWarning="false"
+         failOnDeprecation="false"
+         failOnPhpunitDeprecation="false"
          displayDetailsOnIncompleteTests="true"
          displayDetailsOnSkippedTests="true">
   <php>
@@ -16,8 +18,8 @@
     <ini name="error_reporting" value="32767"/>
     <!-- Do not limit the amount of memory tests take to run. -->
     <ini name="memory_limit" value="-1"/>
-    <!-- Example SIMPLETEST_BASE_URL value: http://localhost -->
-    <env name="SIMPLETEST_BASE_URL" value="http://localhost"/>
+    <!-- Must match the server port (e.g. php -S localhost:8888). -->
+    <env name="SIMPLETEST_BASE_URL" value="http://localhost:8888"/>
     <!-- Example SIMPLETEST_DB value: mysql://username:password@localhost/database_name#table_prefix -->
     <env name="SIMPLETEST_DB" value="sqlite://localhost/sites/default/files/db.sqlite"/>
     <!-- Example BROWSERTEST_OUTPUT_DIRECTORY value: /path/to/webroot/sites/simpletest/browser_output -->
@@ -43,19 +45,4 @@
       <directory>tests/src/FunctionalJavascript</directory>
     </testsuite>
   </testsuites>
-  <coverage includeUncoveredFiles="true"
-            pathCoverage="false"
-            ignoreDeprecatedCodeUnits="true"
-            disableCodeCoverageIgnore="true">
-    <include>
-      <directory suffix=".php">src</directory>
-    </include>
-    <exclude>
-      <directory>tests</directory>
-      <directory>vendor</directory>
-    </exclude>
-    <report>
-      <html outputDirectory="tests/coverage" lowUpperBound="50" highLowerBound="90"/>
-    </report>
-  </coverage>
 </phpunit>

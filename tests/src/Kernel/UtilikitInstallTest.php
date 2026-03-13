@@ -269,8 +269,8 @@ class UtilikitInstallTest extends KernelTestBase {
     $this->container->set('file_system', $mockFileSystem);
 
     // We'll need to mock is_writable in the install file
-    // For now, we'll skip this specific test scenario.
-    $this->markTestIncomplete('Testing non-writable directories requires additional mocking infrastructure');
+    // For now, skip this specific test scenario.
+    $this->markTestSkipped('Testing non-writable directories requires additional mocking infrastructure');
   }
 
   /**

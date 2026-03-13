@@ -633,6 +633,43 @@ UtiliKit supports all modern browsers:
 3. Set up local Drupal site with UtiliKit enabled
 4. Enable development mode in UtiliKit settings
 
+### Running CI checks locally
+
+You can run the same tests and lint as GitLab CI without pushing to drupalcode.org.
+
+**Option A — Use the script (recommended)**
+
+From the module repo root:
+
+```bash
+chmod +x scripts/run-ci-locally.sh
+./scripts/run-ci-locally.sh
+```
+
+This creates a Drupal 11 project in `./build/drupal` (if needed), copies the module in, and runs unit, kernel, functional, and PHPCS. Optional env vars:
+
+- `DRUPAL_ROOT=/path/to/your/drupal` — use an existing Drupal root (syncs this repo into `web/modules/contrib/utilikit` and runs tests).
+- `SKIP_FUNCTIONAL=1` — skip functional tests (avoids starting the PHP built-in server).
+- `SKIP_PHPCS=1` — skip coding standards.
+- `BUILD_DIR=/path` — where to create Drupal when not using `DRUPAL_ROOT` (default: `./build/drupal`).
+
+**Option B — Use an existing Drupal site**
+
+If the module is already at `web/modules/contrib/utilikit` in your Drupal project, from the **Drupal project root** (parent of `web/`):
+
+```bash
+# Unit tests
+./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --bootstrap web/core/tests/bootstrap.php --testsuite unit
+
+# Kernel tests
+./vendor/bin/phpunit -c web/modules/contrib/utilikit/phpunit.xml --bootstrap web/core/tests/bootstrap.php --testsuite kernel
+
+# PHPCS (from module repo root, with phpcs on PATH)
+phpcs --standard=Drupal,DrupalPractice --extensions=php,module,install,inc src/ modules/
+```
+
+Ensure the Drupal project has dev dependencies: `composer require --dev drupal/core-dev`.
+
 ### Coding Standards
 
 - Follow Drupal coding standards for PHP
