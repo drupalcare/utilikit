@@ -119,6 +119,6 @@
     "npm": ">=8.0.0"
   },
   "devDependencies": {
-    "jest-environment-jsdom": "^30.0.5"
+    "jest-environment-jsdom": "^30.4.1"
   }
 }
