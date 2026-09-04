@@ -25,7 +25,7 @@ use Drupal\utilikit_test\Service\TestGenerator;
  * The service requires the utilikit_test module to be enabled as it depends
  * on the TestGenerator service to enumerate all possible utility classes.
  */
-class UtilikitTestCssGenerator {
+class UtilikitTestCssGenerator implements UtilikitTestCssGeneratorInterface {
 
   /**
    * Constructs a new UtilikitTestCssGenerator.

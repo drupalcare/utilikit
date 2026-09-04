@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Functional;
 
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+
 /**
  * Tests the UtiliKit AJAX endpoint access control.
  *
@@ -13,6 +15,7 @@ namespace Drupal\Tests\utilikit\Functional;
  *
  * @group utilikit
  */
+#[RunTestsInSeparateProcesses]
 class UtilikitAjaxTest extends UtilikitFunctionalTestBase {
 
   /**

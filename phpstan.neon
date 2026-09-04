@@ -1,0 +1,51 @@
+# PHPStan configuration for UtiliKit.
+#
+# There is deliberately no baseline file, matching paragraphs_bundles and
+# vvj_core. That policy is not stylistic: paragraphs_bundles records that its
+# suppression list started at 145 entries and burning it down found five
+# shipped defects — three live fatals, a silent data-loss bug, and a dead
+# conditional-fields branch. A suppressed finding in this codebase has a poor
+# track record of being noise. Fix new findings rather than running
+# `--generate-baseline`.
+#
+# LEVEL 5, AND WHY NOT max YET. Measured on Drupal 12, 2026-09-03: this
+# module's shipped code passes level 5 with zero findings, and level 6 reports
+# 173 — almost all `missingType.iterableValue`, which is docblock debt rather
+# than defect. `max` is the target the sibling projects already hold, and the
+# honest way to reach it is to pay down those 173 and raise this number, not to
+# declare `max` here and let the pipeline sit red. A gate at 5 that is green
+# and enforced is worth more than a gate at max that everyone learns to ignore.
+#
+# `level: max` is not one level, for when this is raised. On PHPStan 1.x it
+# means 9; on 2.x it means 10, which adds the `mixed` strictness rules, and
+# drupal.org CI runs 2.x. CI also passes `.` on the command line, which
+# OVERRIDES the `paths` below — so the job analyses strictly more code, more
+# strictly, than any local run. A clean local run is evidence about this
+# machine, not about the gate.
+parameters:
+  level: 5
+  paths:
+    - src
+    - utilikit.module
+    - utilikit.install
+    # The four sub-modules (examples, help, playground, test) ship their own
+    # PHP. Omitting them would leave the shipped surface unanalysed, which is
+    # exactly the gap paragraphs_bundles found in its own config.
+    - modules
+  excludePaths:
+    - vendor (?)
+    # Drush is a host-site dependency, not a package dependency, so the
+    # DrushCommands base class is unresolvable at analysis time. Matches
+    # vvj_core and paragraphs_bundles. The command is a thin wrapper; its
+    # logic lives in the analysed services.
+    - src/Commands
+    # Tests are validated by PHPUnit; PHPStan scopes to shipped code, the same
+    # split paragraphs_bundles makes. Measured 2026-09-03: the test suite
+    # carries 51 findings of its own — mock and trait-resolution artefacts,
+    # deprecated PHPUnit assertions, and container nullability — none of them
+    # in shipped code. Analysing them here would hold the gate red on problems
+    # PHPUnit is the right tool to catch. Worth revisiting once that backlog is
+    # paid down.
+    - tests
+    - modules/*/tests/*
+  treatPhpDocTypesAsCertain: false

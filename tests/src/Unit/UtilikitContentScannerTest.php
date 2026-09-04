@@ -10,6 +10,7 @@ use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitContentScanner;
 use Drupal\utilikit\Service\UtilikitRules;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -90,8 +91,8 @@ class UtilikitContentScannerTest extends UnitTestCase {
    * Tests extractClassesFromHtml with valid HTML.
    *
    * @covers ::extractClassesFromHtml
-   * @dataProvider providerValidHtml
    */
+  #[DataProvider('providerValidHtml')]
   public function testExtractClassesFromHtmlValid(string $html, array $expected): void {
     $result = $this->contentScanner->extractClassesFromHtml($html);
     $this->assertEquals($expected, $result);

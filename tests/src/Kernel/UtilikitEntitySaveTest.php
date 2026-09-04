@@ -14,12 +14,14 @@ use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\utilikit\Service\UtilikitConstants;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests entity save hooks and CSS auto-update functionality.
  *
  * @group utilikit
  */
+#[RunTestsInSeparateProcesses]
 class UtilikitEntitySaveTest extends KernelTestBase {
 
   /**

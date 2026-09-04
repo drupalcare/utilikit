@@ -13,6 +13,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *
  * Renders the test suite page that validates all utility classes and
  * displays CSS generation behavior organized by category.
+ *
+ * @phpstan-consistent-constructor
+ *   Drupal's create() factory returns `new static()`. PHPStan treats that as
+ *   unsafe on a non-final class because a subclass could declare a different
+ *   constructor. This class's constructor is the contract subclasses inherit,
+ *   which is what the annotation asserts.
  */
 class TestSuiteController extends ControllerBase {
 

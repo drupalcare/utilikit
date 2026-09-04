@@ -500,17 +500,90 @@
     const stateSuffix = stateMatch ? ` (${pseudoStateMap[stateMatch[1]]})` : '';
 
     if (value === 'auto') return `${prop}: auto`;
+
+    // Which value grammar applies is decided by the prefix, not the value.
+    // Without this, every value fell through to the numeric branch below and
+    // was given a 'px' suffix — so a colour read as "1e40afpx" and a keyword
+    // as "gridpx".
+    const prefixMatch = className.match(/^uk-(?:[a-z]+-)?([a-z]+)--/);
+    const key = prefixMatch ? prefixMatch[1] : '';
+    const COLOR_PREFIXES = ['bg', 'tc', 'bc'];
+    const KEYWORD_PREFIXES = [
+      'ac', 'ai', 'bs', 'bz', 'cl', 'cu', 'dp', 'fd',
+      'fl', 'fx', 'jc', 'ov', 'ps', 'ta', 'us',
+    ];
+    const UNITLESS_PREFIXES = [
+      'ar', 'fg', 'fk', 'fw', 'gc', 'gl', 'gr', 'gw', 'or', 'sc', 'zi',
+    ];
+
+    // Colours: "<hex>[-<alpha 0-100>][-h|f|a]".
+    if (COLOR_PREFIXES.includes(key)) {
+      const bare = value.replace(/-(h|f|a)$/, '');
+      const colorMatch = bare.match(/^([0-9a-fA-F]{3}|[0-9a-fA-F]{6})(?:-(\d{1,3}))?$/);
+      if (colorMatch) {
+        const hex = `#${colorMatch[1]}`;
+        const alpha = colorMatch[2] !== undefined
+          ? ` at ${Math.min(parseInt(colorMatch[2], 10), 100)}% opacity`
+          : '';
+        return `${prop}: ${hex}${alpha}${stateSuffix}`;
+      }
+      return `${prop}: ${bare}${stateSuffix}`;
+    }
+
+    // Keywords take the value verbatim — no unit.
+    if (KEYWORD_PREFIXES.includes(key)) {
+      return `${prop}: ${value.replace(/-/g, ' ')}`;
+    }
+
+    // Opacity is authored 0-100 and emitted as a 0-1 decimal.
+    if (key === 'op') {
+      const n = parseInt(value, 10);
+      return Number.isNaN(n) ? `${prop}: ${value}` : `${prop}: ${Math.min(n, 100) / 100}`;
+    }
+
+    // Per-side values: "t|r|b|l-<value>".
     if (value.includes('-')) {
       const subParts = value.split('-');
       if (['t', 'r', 'b', 'l'].includes(subParts[0])) {
         const sideMap = { t: 'block-start', r: 'inline-end', b: 'block-end', l: 'inline-start' };
-        return `${prop}-${sideMap[subParts[0]]}: ${subParts[1]}px`;
+        const sideValue = subParts.slice(1).join('-');
+        return `${prop}-${sideMap[subParts[0]]}: ${formatNumeric(sideValue, key)}`;
+      }
+      // Otherwise it is CSS shorthand: "10-24" means "10px 24px".
+      const shorthand = subParts.map((part) => formatNumeric(part, key));
+      if (shorthand.every((part) => part !== null)) {
+        return `${prop}: ${shorthand.join(' ')}`;
       }
     }
 
-    const unit = value.endsWith('pr') ? '%' : 'px';
-    const numValue = value.replace('pr', '').replace(/-(h|f|a)$/, '');
-    return `${prop}: ${numValue}${unit}${stateSuffix}`;
+    // Unitless numbers.
+    if (UNITLESS_PREFIXES.includes(key)) {
+      return `${prop}: ${value.replace(/d/g, '.')}`;
+    }
+
+    return `${prop}: ${formatNumeric(value.replace(/-(h|f|a)$/, ''), key)}${stateSuffix}`;
+  }
+
+  /**
+   * Formats a numeric utility value the way the CSS generator does.
+   *
+   * 'd' is the decimal separator, 'pr' means percent, and px is the default
+   * unit when none is given.
+   */
+  function formatNumeric(raw, prefix) {
+    if (raw === 'auto') return 'auto';
+    const match = raw.match(/^(\d+(?:d\d+)?)(px|pr|em|rem|vh|vw)?$/);
+    if (!match) return raw;
+    const number = match[1].replace(/d/g, '.');
+
+    // line-height with no explicit unit and a value of 10 or less is emitted
+    // unitless by the CSS generator.
+    if (prefix === 'lh' && !match[2] && parseFloat(number) <= 10) {
+      return number;
+    }
+
+    const unit = match[2] === 'pr' ? '%' : (match[2] || 'px');
+    return `${number}${unit}`;
   }
 
   /**

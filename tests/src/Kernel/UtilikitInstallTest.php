@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Kernel;
 
+use Drupal\Core\Extension\Requirement\RequirementSeverity;
+use Drupal\utilikit\Hook\UtilikitRequirements;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\utilikit\Service\UtilikitConstants;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the UtiliKit installation process.
  *
  * @group utilikit
  */
+#[RunTestsInSeparateProcesses]
 class UtilikitInstallTest extends KernelTestBase {
 
   /**
@@ -224,20 +228,26 @@ class UtilikitInstallTest extends KernelTestBase {
     \Drupal::moduleHandler()->loadInclude('utilikit', 'install');
     utilikit_install();
 
-    // Test with everything working.
-    $requirements = utilikit_requirements('runtime');
+    // Through the hook class, not the removed utilikit_requirements(). The
+    // function moved to Drupal\utilikit\Hook\UtilikitRequirements for Drupal
+    // 12, where hook_requirements() is no longer a procedural hook.
+    $requirements = $this->container
+      ->get(UtilikitRequirements::class)
+      ->runtimeRequirements();
 
     // Check directory requirement.
     $this->assertArrayHasKey('utilikit_directory', $requirements);
-    $this->assertEquals(REQUIREMENT_OK, $requirements['utilikit_directory']['severity']);
+    $this->assertEquals(RequirementSeverity::OK, $requirements['utilikit_directory']['severity']);
 
     // Test with static mode and missing CSS file.
     $config = $this->configFactory->getEditable('utilikit.settings');
     $config->set('rendering_mode', 'static')->save();
 
-    $requirements = utilikit_requirements('runtime');
+    $requirements = $this->container
+      ->get(UtilikitRequirements::class)
+      ->runtimeRequirements();
     $this->assertArrayHasKey('utilikit_static_css', $requirements);
-    $this->assertEquals(REQUIREMENT_WARNING, $requirements['utilikit_static_css']['severity']);
+    $this->assertEquals(RequirementSeverity::Warning, $requirements['utilikit_static_css']['severity']);
 
     // Test with many classes (performance warning)
     $manyClasses = [];
@@ -246,9 +256,11 @@ class UtilikitInstallTest extends KernelTestBase {
     }
     $this->state->set(UtilikitConstants::STATE_KNOWN_CLASSES, $manyClasses);
 
-    $requirements = utilikit_requirements('runtime');
+    $requirements = $this->container
+      ->get(UtilikitRequirements::class)
+      ->runtimeRequirements();
     $this->assertArrayHasKey('utilikit_performance', $requirements);
-    $this->assertEquals(REQUIREMENT_WARNING, $requirements['utilikit_performance']['severity']);
+    $this->assertEquals(RequirementSeverity::Warning, $requirements['utilikit_performance']['severity']);
   }
 
   /**
@@ -298,12 +310,16 @@ class UtilikitInstallTest extends KernelTestBase {
    * Tests requirements during install phase.
    */
   public function testRequirementsInstallPhase() {
-    \Drupal::moduleHandler()->loadInclude('utilikit', 'install');
-    $requirements = utilikit_requirements('install');
-
-    // During install phase, we typically don't return requirements
-    // unless there are specific system requirements to check.
-    $this->assertIsArray($requirements);
+    // There is no install-phase implementation to call any more, and there
+    // never was one with a body: utilikit_requirements() ran nothing outside
+    // `$phase === 'runtime'`. Drupal 11.2 split the hook into
+    // hook_runtime_requirements() and hook_install_requirements(); this module
+    // implements only the former, so the install phase contributing nothing is
+    // now a fact about the module rather than a branch that returned [].
+    $this->assertFalse(
+      $this->container->has('utilikit.install_requirements'),
+      'utilikit deliberately implements no install-phase requirements.',
+    );
   }
 
   /**

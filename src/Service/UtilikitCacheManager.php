@@ -210,24 +210,39 @@ class UtilikitCacheManager implements UtilikitCacheManagerInterface {
    *   - js_optimizer: JS optimizer service availability
    */
   public function getCacheServiceStatus(): array {
+    // Three of these are required, non-nullable constructor arguments, so the
+    // container cannot build this service without them and their `!== NULL`
+    // checks could only ever answer TRUE — reporting an availability the
+    // method was in no position to determine. Those three are stated as
+    // constants. `pageCache` and `dynamicPageCache` are optional arguments
+    // defaulting to NULL, so their checks are meaningful and remain.
     return [
-      'render_cache' => $this->renderCache !== NULL,
+      'render_cache' => TRUE,
+      // These two ARE optional constructor arguments and genuinely can be
+      // NULL, so their checks are real and stay.
       'page_cache' => $this->pageCache !== NULL,
       'dynamic_page_cache' => $this->dynamicPageCache !== NULL,
-      'css_optimizer' => $this->cssOptimizer !== NULL,
-      'js_optimizer' => $this->jsOptimizer !== NULL,
+      'css_optimizer' => TRUE,
+      'js_optimizer' => TRUE,
     ];
   }
 
   /**
    * Clears the render cache.
    *
-   * Invalidates all render cache entries. Exceptions are caught and handled
+   * Deletes all render cache entries. Exceptions are caught and handled
    * silently to prevent cache clearing failures from breaking the system.
    */
   private function clearRenderCache(): void {
     try {
-      $this->renderCache->invalidateAll();
+      // deleteAll(), not invalidateAll(). `CacheBackendInterface` dropped
+      // invalidateAll() in Drupal 12 — verified by diffing the interface
+      // against 11.4.5, where it is still present — so the old call is a
+      // fatal on a core version this module declares support for.
+      // deleteAll() exists in 10, 11 and 12 alike, and it is the closer match
+      // to what this method documents: clearing the cache, not marking it
+      // stale.
+      $this->renderCache->deleteAll();
     }
     catch (\Exception $e) {
       $this->logger->warning('Failed to clear render cache: @message', [

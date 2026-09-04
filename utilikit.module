@@ -56,7 +56,8 @@ function _utilikit_helper_render_readme(): string {
   $text = file_get_contents($readme_path);
 
   if ($text === FALSE) {
-    return t('README.md file not found.');
+    // Cast: t() returns TranslatableMarkup, and this function declares string.
+    return (string) t('README.md file not found.');
   }
 
   if (!\Drupal::moduleHandler()->moduleExists('markdown')) {
@@ -439,7 +440,8 @@ function utilikit_update_classes(array $classes, bool $force = FALSE): void {
   if (!$force) {
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
     foreach ($backtrace as $call) {
-      if (isset($call['function']) && $call['function'] === 'utilikit_entity_presave') {
+      // No isset(): every debug_backtrace() frame carries a 'function' key.
+      if ($call['function'] === 'utilikit_entity_presave') {
         return;
       }
     }

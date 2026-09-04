@@ -292,16 +292,24 @@ final class UtilikitCommands extends DrushCommands {
       $this->io()->warning([
         'No UtiliKit utility classes found in scanned content.',
         'This could mean:',
+        '  • The scanned entity types have no rich-text field to scan.',
+        '    A content type with no body field has nothing for the scanner to read,',
+        '    and entities of that type are still counted as scanned.',
+        '  • The text format strips class attributes on save.',
+        '    Basic HTML and Restricted HTML both remove them; Full HTML keeps them.',
         '  • No content is using UtiliKit utility classes yet',
-        '  • The scanned entity types don\'t contain UtiliKit classes',
         '  • UtiliKit classes are in entity types not included in the scan',
       ]);
 
       $this->io()->note([
         'Next steps:',
-        '  1. Add UtiliKit classes to your content (e.g., uk-pd--20, uk-bg--primary)',
-        '  2. Verify scanning configuration: drush utilikit:status',
-        '  3. Try scanning different entity types: drush utilikit:scan --entity-types=node,block_content',
+        '  1. Check that the entity types you are scanning have a rich-text field',
+        '     (Structure > Content types > Manage fields).',
+        '  2. Check the field\'s text format allows class attributes — use Full HTML.',
+        '  3. Add UtiliKit classes to your content, e.g. uk-pd--20 uk-bg--f0f9ff,',
+        '     remembering the required "utilikit" base class on the same element.',
+        '  4. Verify scanning configuration: drush utilikit:status',
+        '  5. Try scanning different entity types: drush utilikit:scan --entity-types=node,block_content',
       ]);
     }
   }

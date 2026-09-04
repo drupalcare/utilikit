@@ -28,6 +28,12 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * operation in production environments.
  *
  * @package Drupal\utilikit\Controller
+ *
+ * @phpstan-consistent-constructor
+ *   Drupal's create() factory returns `new static()`. PHPStan treats that as
+ *   unsafe on a non-final class because a subclass could declare a different
+ *   constructor. This class's constructor is the contract subclasses inherit,
+ *   which is what the annotation asserts.
  */
 class UtilikitAjaxController extends ControllerBase {
 
@@ -301,14 +307,14 @@ class UtilikitAjaxController extends ControllerBase {
           }
 
           $this->logger->info('CSS updated in head mode with @count classes.', [
-            '@count' => count($validClasses ?? []),
+            '@count' => count($validClasses),
           ]);
 
           return $this->createSuccessResponse(
             'CSS updated successfully in head mode.',
             [
               'mode' => 'head',
-              'count' => count($validClasses ?? []),
+              'count' => count($validClasses),
               'css' => $css ?? '',
               'timestamp' => $this->time->getRequestTime(),
             ]
@@ -407,6 +413,15 @@ class UtilikitAjaxController extends ControllerBase {
 
     // Process queue items up to batch limit.
     while ($item = $queue->claimItem()) {
+      // QueueInterface::claimItem() is documented as returning an object or
+      // FALSE, but it declares no return type, so nothing guarantees a truthy
+      // value is an object. Reading ->data on a non-object would be a fatal in
+      // a queue worker, where it would be seen as a stuck queue rather than an
+      // error.
+      if (!is_object($item)) {
+        break;
+      }
+
       if ($processed >= UtilikitConstants::QUEUE_PROCESSING_LIMIT) {
         $queue->releaseItem($item);
         break;
@@ -485,15 +500,39 @@ class UtilikitAjaxController extends ControllerBase {
       return new Response('', 204);
     }
 
+    // Hide the button when every automatic update trigger is enabled: saving
+    // content already adds new classes, so a manual update has nothing left to
+    // do. If any trigger is off the button still earns its place, because
+    // content of that kind will not refresh the CSS on its own.
+    $triggers = [
+      'update_on_node_save',
+      'update_on_block_save',
+      'update_on_paragraph_save',
+    ];
+    $allAutomatic = TRUE;
+    foreach ($triggers as $trigger) {
+      if (!$config->get($trigger)) {
+        $allAutomatic = FALSE;
+        break;
+      }
+    }
+    if ($allAutomatic) {
+      return new Response('', 204);
+    }
+
     $build = [
       '#theme' => 'utilikit_update_button',
       '#cache' => [
         'contexts' => ['user.permissions'],
-        'tags' => [UtilikitConstants::CACHE_TAG_CONFIG],
+        'tags' => [UtilikitConstants::CACHE_TAG_CONFIG, 'config:utilikit.settings'],
       ],
     ];
 
-    $html = $this->renderer->renderPlain($build);
+    // renderInIsolation(), not renderPlain(). renderPlain() was deprecated in
+    // Drupal 10.3 and REMOVED in Drupal 12 — verified by grepping
+    // RendererInterface in 11.4.5 (present) and 12 (absent) — so the old call
+    // was a fatal on a core version this module declares support for.
+    $html = $this->renderer->renderInIsolation($build);
 
     return new Response((string) $html, 200, [
       'Content-Type' => 'text/html',

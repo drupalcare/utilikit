@@ -42,7 +42,13 @@ package: UtiliKit
 # Supports both Drupal 10 and 11 for broad compatibility
 # Uses modern dependency injection and service architecture
 # Leverages current Drupal APIs for optimal performance and security
-core_version_requirement: ^10 || ^11
+# Drupal 10 is deliberately not claimed. Two D12 changes force it:
+# renderPlain() was removed in favour of renderInIsolation() (10.3+),
+# and the REQUIREMENT_* constants were replaced by the
+# RequirementSeverity enum, which does not exist before 11.2. There is
+# no single expression that serves both 10.x and 12, and advertising a
+# core version the code fatals on is the defect this pass exists to fix.
+core_version_requirement: ^11.2 || ^12
 
 # =============================================================================
 # CONFIGURATION AND INTEGRATION

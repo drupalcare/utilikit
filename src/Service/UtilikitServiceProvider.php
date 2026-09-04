@@ -287,7 +287,7 @@ class UtilikitServiceProvider {
    * @return \Drupal\utilikit\Service\UtilikitTestCssGenerator|null
    *   The test CSS generator service, or NULL if not available.
    */
-  public function getTestCssGenerator(): ?UtilikitTestCssGenerator {
+  public function getTestCssGenerator(): ?UtilikitTestCssGeneratorInterface {
     return $this->testCssGenerator;
   }
 

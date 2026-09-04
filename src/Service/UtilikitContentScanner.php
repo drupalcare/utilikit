@@ -237,6 +237,13 @@ class UtilikitContentScanner {
     }
 
     foreach ($nodes as $node) {
+      // getAttribute() is declared on DOMElement, not on DOMNode. An XPath
+      // query returns DOMNode|DOMNameSpaceNode, so an attribute or namespace
+      // node reaching this loop would be a fatal. Narrow rather than assume.
+      if (!$node instanceof \DOMElement) {
+        continue;
+      }
+
       $classAttr = $node->getAttribute('class');
       $elementClasses = preg_split('/\s+/', trim($classAttr));
 

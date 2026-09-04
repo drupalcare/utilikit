@@ -6,6 +6,7 @@ namespace Drupal\Tests\utilikit\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Traits\ResponseHelperTrait;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
@@ -36,8 +37,8 @@ class ResponseHelperTraitTest extends UnitTestCase {
    * Tests createJsonResponse method.
    *
    * @covers ::createJsonResponse
-   * @dataProvider providerJsonResponse
    */
+  #[DataProvider('providerJsonResponse')]
   public function testCreateJsonResponse($status, $message, $data, $statusCode, $expected) {
     $response = $this->traitObject->createJsonResponsePublic($status, $message, $data, $statusCode);
 
@@ -265,8 +266,8 @@ class ResponseHelperTraitTest extends UnitTestCase {
    * Tests HTTP status codes.
    *
    * @covers ::createJsonResponse
-   * @dataProvider providerStatusCodes
    */
+  #[DataProvider('providerStatusCodes')]
   public function testHttpStatusCodes($statusCode) {
     $response = $this->traitObject->createJsonResponsePublic('test', 'Testing status', [], $statusCode);
     $this->assertEquals($statusCode, $response->getStatusCode());

@@ -3,6 +3,12 @@ type: module
 description: 'Comprehensive documentation and help system for UtiliKit module with interactive examples and user-friendly guides.'
 package: 'UtiliKit'
 configure: utilikit_help.documentation
-core_version_requirement: ^10 || ^11
+# Matches the parent exactly, and must keep matching it. Every module here
+# declares `utilikit:utilikit` as a dependency, so it can only ever run where
+# utilikit runs — claiming ^10 advertised a Drupal 10 install that the
+# dependency would refuse, and ^11.0/^11.1 a Drupal 11 that utilikit's own
+# RequirementSeverity use fatals on. A submodule's version claim is a promise
+# about the whole stack, not about its own file.
+core_version_requirement: ^11.2 || ^12
 dependencies:
   - utilikit:utilikit

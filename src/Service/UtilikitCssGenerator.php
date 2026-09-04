@@ -478,8 +478,11 @@ class UtilikitCssGenerator {
       }
     }
 
-    // Validate we got 1-4 values.
-    if (empty($values) || count($values) > 4) {
+    // Validate we got no more than 4 values. The lower bound needs no check:
+    // explode() always yields at least one part, and every path through the
+    // loop above either appends a value or returns NULL, so $values cannot be
+    // empty here.
+    if (count($values) > 4) {
       return NULL;
     }
 
@@ -762,8 +765,8 @@ class UtilikitCssGenerator {
    * @param string $suffix
    *   The color value suffix (hex with optional alpha).
    *
-   * @return string|null
-   *   Generated CSS color declaration or NULL if invalid color.
+   * @return array|null
+   *   The generated colour declaration, or NULL if the colour is invalid.
    */
   private function applyColorRule(array $rule, string $suffix): ?array {
     $result = $this->parseColorWithAlpha($suffix);

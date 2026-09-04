@@ -1115,8 +1115,9 @@ class TestGenerator {
       }
     }
 
-    // Remove duplicates and filter out any empty values.
-    $classes = array_unique(array_filter($classes));
+    // Only array_unique() is needed: every element is a generated class name
+    // built from a non-empty prefix, so array_filter() could never remove one.
+    $classes = array_unique($classes);
 
     return $classes;
   }

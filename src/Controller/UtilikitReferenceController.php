@@ -17,6 +17,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * available UtiliKit utility classes, their usage patterns, examples, and
  * interactive demonstrations. It organizes utility classes by category and
  * provides copy-to-clipboard functionality and live preview capabilities.
+ *
+ * @phpstan-consistent-constructor
+ *   Drupal's create() factory returns `new static()`. PHPStan treats that as
+ *   unsafe on a non-final class because a subclass could declare a different
+ *   constructor. This class's constructor is the contract subclasses inherit,
+ *   which is what the annotation asserts.
  */
 class UtilikitReferenceController extends ControllerBase {
 

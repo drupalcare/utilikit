@@ -142,7 +142,7 @@ class UtilikitCacheManagerTest extends UnitTestCase {
       ->with($expectedTags);
 
     $this->renderCache->expects($this->once())
-      ->method('invalidateAll');
+      ->method('deleteAll');
 
     $this->cacheManager->clearCssCaches();
   }
@@ -168,7 +168,7 @@ class UtilikitCacheManagerTest extends UnitTestCase {
       ->with($expectedTags);
 
     $this->renderCache->expects($this->once())
-      ->method('invalidateAll');
+      ->method('deleteAll');
 
     $this->pageCache->expects($this->once())
       ->method('deleteAll');

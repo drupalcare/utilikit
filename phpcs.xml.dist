@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="UtiliKit">
+  <description>Drupal + DrupalPractice coding standards for UtiliKit.</description>
+
+  <rule ref="Drupal"/>
+  <rule ref="DrupalPractice"/>
+
+  <arg name="colors"/>
+  <arg value="sp"/>
+  <arg name="extensions" value="php,module,inc,install,test,profile,theme"/>
+
+  <!-- The four sub-modules ship their own PHP. paragraphs_bundles learned this
+       the hard way: its bundle sub-modules sat outside the analysed paths and
+       so were never checked at all, and the parent module alone is not the
+       shipped surface. -->
+  <file>src</file>
+  <file>modules</file>
+  <file>tests</file>
+  <file>utilikit.module</file>
+  <file>utilikit.install</file>
+
+  <exclude-pattern>*/vendor/*</exclude-pattern>
+  <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+  <!-- JavaScript is deliberately NOT sniffed here, matching vvj_core.
+       paragraphs_bundles does sniff it, and pays for it with a documented
+       exclusion: PHPCS and Prettier make contradictory demands on switch
+       statements, and both gate the drupal.org pipeline. UtiliKit ships a
+       large JS surface, so turning this on is a deliberate decision to make
+       with the conflict understood — not a default to inherit by accident. -->
+</ruleset>

@@ -26,6 +26,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Provides administrative interface for configuring rendering mode,
  * performance settings, scope controls, cache management, and developer
  * tools for the UtiliKit utility class system.
+ *
+ * @phpstan-consistent-constructor
+ *   Drupal's create() factory returns `new static()`. PHPStan treats that as
+ *   unsafe on a non-final class because a subclass could declare a different
+ *   constructor. This class's constructor is the contract subclasses inherit,
+ *   which is what the annotation asserts.
  */
 class UtilikitSettingsForm extends ConfigFormBase {
 
@@ -462,8 +468,20 @@ class UtilikitSettingsForm extends ConfigFormBase {
     }
 
     try {
-      /** @var \Drupal\utilikit\UtilikitTestCssGeneratorInterface $generator */
+      /** @var \Drupal\utilikit\Service\UtilikitTestCssGeneratorInterface|null $generator */
       $generator = $this->serviceProvider->getTestCssGenerator();
+
+      // getTestCssGenerator() is nullable and the module check above is not
+      // enough on its own: the module can be enabled while the service is
+      // still unavailable — during install, or if the container has not been
+      // rebuilt since. Calling a method on NULL here would be a fatal on a
+      // button a site builder can press.
+      if ($generator === NULL) {
+        $this->messenger()->addError($this->t('The test CSS generator is not available. Rebuild caches and try again.'));
+        $form_state->setRebuild(TRUE);
+        return;
+      }
+
       $result = $generator->generateCompleteTestCss();
 
       if (!empty($result['success'])) {

@@ -23,6 +23,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   title = @Translation("UtiliKit CSS Processor"),
  *   cron = {"time" = 30}
  * )
+ *
+ * @phpstan-consistent-constructor
+ *   Drupal's create() factory returns `new static()`. PHPStan treats that as
+ *   unsafe on a non-final class because a subclass could declare a different
+ *   constructor. This class's constructor is the contract subclasses inherit,
+ *   which is what the annotation asserts.
  */
 class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPluginInterface {
 

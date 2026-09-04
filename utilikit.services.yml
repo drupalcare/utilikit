@@ -162,3 +162,9 @@ services:
 # - Cache manager provides cross-cutting caching support for all operations
 # - State manager provides persistent storage for all services
 # - Logger provides centralized monitoring and debugging capabilities
+
+  # Runtime requirements, moved out of utilikit.install for Drupal 12 (see the
+  # class docblock). Autowired so its three dependencies stay injected rather
+  # than fetched statically.
+  Drupal\utilikit\Hook\UtilikitRequirements:
+    autowire: true

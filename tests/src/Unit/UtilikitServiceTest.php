@@ -6,6 +6,7 @@ namespace Drupal\Tests\utilikit\Unit;
 
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitService;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 
@@ -78,8 +79,8 @@ class UtilikitServiceTest extends UnitTestCase {
    * Tests getRenderingMode with valid values.
    *
    * @covers ::getRenderingMode
-   * @dataProvider renderingModeProvider
    */
+  #[DataProvider('renderingModeProvider')]
   public function testGetRenderingModeValid($configValue, $expectedResult) {
     $this->config->expects($this->once())
       ->method('get')
@@ -139,8 +140,8 @@ class UtilikitServiceTest extends UnitTestCase {
    * Tests getScope with valid values.
    *
    * @covers ::getScope
-   * @dataProvider scopeProvider
    */
+  #[DataProvider('scopeProvider')]
   public function testGetScopeValid($configValue, $expectedResult) {
     $this->config->expects($this->once())
       ->method('get')
@@ -185,8 +186,8 @@ class UtilikitServiceTest extends UnitTestCase {
    * Tests isStaticMode method.
    *
    * @covers ::isStaticMode
-   * @dataProvider staticModeProvider
    */
+  #[DataProvider('staticModeProvider')]
   public function testIsStaticMode($configValue, $expectedResult) {
     $this->config->expects($this->once())
       ->method('get')
@@ -216,8 +217,8 @@ class UtilikitServiceTest extends UnitTestCase {
    * Tests isDevMode method.
    *
    * @covers ::isDevMode
-   * @dataProvider devModeProvider
    */
+  #[DataProvider('devModeProvider')]
   public function testIsDevMode($configValue, $expectedResult) {
     $this->config->expects($this->once())
       ->method('get')
@@ -299,8 +300,8 @@ class UtilikitServiceTest extends UnitTestCase {
    * Tests shouldUpdateOnEntitySave method.
    *
    * @covers ::shouldUpdateOnEntitySave
-   * @dataProvider entityUpdateProvider
    */
+  #[DataProvider('entityUpdateProvider')]
   public function testShouldUpdateOnEntitySave($entityType, $configKey, $configValue, $expectedResult) {
     if ($configKey) {
       $this->config->expects($this->once())
@@ -355,8 +356,8 @@ class UtilikitServiceTest extends UnitTestCase {
    * Tests getDebounceMs method.
    *
    * @covers ::getDebounceMs
-   * @dataProvider debounceProvider
    */
+  #[DataProvider('debounceProvider')]
   public function testGetDebounceMs($configValue, $expectedResult) {
     $this->config->expects($this->once())
       ->method('get')
@@ -417,8 +418,8 @@ class UtilikitServiceTest extends UnitTestCase {
    *
    * @covers ::shouldShowPageErrors
    * @covers ::shouldEnableTransitions
-   * @dataProvider booleanConfigProvider
    */
+  #[DataProvider('booleanConfigProvider')]
   public function testBooleanConfigMethods($method, $configKey, $configValue, $expectedResult) {
     $this->config->expects($this->once())
       ->method('get')

@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Drupal\Tests\utilikit\Functional;
 
 use Drupal\Tests\BrowserTestBase;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the UtiliKit settings form functionality.
  *
  * @group utilikit
  */
+#[RunTestsInSeparateProcesses]
 class UtilikitSettingsFormTest extends BrowserTestBase {
 
   /**

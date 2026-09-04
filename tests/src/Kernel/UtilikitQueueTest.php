@@ -6,12 +6,14 @@ namespace Drupal\Tests\utilikit\Kernel;
 
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\utilikit\Service\UtilikitConstants;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the UtiliKit queue worker functionality.
  *
  * @group utilikit
  */
+#[RunTestsInSeparateProcesses]
 class UtilikitQueueTest extends KernelTestBase {
 
   /**
