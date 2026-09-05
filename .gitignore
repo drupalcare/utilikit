@@ -65,3 +65,9 @@ CLAUDE.md
 .claude/
 utilikit-homepage.html
 docs/adding-new-rules.md
+
+# Node dependencies. Added 2026-09-05 with jest, which the JavaScript tests
+# need in order to run at all — they had never run before, because jest was
+# not a dependency. The tree itself is never committed.
+node_modules/
+coverage/

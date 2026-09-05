@@ -1,245 +1,126 @@
 /**
  * @file
- * Tests for utilikit.rules.js
+ * Tests for utilikit.rules.js — the registry shim.
+ *
+ * WHAT THIS FILE USED TO DO, and why it was replaced. It built its own copy of
+ * the rules in `beforeEach`, assigned it to `Drupal.utilikit.rules`, and then
+ * asserted things about that copy. It never loaded utilikit.rules.js at all, so
+ * every assertion was the mock agreeing with itself. It could not have failed
+ * for any change to the module.
+ *
+ * It was also a FOURTH copy of the rule definitions, and the most drifted of
+ * the lot — it claimed `wd: 'width'` where the real property is `inlineSize`,
+ * and `rt: 'transform'` where it is `rotate`.
+ *
+ * The file under test no longer declares rules. It reads them from
+ * `drupalSettings.utilikit.rules`, published by utilikit_js_settings_alter()
+ * from UtilikitRules::getRules(). So what is worth testing here is the shim's
+ * contract, not the content of the rules:
+ *
+ *   - it passes through whatever it is given;
+ *   - it reports a missing payload loudly, because an empty registry silently
+ *     stops every utility class on the page from working;
+ *   - it never leaves the registry undefined.
+ *
+ * The rules' actual correctness is asserted in PHP, against the one source, by
+ * UtilikitRulesSingleSourceTest.
  */
 
-describe('UtiliKit Rules', () => {
-  beforeEach(() => {
-    // Set up Drupal global with complete rules and breakpoints
-    global.Drupal = {
-      utilikit: {
-        // Mock the complete rules object based on your actual rules
-        rules: {
-          // Box Model
-          pd: { css: 'padding', sides: true, isNumericFlexible: true },
-          mg: { css: 'margin', sides: true, isNumericFlexible: true },
-          bw: { css: 'borderWidth', sides: true, isNumericFlexible: true },
-          br: { css: 'borderRadius', sides: true, isNumericFlexible: true },
+const fs = require('fs');
+const path = require('path');
 
-          // Sizing
-          wd: { css: 'width', isNumericFlexible: true },
-          ht: { css: 'height', isNumericFlexible: true },
+const SHIM = path.join(__dirname, '..', '..', '..', 'js', 'utilikit.rules.js');
 
-          // Typography
-          fs: { css: 'fontSize', isNumericFlexible: true },
-          fw: { css: 'fontWeight', isInteger: true },
+/**
+ * Loads utilikit.rules.js against a given drupalSettings.
+ *
+ * The file is an IIFE taking (Drupal, once, drupalSettings), so it is invoked
+ * directly rather than imported — that is exactly how Drupal delivers it.
+ *
+ * @param {Object|undefined} utilikitSettings
+ *   The value for drupalSettings.utilikit, or undefined to omit it.
+ *
+ * @return {Object}
+ *   The Drupal object the shim populated, plus the captured console errors.
+ */
+function loadShim(utilikitSettings) {
+  const Drupal = {};
+  const drupalSettings = utilikitSettings === undefined ? {} : { utilikit: utilikitSettings };
+  const errors = [];
+  const fakeConsole = { error: (msg) => errors.push(String(msg)) };
 
-          // Colors
-          bg: { css: 'backgroundColor', isColor: true },
-          tc: { css: 'color', isColor: true },
+  const source = fs.readFileSync(SHIM, 'utf8');
 
-          // Layout
-          dp: { css: 'display', isKeyword: true },
-          ps: { css: 'position', isKeyword: true },
+  // The shim's own closure receives the doubles; nothing global is touched.
+  // eslint-disable-next-line no-new-func
+  new Function('Drupal', 'once', 'drupalSettings', 'console', source)(
+    Drupal, () => [], drupalSettings, fakeConsole,
+  );
 
-          // Transform
-          rt: { css: 'transform', isTransform: 'rotate' },
-          sc: { css: 'transform', isTransform: 'scale' }
-        },
+  return { Drupal, errors };
+}
 
-        // Mock breakpoints based on standard values
-        breakpoints: {
-          sm: 576,
-          md: 768,
-          lg: 992,
-          xl: 1200,
-          xxl: 1400
-        }
-      }
+describe('utilikit.rules.js — the registry shim', () => {
+
+  test('publishes exactly the rules it is given', () => {
+    const payload = {
+      pd: { css: 'padding', sides: true, isNumericFlexible: true, group: 'Box Model' },
+      wd: { css: 'inlineSize', isNumericFlexible: true, allowAuto: true, group: 'Sizing' },
     };
+
+    const { Drupal, errors } = loadShim({ rules: payload });
+
+    expect(Drupal.utilikit.rules).toEqual(payload);
+    expect(errors).toEqual([]);
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  test('does not invent, drop or reshape a rule', () => {
+    // The shim's whole job is to be transparent. If it ever starts massaging
+    // the payload it becomes a second opinion about the rules, which is the
+    // thing this architecture exists to prevent.
+    const payload = { zz: { css: 'somethingUnknown', madeUpFlag: true } };
+
+    const { Drupal } = loadShim({ rules: payload });
+
+    expect(Object.keys(Drupal.utilikit.rules)).toEqual(['zz']);
+    expect(Drupal.utilikit.rules.zz).toEqual({ css: 'somethingUnknown', madeUpFlag: true });
   });
 
-  test('should have all required rule categories', () => {
-    const rules = Drupal.utilikit.rules;
+  test('reports a missing payload loudly rather than failing silently', () => {
+    // This is the case that matters. With no rules, every uk- class on the page
+    // quietly stops working and nothing appears in the interface to say why.
+    const { errors } = loadShim({ renderingMode: 'inline' });
 
-    // Box Model
-    expect(rules.pd).toBeDefined();
-    expect(rules.mg).toBeDefined();
-    expect(rules.bw).toBeDefined();
-    expect(rules.br).toBeDefined();
-
-    // Sizing
-    expect(rules.wd).toBeDefined();
-    expect(rules.ht).toBeDefined();
-
-    // Typography
-    expect(rules.fs).toBeDefined();
-    expect(rules.fw).toBeDefined();
-
-    // Colors
-    expect(rules.bg).toBeDefined();
-    expect(rules.tc).toBeDefined();
-
-    // Layout
-    expect(rules.dp).toBeDefined();
-    expect(rules.ps).toBeDefined();
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatch(/drupalSettings\.utilikit\.rules/);
+    expect(errors[0]).toMatch(/utilikit_js_settings_alter/);
   });
 
-  test('should have correct rule properties', () => {
-    const paddingRule = Drupal.utilikit.rules.pd;
+  test('reports it when the utilikit settings are absent entirely', () => {
+    const { errors } = loadShim(undefined);
 
-    expect(paddingRule).toEqual({
-      css: 'padding',
-      sides: true,
-      isNumericFlexible: true
-    });
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toMatch(/no rule definitions/i);
   });
 
-  test('should have correct margin rule with allowAuto', () => {
-    const marginRule = Drupal.utilikit.rules.mg;
+  test('always leaves a usable registry, never undefined', () => {
+    // Consumers do `prefix in Drupal.utilikit.rules`. An undefined registry
+    // would throw inside the engine rather than degrade.
+    for (const settings of [undefined, {}, { rules: null }, { rules: {} }]) {
+      const { Drupal } = loadShim(settings);
 
-    expect(marginRule.css).toBe('margin');
-    expect(marginRule.sides).toBe(true);
-    expect(marginRule.isNumericFlexible).toBe(true);
+      expect(Drupal.utilikit).toBeDefined();
+      expect(typeof Drupal.utilikit.rules).toBe('object');
+      expect(Drupal.utilikit.rules).not.toBeNull();
+    }
   });
 
-  test('should define transform rules correctly', () => {
-    const rotateRule = Drupal.utilikit.rules.rt;
-    const scaleRule = Drupal.utilikit.rules.sc;
+  test('declares no rules of its own', () => {
+    // The drift guard, from the JavaScript side. Its PHP counterpart scans
+    // every file; this one pins the file that used to hold the map.
+    const source = fs.readFileSync(SHIM, 'utf8');
 
-    expect(rotateRule.isTransform).toBe('rotate');
-    expect(scaleRule.isTransform).toBe('scale');
-    expect(rotateRule.css).toBe('transform');
-    expect(scaleRule.css).toBe('transform');
+    expect(source).not.toMatch(/\b[a-z]{2,4}\s*:\s*\{\s*css\s*:\s*['"]/);
   });
 
-  test('should define keyword rules correctly', () => {
-    const displayRule = Drupal.utilikit.rules.dp;
-    const positionRule = Drupal.utilikit.rules.ps;
-
-    expect(displayRule.isKeyword).toBe(true);
-    expect(positionRule.isKeyword).toBe(true);
-    expect(displayRule.css).toBe('display');
-    expect(positionRule.css).toBe('position');
-  });
-
-  test('should define color rules correctly', () => {
-    const backgroundRule = Drupal.utilikit.rules.bg;
-    const colorRule = Drupal.utilikit.rules.tc;
-
-    expect(backgroundRule.isColor).toBe(true);
-    expect(colorRule.isColor).toBe(true);
-    expect(backgroundRule.css).toBe('backgroundColor');
-    expect(colorRule.css).toBe('color');
-  });
-
-  test('should define sizing rules correctly', () => {
-    const widthRule = Drupal.utilikit.rules.wd;
-    const heightRule = Drupal.utilikit.rules.ht;
-
-    expect(widthRule.isNumericFlexible).toBe(true);
-    expect(heightRule.isNumericFlexible).toBe(true);
-    expect(widthRule.css).toBe('width');
-    expect(heightRule.css).toBe('height');
-  });
-
-  test('should define typography rules correctly', () => {
-    const fontSizeRule = Drupal.utilikit.rules.fs;
-    const fontWeightRule = Drupal.utilikit.rules.fw;
-
-    expect(fontSizeRule.isNumericFlexible).toBe(true);
-    expect(fontWeightRule.isInteger).toBe(true);
-    expect(fontSizeRule.css).toBe('fontSize');
-    expect(fontWeightRule.css).toBe('fontWeight');
-  });
-
-  test('should define border rules correctly', () => {
-    const borderWidthRule = Drupal.utilikit.rules.bw;
-    const borderRadiusRule = Drupal.utilikit.rules.br;
-
-    expect(borderWidthRule.sides).toBe(true);
-    expect(borderRadiusRule.sides).toBe(true);
-    expect(borderWidthRule.isNumericFlexible).toBe(true);
-    expect(borderRadiusRule.isNumericFlexible).toBe(true);
-  });
-
-  test('should have all breakpoints defined', () => {
-    const breakpoints = Drupal.utilikit.breakpoints;
-
-    expect(breakpoints).toEqual({
-      sm: 576,
-      md: 768,
-      lg: 992,
-      xl: 1200,
-      xxl: 1400
-    });
-  });
-
-  test('should have valid breakpoint values', () => {
-    const breakpoints = Drupal.utilikit.breakpoints;
-
-    // All breakpoints should be numbers
-    Object.values(breakpoints).forEach(value => {
-      expect(typeof value).toBe('number');
-      expect(value).toBeGreaterThan(0);
-    });
-
-    // Breakpoints should be in ascending order
-    expect(breakpoints.sm).toBeLessThan(breakpoints.md);
-    expect(breakpoints.md).toBeLessThan(breakpoints.lg);
-    expect(breakpoints.lg).toBeLessThan(breakpoints.xl);
-    expect(breakpoints.xl).toBeLessThan(breakpoints.xxl);
-  });
-
-  test('should distinguish between different rule types', () => {
-    const rules = Drupal.utilikit.rules;
-
-    // Numeric flexible rules
-    const numericRules = Object.keys(rules).filter(key => rules[key].isNumericFlexible);
-    expect(numericRules).toContain('pd');
-    expect(numericRules).toContain('mg');
-    expect(numericRules).toContain('wd');
-    expect(numericRules).toContain('ht');
-
-    // Color rules
-    const colorRules = Object.keys(rules).filter(key => rules[key].isColor);
-    expect(colorRules).toContain('bg');
-    expect(colorRules).toContain('tc');
-
-    // Keyword rules
-    const keywordRules = Object.keys(rules).filter(key => rules[key].isKeyword);
-    expect(keywordRules).toContain('dp');
-    expect(keywordRules).toContain('ps');
-
-    // Transform rules
-    const transformRules = Object.keys(rules).filter(key => rules[key].isTransform);
-    expect(transformRules).toContain('rt');
-    expect(transformRules).toContain('sc');
-  });
-
-  test('should validate rule structure', () => {
-    const rules = Drupal.utilikit.rules;
-
-    Object.keys(rules).forEach(prefix => {
-      const rule = rules[prefix];
-
-      // Each rule should have a css property
-      expect(rule).toHaveProperty('css');
-      expect(typeof rule.css).toBe('string');
-
-      // Each rule should have at least one type flag
-      const typeFlags = ['isNumericFlexible', 'isColor', 'isKeyword', 'isTransform', 'isInteger'];
-      const hasTypeFlag = typeFlags.some(flag => rule[flag]);
-      expect(hasTypeFlag).toBe(true);
-    });
-  });
-
-  test('should properly identify sides-based rules', () => {
-    const rules = Drupal.utilikit.rules;
-    const sidesRules = Object.keys(rules).filter(key => rules[key].sides);
-
-    expect(sidesRules).toContain('pd'); // padding
-    expect(sidesRules).toContain('mg'); // margin
-    expect(sidesRules).toContain('bw'); // border-width
-    expect(sidesRules).toContain('br'); // border-radius
-
-    // Non-sides rules shouldn't have sides property
-    expect(rules.wd.sides).toBeUndefined();
-    expect(rules.ht.sides).toBeUndefined();
-    expect(rules.dp.sides).toBeUndefined();
-  });
 });

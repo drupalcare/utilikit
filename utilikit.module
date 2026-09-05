@@ -25,7 +25,9 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\utilikit\Service\UtilikitConstants;
+use Drupal\utilikit\Service\UtilikitRules;
 
 /**
  * Implements hook_help().
@@ -115,6 +117,38 @@ function _utilikit_attach_inline_settings(array &$attachments, string $submodule
   if ($isAdmin && $config->get('dev_mode')) {
     $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
   }
+}
+
+/**
+ * Implements hook_js_settings_alter().
+ *
+ * Publishes the rule definitions to JavaScript, from the one place they are
+ * declared.
+ *
+ * WHY THIS HOOK AND NOT THE FIVE ATTACH POINTS. `drupalSettings.utilikit` is
+ * built in five separate places — utilikit_page_attachments() and the four
+ * submodules through _utilikit_attach_inline_settings(). Adding the rules to
+ * each would be five copies of one decision and a sixth waiting to be
+ * forgotten by the next submodule. This hook runs wherever those settings
+ * already exist, so the rules travel with them and cannot be left behind.
+ *
+ * WHY IT IS GUARDED ON `utilikit` BEING PRESENT. The rules are ~50 entries;
+ * putting them on pages that have no UtiliKit engine would be payload for
+ * nothing. The guard means they appear exactly where the engine does.
+ *
+ * MEASURED 2026-09-05, and this is the reason the hook exists at all: the same
+ * fifty rules were declared three times — once here in PHP and twice in
+ * JavaScript — and had already drifted. Four sizing rules carried `allowAuto`
+ * in JavaScript and not in PHP, so `uk-wd--auto` rendered in inline mode and
+ * produced NO CSS in static and head mode. A second copy of a fact is not
+ * untidiness; it is the bug, waiting.
+ */
+function utilikit_js_settings_alter(array &$settings, AttachedAssetsInterface $assets): void {
+  if (!isset($settings['utilikit']) || !is_array($settings['utilikit'])) {
+    return;
+  }
+
+  $settings['utilikit']['rules'] = UtilikitRules::getRules();
 }
 
 /**

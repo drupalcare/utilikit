@@ -33,79 +33,25 @@
    * @property {boolean} [isGridTrackList] - CSS Grid track definitions
    * @property {boolean} [isRange] - Range values like grid spans or ratios
    */
-  const utilikitRules = {
-    // Box Model
-    pd: { css: 'padding', sides: true, isNumericFlexible: true, group: 'Box Model' },
-    mg: { css: 'margin', sides: true, isNumericFlexible: true, allowAuto: true, group: 'Box Model' },
-    bw: { css: 'borderWidth', sides: true, isNumericFlexible: true, group: 'Box Model' },
-    br: { css: 'borderRadius', sides: true, isNumericFlexible: true, group: 'Box Model' },
-    bs: { css: 'borderStyle', isKeyword: true, sides: true, group: 'Box Model' },
-
-    // Colors
-    bc: { css: 'borderColor', isColor: true, group: 'Colors' },
-    bg: { css: 'backgroundColor', isColor: true, group: 'Colors' },
-    tc: { css: 'color', isColor: true, group: 'Colors' },
-
-    // Sizing (logical properties)
-    wd: { css: 'inlineSize', isNumericFlexible: true, group: 'Sizing' },
-    ht: { css: 'blockSize', isNumericFlexible: true, group: 'Sizing' },
-    xw: { css: 'maxInlineSize', isNumericFlexible: true, group: 'Sizing' },
-    nw: { css: 'minInlineSize', isNumericFlexible: true, group: 'Sizing' },
-    xh: { css: 'maxBlockSize', isNumericFlexible: true, group: 'Sizing' },
-    nh: { css: 'minBlockSize', isNumericFlexible: true, group: 'Sizing' },
-
-    // Positioning (logical properties)
-    tp: { css: 'insetBlockStart', isNumericFlexible: true, group: 'Positioning' },
-    lt: { css: 'insetInlineStart', isNumericFlexible: true, group: 'Positioning' },
-    ri: { css: 'insetInlineEnd', isNumericFlexible: true, group: 'Positioning' },
-    bt: { css: 'insetBlockEnd', isNumericFlexible: true, group: 'Positioning' },
-    ps: { css: 'position', isKeyword: true, group: 'Positioning' },
-
-    // Typography
-    fs: { css: 'fontSize', isNumericFlexible: true, group: 'Typography' },
-    lh: { css: 'lineHeight', isNumericFlexible: true, group: 'Typography' },
-    fw: { css: 'fontWeight', isInteger: true, group: 'Typography' },
-    ls: { css: 'letterSpacing', isNumericFlexible: true, group: 'Typography' },
-    ta: { css: 'textAlign', isKeyword: true, group: 'Typography' },
-
-    // Effects
-    op: { css: 'opacity', isInteger: true, isOpacity: true, group: 'Effects' },
-    zi: { css: 'zIndex', isInteger: true, group: 'Effects' },
-
-    // Layout
-    dp: { css: 'display', isKeyword: true, group: 'Layout' },
-    ov: { css: 'overflow', isKeyword: true, group: 'Layout' },
-    cu: { css: 'cursor', isKeyword: true, group: 'Layout' },
-    fl: { css: 'float', isKeyword: true, group: 'Layout' },
-    cl: { css: 'clear', isKeyword: true, group: 'Layout' },
-    us: { css: 'userSelect', isKeyword: true, group: 'Layout' },
-
-    // Flexbox
-    fd: { css: 'flexDirection', isKeyword: true, group: 'Flexbox' },
-    jc: { css: 'justifyContent', isKeyword: true, group: 'Flexbox' },
-    ai: { css: 'alignItems', isKeyword: true, group: 'Flexbox' },
-    ac: { css: 'alignContent', isKeyword: true, group: 'Flexbox' },
-    fx: { css: 'flexWrap', isKeyword: true, group: 'Flexbox' },
-    fg: { css: 'flexGrow', isDecimalFixed: true, group: 'Flexbox' },
-    fk: { css: 'flexShrink', isDecimalFixed: true, group: 'Flexbox' },
-    fb: { css: 'flexBasis', isNumericFlexible: true, group: 'Flexbox' },
-    or: { css: 'order', isInteger: true, group: 'Flexbox' },
-
-    // Grid
-    gc: { css: 'gridTemplateColumns', isGridTrackList: true, group: 'Grid' },
-    gr: { css: 'gridTemplateRows', isGridTrackList: true, group: 'Grid' },
-    gl: { css: 'gridColumn', isRange: true, group: 'Grid' },
-    gw: { css: 'gridRow', isRange: true, group: 'Grid' },
-    gp: { css: 'gap', isNumericFlexible: true, group: 'Spacing' },
-
-    // Transform
-    rt: { css: 'rotate', isTransform: 'rotate', group: 'Transform' },
-    sc: { css: 'scale', isTransform: 'scale', group: 'Transform' },
-
-    // Other
-    ar: { css: 'aspectRatio', isRange: true, group: 'Layout' },
-    bz: { css: 'backgroundSize', isKeyword: true, group: 'Background' },
-  };
+  /**
+   * The UtiliKit rules, read from the one place they are declared.
+   *
+   * This file used to carry its own copy of all fifty rules — the second of
+   * three, and its own comment said what it should have been instead:
+   * "Should ideally be passed from Drupal settings for consistency."
+   *
+   * It is a function rather than a const because it is read at call time. The
+   * playground library depends on utilikit/utilikit.engine, so the registry is
+   * populated before anything here runs, but a getter keeps that an ordering
+   * detail rather than a load-order assumption baked into this file.
+   *
+   * @return {Object.<string, Object>}
+   *   Prefix keyed rule definitions, or an empty object if none were
+   *   delivered — utilikit.rules.js reports that case to the console.
+   */
+  function utilikitRules() {
+    return (Drupal.utilikit && Drupal.utilikit.rules) || {};
+  }
 
   /**
    * Keyword mappings for CSS properties that accept specific keywords.
@@ -171,7 +117,7 @@
    * @param {string} prefix
    *   The UtiliKit prefix (e.g., 'pd', 'mg', 'bg').
    * @param {Object} rule
-   *   The rule configuration object from utilikitRules.
+   *   The rule configuration object from utilikitRules().
    *
    * @returns {string[]}
    *   Array of complete UtiliKit class suggestions.
@@ -363,7 +309,7 @@
     if (!match) return '';
 
     const prefix = match[1];
-    const rule = utilikitRules[prefix];
+    const rule = utilikitRules()[prefix];
 
     if (!rule) return prefix;
 
@@ -429,7 +375,7 @@
           const inputPrefix = match[1];
 
           // Find all matching rules
-          Object.entries(utilikitRules).forEach(([rulePrefix, rule]) => {
+          Object.entries(utilikitRules()).forEach(([rulePrefix, rule]) => {
             if (rulePrefix.startsWith(inputPrefix)) {
               const suggestions = generateSuggestionsForPrefix(rulePrefix, rule);
               // Filter to only show suggestions that match what's typed

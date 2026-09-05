@@ -104,10 +104,23 @@ class UtilikitRules {
       'bs' => ['css' => 'borderStyle', 'isKeyword' => TRUE, 'sides' => TRUE, 'group' => 'Box Model'],
       'bc' => ['css' => 'borderColor', 'isColor' => TRUE, 'group' => 'Colors'],
 
-      'wd' => ['css' => 'inlineSize', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
-      'ht' => ['css' => 'blockSize', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
+      // `allowAuto` on wd/ht/nw and NOT on xw/xh is decided by CSS, not by
+      // preference — verified against the browser's own CSS.supports() on
+      // 2026-09-05: `inline-size`, `block-size` and `min-inline-size` accept
+      // `auto`; `max-inline-size` and `max-block-size` do not (they take
+      // `none`). The JS copy of these rules had allowAuto on wd/ht/xw/nw and
+      // PHP had it on none of them, so `uk-wd--auto` rendered in inline mode
+      // and silently produced NO CSS in static and head mode, while
+      // `uk-xw--auto` produced invalid CSS the browser discarded. Measured,
+      // not reasoned about.
+      //
+      // `nh` (min-block-size) does accept `auto` and neither side allows it.
+      // That is a missing feature rather than drift, and adding it silently
+      // here would be a change nobody asked for.
+      'wd' => ['css' => 'inlineSize', 'isNumericFlexible' => TRUE, 'allowAuto' => TRUE, 'group' => 'Sizing'],
+      'ht' => ['css' => 'blockSize', 'isNumericFlexible' => TRUE, 'allowAuto' => TRUE, 'group' => 'Sizing'],
       'xw' => ['css' => 'maxInlineSize', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
-      'nw' => ['css' => 'minInlineSize', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
+      'nw' => ['css' => 'minInlineSize', 'isNumericFlexible' => TRUE, 'allowAuto' => TRUE, 'group' => 'Sizing'],
       'xh' => ['css' => 'maxBlockSize', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
       'nh' => ['css' => 'minBlockSize', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
 
