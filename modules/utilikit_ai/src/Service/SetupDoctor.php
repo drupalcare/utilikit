@@ -112,9 +112,16 @@ final class SetupDoctor implements SetupDoctorInterface {
       $allowed = is_array($settings) ? ($settings['allowed_html'] ?? '') : '';
       $allowed = is_string($allowed) ? $allowed : '';
 
-      // filter_html keeps a class only where the tag lists it, and UtiliKit
-      // classes are open-ended, so anything short of `class` with a wildcard
-      // will drop them.
+      // A DELIBERATELY COARSE TEST, and its limits are stated rather than
+      // hidden. filter_html permits attributes per TAG, so a format may allow
+      // `class` on <a> and strip it from <div>. Reproducing that matching here
+      // would mean re-implementing core's HTMLRestrictions, and getting it
+      // subtly wrong would be worse than not answering.
+      //
+      // So: no mention of `class` at all is a certain strip and is reported.
+      // Any mention is treated as "not certainly stripping" — which can be a
+      // false all-clear for the tag you happen to use. The tool says so in its
+      // output rather than implying the check is complete.
       if (!str_contains($allowed, 'class')) {
         $stripping[(string) $format->id()] = (string) $format->label();
       }

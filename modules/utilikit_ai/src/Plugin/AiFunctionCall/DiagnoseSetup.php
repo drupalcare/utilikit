@@ -146,7 +146,13 @@ final class DiagnoseSetup extends FunctionCallBase implements ExecutableFunction
       );
     }
     else {
-      $lines[] = 'No text format is stripping class attributes.';
+      // Not "no format strips classes". filter_html allows attributes per tag,
+      // so a format permitting class on <a> but not <div> passes this check
+      // and still drops the class from a div. Saying more than was checked is
+      // the false all-clear this module exists to avoid.
+      $lines[] = 'No text format refuses class attributes outright. Note this check is coarse: '
+        . 'a format can allow class on some tags and strip it from others, so if a class '
+        . 'disappears from one element type in particular, look at that format\'s allowed HTML.';
     }
 
     $lines[] = '';
