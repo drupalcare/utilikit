@@ -61,23 +61,21 @@
    *
    * @type {Object.<string, string[]>}
    */
-  const keywordMap = {
-    display: ['none', 'block', 'inline', 'inline-block', 'flex', 'inline-flex', 'grid', 'inline-grid', 'table', 'table-cell'],
-    position: ['static', 'relative', 'absolute', 'fixed', 'sticky'],
-    textAlign: ['left', 'center', 'right', 'justify', 'start', 'end'],
-    overflow: ['visible', 'hidden', 'auto', 'scroll', 'clip'],
-    cursor: ['auto', 'default', 'pointer', 'move', 'text', 'wait', 'help', 'progress', 'not-allowed', 'grab', 'grabbing'],
-    borderStyle: ['none', 'solid', 'dashed', 'dotted', 'double', 'groove', 'ridge', 'inset', 'outset'],
-    backgroundSize: ['auto', 'cover', 'contain'],
-    flexDirection: ['row', 'row-reverse', 'column', 'column-reverse'],
-    justifyContent: ['flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'space-evenly', 'start', 'end'],
-    alignItems: ['flex-start', 'flex-end', 'center', 'baseline', 'stretch', 'start', 'end'],
-    alignContent: ['flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'stretch', 'start', 'end'],
-    flexWrap: ['nowrap', 'wrap', 'wrap-reverse'],
-    float: ['left', 'right', 'none', 'inline-start', 'inline-end'],
-    clear: ['left', 'right', 'both', 'none', 'inline-start', 'inline-end'],
-    userSelect: ['none', 'auto', 'text', 'all', 'contain'],
-  };
+  /**
+   * Keyword suggestions, from the one declaration.
+   *
+   * This was a hand-kept copy and it had drifted both ways: it suggested
+   * `uk-cu--progress`, which the engine rejected, and omitted four of the
+   * fourteen `display` values. Suggesting a value the engine refuses is worse
+   * than suggesting nothing.
+   *
+   * @return {Object.<string, string[]>}
+   *   CSS property => accepted keywords.
+   */
+  function keywordMapFor() {
+    return (drupalSettings && drupalSettings.utilikit
+      && drupalSettings.utilikit.keywords) || {};
+  }
 
   /**
    * Common color values for autocomplete suggestions.
@@ -173,7 +171,7 @@
     }
 
     else if (rule.isKeyword) {
-      const keywords = keywordMap[rule.css] || [];
+      const keywords = keywordMapFor()[rule.css] || [];
       keywords.forEach(keyword => {
         suggestions.push(`uk-${prefix}--${keyword}`);
       });

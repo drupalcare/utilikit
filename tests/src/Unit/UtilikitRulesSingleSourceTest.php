@@ -120,6 +120,70 @@ final class UtilikitRulesSingleSourceTest extends UnitTestCase {
   }
 
   /**
+   * No JavaScript file declares its own keyword list either.
+   *
+   * MEASURED 2026-09-05, the second instance of one rule written twice. The
+   * allowed keyword values lived only in js/utilikit.rules.apply.js; PHP
+   * validated nothing and its generator emitted any word it was handed, so
+   * `uk-dp--banana` produced `display: banana;` in static and head mode while
+   * the engine rejected the identical class in inline mode.
+   */
+  public function testNoJavaScriptFileDeclaresKeywordLists(): void {
+    $offenders = [];
+
+    foreach ($this->javascriptFiles() as $path) {
+      $source = (string) file_get_contents($path);
+
+      // A literal list assigned to a name containing "keyword" is the shape
+      // being outlawed. Reading one from settings is fine and does not match.
+      if (preg_match('/\b\w*[kK]eywords?\w*\s*=\s*\{\s*\n\s*\w+:\s*\[/', $source)) {
+        $offenders[] = str_replace($this->moduleRoot() . '/', '', $path);
+      }
+    }
+
+    self::assertSame([], $offenders, implode("\n", array_merge(
+      ['A JavaScript file declares its own keyword list. They are declared once,'],
+      ['in UtilikitRules::getAllowedKeywords(). Offending files:'],
+      $offenders,
+    )));
+  }
+
+  /**
+   * Every keyword rule has a list, and every list is usable.
+   *
+   * A keyword rule with no list is unvalidated: any word at all would be
+   * written into the stylesheet.
+   */
+  public function testEveryKeywordRuleHasAnAllowedList(): void {
+    $rules = UtilikitRules::getRules();
+    $keywords = UtilikitRules::getAllowedKeywords();
+
+    self::assertNotEmpty($keywords, 'The keyword catalogue is empty.');
+
+    $missing = [];
+
+    foreach ($rules as $prefix => $rule) {
+      if (empty($rule['isKeyword'])) {
+        continue;
+      }
+
+      $css = (string) ($rule['css'] ?? '');
+
+      if (!isset($keywords[$css]) || $keywords[$css] === []) {
+        $missing[] = sprintf('%s (%s)', $prefix, $css);
+        continue;
+      }
+
+      foreach ($keywords[$css] as $value) {
+        self::assertIsString($value, $css . ' has a non-string keyword.');
+        self::assertNotSame('', $value, $css . ' has an empty keyword.');
+      }
+    }
+
+    self::assertSame([], $missing, 'Keyword rules with no allowed list: ' . implode(', ', $missing));
+  }
+
+  /**
    * The one source is populated and structurally complete.
    *
    * A single source that is empty or half-filled is worse than three copies,

@@ -280,41 +280,19 @@
    * Restricts keyword rules to valid CSS values only, preventing
    * arbitrary strings from being applied as CSS property values.
    */
-  const allowedKeywords = {
-    display: ['none', 'block', 'inline', 'inline-block', 'flex', 'inline-flex', 'grid', 'inline-grid', 'table', 'table-row', 'table-cell', 'contents', 'flow-root', 'list-item'],
-    position: ['static', 'relative', 'absolute', 'fixed', 'sticky'],
-    overflow: ['visible', 'hidden', 'scroll', 'auto', 'clip'],
-    overflowX: ['visible', 'hidden', 'scroll', 'auto', 'clip'],
-    overflowY: ['visible', 'hidden', 'scroll', 'auto', 'clip'],
-    textAlign: ['left', 'right', 'center', 'justify', 'start', 'end'],
-    float: ['left', 'right', 'none', 'inline-start', 'inline-end'],
-    clear: ['left', 'right', 'both', 'none', 'inline-start', 'inline-end'],
-    borderStyle: ['none', 'solid', 'dashed', 'dotted', 'double', 'groove', 'ridge', 'inset', 'outset', 'hidden'],
-    boxSizing: ['content-box', 'border-box'],
-    cursor: ['auto', 'default', 'none', 'pointer', 'grab', 'grabbing', 'text', 'move', 'not-allowed', 'crosshair', 'wait', 'help', 'zoom-in', 'zoom-out', 'col-resize', 'row-resize', 'n-resize', 's-resize', 'e-resize', 'w-resize'],
-    userSelect: ['none', 'auto', 'text', 'all', 'contain'],
-    flexDirection: ['row', 'row-reverse', 'column', 'column-reverse'],
-    flexWrap: ['nowrap', 'wrap', 'wrap-reverse'],
-    justifyContent: ['start', 'end', 'center', 'between', 'around', 'evenly', 'flex-start', 'flex-end', 'space-between', 'space-around', 'space-evenly', 'stretch', 'normal'],
-    alignItems: ['start', 'end', 'center', 'stretch', 'baseline', 'flex-start', 'flex-end', 'self-start', 'self-end', 'normal'],
-    alignContent: ['start', 'end', 'center', 'stretch', 'between', 'around', 'evenly', 'flex-start', 'flex-end', 'space-between', 'space-around', 'space-evenly', 'normal'],
-    order: ['0', '1', '2', '3', '4', '5', '-1'],
-    visibility: ['visible', 'hidden', 'collapse'],
-    whiteSpace: ['normal', 'nowrap', 'pre', 'pre-wrap', 'pre-line', 'break-spaces'],
-    wordBreak: ['normal', 'break-all', 'keep-all', 'break-word'],
-    textDecoration: ['none', 'underline', 'overline', 'line-through'],
-    textTransform: ['none', 'uppercase', 'lowercase', 'capitalize'],
-    fontStyle: ['normal', 'italic', 'oblique'],
-    listStyleType: ['none', 'disc', 'circle', 'square', 'decimal'],
-    objectFit: ['contain', 'cover', 'fill', 'none', 'scale-down'],
-    objectPosition: ['top', 'bottom', 'left', 'right', 'center'],
-    pointerEvents: ['auto', 'none'],
-    resize: ['none', 'both', 'horizontal', 'vertical'],
-    tableLayout: ['auto', 'fixed'],
-    borderCollapse: ['collapse', 'separate'],
-    verticalAlign: ['baseline', 'top', 'middle', 'bottom', 'sub', 'super', 'text-top', 'text-bottom'],
-    backgroundSize: ['auto', 'cover', 'contain'],
-  };
+  /**
+   * The keyword values each CSS property accepts, from the one declaration.
+   *
+   * This list used to be written out here. It was the only copy — PHP had
+   * none, and its generator emitted whatever word it was handed, so
+   * `uk-dp--banana` became `display: banana;` in static and head mode while
+   * this file rejected the identical class in inline mode. It now lives in
+   * UtilikitRules::getAllowedKeywords() and arrives with the rules.
+   *
+   * @type {Object.<string, string[]>}
+   */
+  const allowedKeywords = (drupalSettings && drupalSettings.utilikit
+    && drupalSettings.utilikit.keywords) || {};
 
   Drupal.utilikit.applyKeywordRule = function(el, rule, suffix, utiliKitProperties, className) {
     if (!rule.isKeyword) return false;

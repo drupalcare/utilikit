@@ -321,27 +321,21 @@
     }
 
     // Keyword prefixes.
-    const keywords = {
-      dp: ['flex', 'grid', 'block', 'inline-block', 'inline-flex', 'none'],
-      ps: ['relative', 'absolute', 'fixed', 'sticky', 'static'],
-      ta: ['center', 'start', 'end', 'justify'],
-      ov: ['hidden', 'auto', 'scroll', 'visible'],
-      cu: ['pointer', 'default', 'move', 'text', 'not-allowed', 'grab'],
-      fl: ['inline-start', 'inline-end', 'none'],
-      cl: ['both', 'inline-start', 'inline-end', 'none'],
-      us: ['none', 'text', 'all', 'auto'],
-      fd: ['row', 'column', 'row-reverse', 'column-reverse'],
-      jc: ['center', 'flex-start', 'flex-end', 'space-between', 'space-around', 'space-evenly'],
-      ai: ['center', 'flex-start', 'flex-end', 'stretch', 'baseline'],
-      ac: ['center', 'flex-start', 'flex-end', 'stretch', 'space-between', 'space-around'],
-      fx: ['wrap', 'nowrap', 'wrap-reverse'],
-      bz: ['cover', 'contain', 'auto'],
-    };
-    if (keywords[prefix]) {
-      for (const kw of keywords[prefix]) {
+    // Keyword values come from the one declaration, by prefix. This file used
+    // to carry a shortened copy — six of the fourteen `display` values, and so
+    // on — which drifted from what the engine actually accepts. A reference
+    // page that lists fewer values than the engine allows is a reference page
+    // that is wrong.
+    const keywordsFor = (prefix) => (Drupal.utilikit.keywordsFor
+      ? Drupal.utilikit.keywordsFor(prefix)
+      : []);
+    const prefixKeywords = keywordsFor(prefix);
+
+    if (prefixKeywords.length) {
+      for (const kw of prefixKeywords) {
         s.push({label: kw, cls: `${p}${kw}`});
       }
-      s.push({label: 'Responsive (md)', cls: `uk-md-${prefix}--${keywords[prefix][0]}`});
+      s.push({label: 'Responsive (md)', cls: `uk-md-${prefix}--${prefixKeywords[0]}`});
       return s;
     }
 

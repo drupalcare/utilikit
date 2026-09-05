@@ -1,0 +1,29 @@
+name: 'UtiliKit AI'
+type: module
+description: 'Optional. Helps compose and diagnose UtiliKit utility classes — which prefix to use, what values it accepts, and why a class is not doing anything. Reads the rules from UtiliKit itself; it never invents one.'
+package: UtiliKit
+
+# NOT `^11.2 || ^12`, and the difference is deliberate.
+#
+# utilikit advertises `^11.2 || ^12`. This module cannot, because it hard-depends
+# on `ai:ai`, and drupal/ai declares `core_version_requirement: ^10.5 || ^11.2`
+# (measured 2026-09-04 in web/modules/contrib/ai/ai.info.yml). Claiming `^12`
+# here would offer the module on a Drupal 12 site where it cannot install —
+# worse than not offering it at all.
+#
+# This costs UtiliKit nothing, which is the point of shipping the AI features as
+# a separate optional module: a Drupal 12 site installs utilikit and every other
+# submodule, and simply does not get this one. Widen the day drupal/ai declares
+# `^12`.
+core_version_requirement: ^11.2
+
+# Both are hard dependencies, and that is correct precisely BECAUSE this module
+# is itself optional. utilikit must stay installable without drupal/ai, and it
+# does — nothing here is referenced from utilikit or any other submodule.
+#
+# ai_assistant_api, ai_agents and ai_chatbot are deliberately absent: each adds
+# only a surface, and requiring them would make a site take modules it did not
+# ask for. The tools work through any drupal/ai caller.
+dependencies:
+  - utilikit:utilikit
+  - ai:ai

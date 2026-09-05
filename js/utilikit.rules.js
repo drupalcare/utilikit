@@ -77,4 +77,31 @@
 
   Drupal.utilikit.rules = published || {};
 
+  /**
+   * The keyword values a prefix accepts, from the one declaration.
+   *
+   * Consumers used to keep their own shortened copies — the reference page and
+   * the playground autocomplete both did, and both had drifted. The
+   * autocomplete suggested `uk-cu--progress` while the engine rejected it, and
+   * offered ten of the fourteen `display` values.
+   *
+   * @param {string} prefix
+   *   A two-to-four letter utility prefix, such as `dp`.
+   *
+   * @return {string[]}
+   *   The accepted keywords, or an empty array when the prefix takes none.
+   */
+  Drupal.utilikit.keywordsFor = function (prefix) {
+    const rule = Drupal.utilikit.rules[prefix];
+
+    if (!rule || !rule.isKeyword) {
+      return [];
+    }
+
+    const keywords = (drupalSettings && drupalSettings.utilikit
+      && drupalSettings.utilikit.keywords) || {};
+
+    return keywords[rule.css] || [];
+  };
+
 })(Drupal, once, drupalSettings);

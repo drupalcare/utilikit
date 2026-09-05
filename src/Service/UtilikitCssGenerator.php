@@ -573,8 +573,30 @@ class UtilikitCssGenerator {
     if (!preg_match('/^([\w-]+)$/', $suffix)) {
       return NULL;
     }
+
+    // The value has to be a keyword the property actually accepts. Without
+    // this, `uk-dp--banana` produced `display: banana;` in the generated
+    // stylesheet — measured 2026-09-05 — while the JavaScript engine rejected
+    // the identical class in inline mode. One class, two answers, decided by a
+    // rendering-mode setting nobody associates with validity.
+    //
+    // Returning NULL is the same answer the engine gives: no declaration at
+    // all, rather than one the browser will discard. Inline is the default
+    // mode, so this aligns the other two with the behaviour most sites already
+    // have.
+    // Shorthand first, then validate — the same order the JavaScript engine
+    // uses. `uk-jc--between` means `space-between`; without this step it
+    // produced `justify-content: between`, which the browser discards.
+    $value = UtilikitRules::getKeywordShorthand()[$rule['css']][$suffix] ?? $suffix;
+
+    $allowed = UtilikitRules::getAllowedKeywords()[$rule['css']] ?? NULL;
+
+    if ($allowed !== NULL && !in_array($value, $allowed, TRUE)) {
+      return NULL;
+    }
+
     $cssProperty = UtilikitRules::getCssPropertyName($rule['css']);
-    return "$cssProperty: $suffix;";
+    return "$cssProperty: $value;";
   }
 
   /**

@@ -149,6 +149,10 @@ function utilikit_js_settings_alter(array &$settings, AttachedAssetsInterface $a
   }
 
   $settings['utilikit']['rules'] = UtilikitRules::getRules();
+  // The keyword lists travel with the rules for the same reason: they were a
+  // second implementation of one rule. PHP had no list at all and emitted any
+  // word it was given; JavaScript had the list and rejected the same class.
+  $settings['utilikit']['keywords'] = UtilikitRules::getAllowedKeywords();
 }
 
 /**
