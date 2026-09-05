@@ -1,0 +1,19 @@
+utilikit_ckeditor_classes:
+  ckeditor5:
+    plugins:
+      - utilikit.Utilikit
+  drupal:
+    label: 'UtiliKit classes'
+    library: utilikit_ckeditor/utilikit_ckeditor
+    admin_library: utilikit_ckeditor/admin
+    class: Drupal\utilikit_ckeditor\Plugin\CKEditor5Plugin\UtilikitClasses
+    toolbar_items:
+      utilikit:
+        label: 'UtiliKit classes'
+    # SAME DECLARATION CORE'S STYLE PLUGIN MAKES, and for the same reason: this
+    # plugin adds a class attribute to elements other plugins create, so it has
+    # to tell the HTML restrictions system that it emits classes. Without this
+    # the text format strips every class the moment the page is saved — the
+    # exact failure utilikit_ai refuses to write into.
+    elements:
+      - <$any-html5-element class>

@@ -1,0 +1,4 @@
+# node_modules is not committed. js/build IS — see utilikit_ckeditor.libraries.yml
+# for why: core commits its built CKEditor 5 plugins, and a module that does not
+# ships a toolbar button that silently fails to load for anyone on the dev branch.
+node_modules

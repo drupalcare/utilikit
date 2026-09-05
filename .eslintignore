@@ -1,0 +1,5 @@
+# Built CKEditor 5 plugin output. Committed (see utilikit_ckeditor's README) but
+# generated, minified and not ours to lint — core ignores `**/build/**/*` in its
+# own .eslintignore for exactly this.
+**/js/build/**/*
+node_modules

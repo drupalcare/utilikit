@@ -27,6 +27,31 @@
   },
   "overrides": [
     {
+      // The CKEditor 5 plugin sources import from `ckeditor5/src/*`. Those are
+      // not npm paths: webpack maps them onto core's shared CKEditor runtime
+      // through DllReferencePlugin at build time. Nothing resolves them when
+      // the project is linted on its own, which is what drupal.org CI does, so
+      // the resolver reports every import as unresolved. The imports are
+      // correct — core's own plugins are written the same way.
+      "files": ["modules/utilikit_ckeditor/js/ckeditor5_plugins/**/*.js"],
+      "rules": {
+        "import/no-unresolved": "off",
+        "import/no-extraneous-dependencies": "off"
+      }
+    },
+    {
+      // A webpack config is a build script: it runs in node, and resolving the
+      // DLL manifest by path is how core's own config does it.
+      "files": ["**/webpack.config.js"],
+      "env": { "node": true },
+      "rules": {
+        "import/no-unresolved": "off",
+        "import/no-extraneous-dependencies": "off",
+        "global-require": "off",
+        "import/no-dynamic-require": "off"
+      }
+    },
+    {
       // Jest supplies describe/test/expect; without this they read as globals
       // that nothing defines.
       "files": ["tests/js/**/*.js"],

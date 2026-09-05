@@ -1,0 +1,12 @@
+name: 'UtiliKit CKEditor'
+type: module
+description: 'Optional. Adds a CKEditor 5 toolbar button for applying UtiliKit utility classes to the element you are editing, with the values this site actually accepts.'
+package: UtiliKit
+
+# Matches utilikit itself. Nothing here needs drupal/ai — this is the editor
+# surface, and it works whether or not the AI module is installed.
+core_version_requirement: ^11.2 || ^12
+
+dependencies:
+  - utilikit:utilikit
+  - drupal:ckeditor5

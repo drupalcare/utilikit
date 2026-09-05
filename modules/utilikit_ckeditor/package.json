@@ -1,0 +1,17 @@
+{
+  "name": "utilikit-ckeditor",
+  "version": "1.0.0",
+  "description": "CKEditor 5 plugin for applying UtiliKit utility classes.",
+  "license": "GPL-2.0-or-later",
+  "private": true,
+  "scripts": {
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch"
+  },
+  "devDependencies": {
+    "ckeditor5": "~47.6.2",
+    "terser-webpack-plugin": "^5.6.1",
+    "webpack": "^5.108.1",
+    "webpack-cli": "^6.0.1"
+  }
+}

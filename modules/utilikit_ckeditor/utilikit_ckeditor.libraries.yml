@@ -1,0 +1,19 @@
+# The built plugin. js/build/ IS COMMITTED, following Drupal core, which commits
+# core/modules/ckeditor5/js/build/*.js rather than gitignoring it. The
+# alternative — ai_ckeditor's choice — leaves anyone installing from the dev
+# branch with an editor button that silently does not load, because the file the
+# library points at does not exist until someone runs webpack.
+utilikit_ckeditor:
+  js:
+    js/build/utilikit.js: { preprocess: false, minified: true }
+  css:
+    theme:
+      css/utilikit-ckeditor.css: {}
+  dependencies:
+    - core/ckeditor5
+
+# Loaded in the text format admin form, not the editor.
+admin:
+  css:
+    theme:
+      css/utilikit-ckeditor.admin.css: {}

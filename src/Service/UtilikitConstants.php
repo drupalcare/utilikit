@@ -213,6 +213,20 @@ class UtilikitConstants {
   /**
    * Regular expression pattern for validating utility class names.
    */
+  /**
+   * The marker class UtiliKit requires on every element it styles.
+   *
+   * THE ONE FACT NOTHING WORKS WITHOUT. The engine only looks at elements
+   * carrying this class, so a `uk-` class on an element without it is inert —
+   * no error, no warning, the element simply renders unstyled.
+   *
+   * It lives here because it had started to spread: utilikit_ai's writer kept
+   * its own private copy, HTML_CLASS_EXTRACTION_PATTERN below encodes it in a
+   * regular expression, and the CKEditor plugin needed it too. Two copies of a
+   * fact is the bug; four would have been worse.
+   */
+  public const MARKER_CLASS = 'utilikit';
+
   public const CLASS_VALIDATION_PATTERN = '/^uk-(?:(?:sm|md|lg|xl|xxl)-)?[a-z]{2,4}--[a-zA-Z0-9\-_.%]+$/';
 
   // ======================================================================= */

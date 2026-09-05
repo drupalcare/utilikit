@@ -7,6 +7,7 @@ namespace Drupal\utilikit_ai\Service;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\node\NodeInterface;
+use Drupal\utilikit\Service\UtilikitConstants;
 
 /**
  * Adds UtiliKit classes to elements inside a node's rich-text field.
@@ -40,8 +41,11 @@ final class ClassApplier implements ClassApplierInterface {
 
   /**
    * The marker class UtiliKit requires on every styled element.
+   *
+   * Read from utilikit rather than restated here: this module and the editor
+   * plugin both need it, and a second copy is how the two drift apart.
    */
-  private const MARKER = 'utilikit';
+  private const MARKER = UtilikitConstants::MARKER_CLASS;
 
   /**
    * Constructs the applier.
