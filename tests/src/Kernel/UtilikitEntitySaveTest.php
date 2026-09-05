@@ -132,10 +132,17 @@ class UtilikitEntitySaveTest extends KernelTestBase {
   protected function createBodyField($entity_type, $bundle, $field_name = 'body') {
     // Create field storage if it doesn't exist.
     if (!FieldStorageConfig::loadByName($entity_type, $field_name)) {
+      // `text_long`, not `text_with_summary`. This field exists only to hold
+      // markup for the class scanner; nothing here reads a summary. MEASURED
+      // on drupal.org CI 2026-09-05, the first time this project was ever
+      // tested against the next major: all thirteen errors in this class were
+      // "Attempt to create a field storage of unknown type text_with_summary",
+      // with the `text` module enabled. `text_long` is the plain long-text
+      // field and is what the test actually needs.
       FieldStorageConfig::create([
         'field_name' => $field_name,
         'entity_type' => $entity_type,
-        'type' => 'text_with_summary',
+        'type' => 'text_long',
       ])->save();
     }
 
