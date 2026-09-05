@@ -23,7 +23,18 @@ core_version_requirement: ^11.2
 #
 # ai_assistant_api, ai_agents and ai_chatbot are deliberately absent: each adds
 # only a surface, and requiring them would make a site take modules it did not
-# ask for. The tools work through any drupal/ai caller.
+# ask for.
+#
+# BUT KNOW WHAT THAT COSTS, because it is not nothing. The tools are callable by
+# any drupal/ai caller in code, but for an ASSISTANT to reach them the site
+# needs ai_agents: ai_assistant_api builds its list from `actions_enabled`,
+# which is a different plugin type entirely (measured 2026-09-04). So a site
+# with only ai:ai gets four tools that nothing on the site can call.
+#
+# That is why config/optional/ai_agents.ai_agent.utilikit_agent.yml exists. It
+# installs itself the moment ai_agents is present and stays absent otherwise,
+# so the module is usable out of the box for sites that have the surface,
+# without forcing the surface on sites that do not.
 dependencies:
   - utilikit:utilikit
   - ai:ai

@@ -172,9 +172,10 @@ final class ClassApplier implements ClassApplierInterface {
       $tag,
     ));
 
-    if ($node->getEntityType()->isRevisionable() && method_exists($node, 'setRevisionUserId')) {
-      $node->setRevisionUserId((int) $this->currentUser->id());
-    }
+    // NodeInterface guarantees this through RevisionLogInterface, so there is
+    // nothing to guard against — a method_exists() check here was flagged by
+    // PHPStan as always true, and it was right.
+    $node->setRevisionUserId((int) $this->currentUser->id());
 
     $node->save();
 
