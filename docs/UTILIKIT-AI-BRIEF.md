@@ -27,11 +27,98 @@ property plus flags describing what values it accepts.
 The value flags are the interesting part, because they are what a person or a
 model gets wrong: `isNumericFlexible` (19 rules), `isKeyword` (15), `sides` (5),
 `isInteger` (4), `isColor` (3), `isRange` (3), `isTransform` (2),
-`isGridTrackList` (2), `isDecimalFixed` (2), `isOpacity` (1), `allowAuto` (1).
+`isGridTrackList` (2), `isDecimalFixed` (2), `isOpacity` (1), `allowAuto` (4 —
+was 1 before the drift fix of 2026-09-05).
 
 **The class space is unbounded by design.** `uk-pd--247px`, `uk-mg--3d75rem`,
 `uk-wd--87vw` are all generated on demand. So no finite list of classes can be
 correct, and anything that offers one is offering a subset.
+
+## 1a · The data contract the AI works against
+
+**Settled 2026-09-05.** `UtilikitRules::getRules()` is now the ONE declaration
+of the rules, and `utilikit_js_settings_alter()` publishes it to JavaScript as
+`drupalSettings.utilikit.rules`. Before that it existed four times and had
+already drifted. Every tool here reads that at runtime, never a list typed into
+a prompt.
+
+```
+'pd' => ['css' => 'padding', 'sides' => TRUE, 'isNumericFlexible' => TRUE, 'group' => 'Box Model']
+```
+
+**The flags are the value grammar**, and they are what a model gets wrong:
+
+| Flag | n | Means |
+|---|---|---|
+| `isNumericFlexible` | 19 | any number + any unit — `16px`, `3d75rem`, `87vw` |
+| `isKeyword` | 15 | a fixed keyword — `uk-fw--bold`, not `uk-fw--700` |
+| `sides` | 5 | directional forms — `uk-pd--t-16` |
+| `isInteger` | 4 | whole numbers only |
+| `allowAuto` | 4 | `auto` permitted |
+| `isColor` | 3 | a hex colour, no `#` — `uk-bg--3b82f6` |
+| `isRange` | 3 | grid line span — `uk-gl--1-3` |
+| `isTransform` | 2 | `rotate` / `scale` |
+| `isGridTrackList` | 2 | track lists — `uk-gc--repeat-3-1fr` |
+| `isDecimalFixed` | 2 | fixed-precision decimals |
+| `isOpacity` | 1 | 0–100, converted to 0–1 |
+
+`allowAuto` carries its own lesson. It is on `wd`, `ht`, `nw`, `mg` and NOT on
+`xw`, `xh` — because `max-inline-size: auto` is not valid CSS, verified against
+the browser's own `CSS.supports()`. **A flag is a statement about CSS, not a
+preference.** A tool offering `uk-xw--auto` offers a declaration the browser
+discards in silence.
+
+## 1b · THE MARKER CLASS. Nothing works without it
+
+**Measured in a browser, 2026-09-05, and it governs everything the AI emits.**
+The engine processes only elements carrying a `utilikit` marker class:
+
+```js
+document.querySelectorAll('.utilikit')
+```
+
+| Markup | Result |
+|---|---|
+| `class="utilikit uk-pd--37px"` | `padding-top: 37px` |
+| `class="uk-pd--37px"` | **`0px` — nothing at all** |
+
+The assistant must always produce `utilikit uk-…`, never the utility class
+alone. Emitting the bare class produces markup that looks right, validates, and
+does nothing. I nearly missed this: the first audit reported the marker
+convention as a *bug*, because it was tested against invented markup rather than
+markup UtiliKit produces.
+
+## 1c · Three ways a correct class still does nothing
+
+The assistant must be able to say which is happening, because none is visible
+from the page:
+
+1. **The mode needs discovery.** In `inline` a class works the moment it is on
+   the page. In `static` and `head` the server generates CSS only for classes it
+   already knows, so a brand-new class does nothing until content is scanned and
+   the CSS rebuilt.
+2. **Auto-update is off for that entity type.** Discovery runs in
+   `hook_entity_presave` for `node`, `block_content` and `paragraph`, each gated
+   by its own setting.
+3. **A text filter stripped it.** The WYSIWYG case — it vanishes on save with no
+   error anywhere.
+
+## 1d · The tools, and where each writes
+
+Mirrors the two shipped sibling modules: several that read, one that negotiates,
+one that writes.
+
+| Tool | Writes? | For |
+|---|---|---|
+| `utilikit_explain_utility` | no | what `pd` does and what values it takes, from the flags |
+| `utilikit_compose_classes` | no | plain English → a validated class string, every class checked against §1a |
+| `utilikit_diagnose_classes` | no | why a class did nothing — bad prefix, bad value, or one of the three causes in §1c |
+| `utilikit_resolve_target` | no | turns a vague request into exact values, or into the questions to ask |
+| `utilikit_apply_classes` | **yes** | writes the classes where the person is working — with the §1b marker |
+
+Two surfaces: the **playground**, where output is visible and nothing on the
+site changes, and the **WYSIWYG**, which needs U1 first — without the plugin
+there is nowhere for the assistant to put anything.
 
 ## 1 · The one thing that must not be repeated
 
@@ -63,9 +150,12 @@ webpack, `ckeditor5` dev dependencies, and a **committed build artifact** under
 JS files loaded as Drupal libraries. This adds a node toolchain to a module that
 has none, and puts generated code in the repository.
 
-It also lands in front of the `eslint` job on drupal.org CI, which is currently
-**failing on utilikit for pre-existing reasons** and would need care not to
-confuse the two.
+CORRECTION: an earlier version of this brief said the `eslint` job on utilikit
+was already failing. That was wrong — utilikit had no eslint job at all; the
+project was on a hand-rolled pipeline with only build/phpcs/unit/kernel/
+functional. It gained eslint, stylelint, cspell and phpstan on 2026-09-05 when
+CI moved to the Drupal Association templates, and what those report is not yet
+known.
 
 ### (b) Generated configuration for core's Style plugin
 
@@ -80,9 +170,25 @@ Gain: **no JavaScript at all**, no build step, no committed artifacts, works on
 every Drupal 11/12 site today, and the allowed-classes problem in §1 is solved
 in the same place the list is declared.
 
-**My recommendation is (b) first**, then (a) only if the finite list proves too
-limiting in real use — because (b) ships in a day, changes no toolchain, and
-makes §1 impossible to get wrong. But this is the owner's call.
+**CORRECTED 2026-09-05.** My first recommendation was (b), argued partly on
+speed — a cost argument dressed as a design one, and the owner said so. Having
+then checked what contrib actually does: `ai_ckeditor` ships
+`webpack.config.js`, `package-lock.json`, sources under `js/ckeditor5_plugins/`
+and a **committed** `js/build/*.js`. The build artifact I called an unusual cost
+is simply how CKEditor 5 plugins are shipped on drupal.org.
+
+So **(a) is the professional path**, and the toolchain is normal rather than
+exotic. Two things make it more than "write a plugin":
+
+- **The UI should be generated from the flags**, not a flat list of fifty
+  prefixes. `isKeyword` becomes a select of allowed keywords;
+  `isNumericFlexible` a number field plus a unit picker; `isColor` a colour
+  control; `sides` a top/right/bottom/left selector. That data already exists.
+- **It must keep the text format's allowed HTML in sync** with what it can
+  insert, and say so on screen when it cannot.
+
+Still the owner's call, and (b) remains a legitimate first step if shipping
+sooner matters more than arbitrary values.
 
 ## 3 · The AI module — what it is FOR
 
