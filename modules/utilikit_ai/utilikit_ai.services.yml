@@ -28,3 +28,17 @@ services:
       - '@entity_type.manager'
 
   Drupal\utilikit_ai\Service\SetupDoctorInterface: '@utilikit_ai.setup_doctor'
+
+  # The only service here that writes, and it only ever adds a class attribute.
+  # It takes the validator and the doctor and re-runs both, so a model that
+  # skips check_classes or diagnose_setup cannot cause a bad write — the
+  # redundancy IS the safety model.
+  utilikit_ai.class_applier:
+    class: Drupal\utilikit_ai\Service\ClassApplier
+    arguments:
+      - '@entity_type.manager'
+      - '@current_user'
+      - '@utilikit_ai.class_validator'
+      - '@utilikit_ai.setup_doctor'
+
+  Drupal\utilikit_ai\Service\ClassApplierInterface: '@utilikit_ai.class_applier'

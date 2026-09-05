@@ -46,6 +46,7 @@ final class ToolDiscoveryTest extends KernelTestBase {
     'utilikit_explain_utility' => 'utilikit:explain_utility',
     'utilikit_check_classes' => 'utilikit:check_classes',
     'utilikit_diagnose_setup' => 'utilikit:diagnose_setup',
+    'utilikit_apply_classes' => 'utilikit:apply_classes',
   ];
 
   /**
@@ -53,7 +54,18 @@ final class ToolDiscoveryTest extends KernelTestBase {
    *
    * @var list<string>
    */
-  protected static $modules = ['system', 'user', 'key', 'ai', 'utilikit', 'utilikit_ai'];
+  protected static $modules = [
+    'system',
+    'user',
+    'field',
+    'text',
+    'filter',
+    'node',
+    'key',
+    'ai',
+    'utilikit',
+    'utilikit_ai',
+  ];
 
   /**
    * {@inheritdoc}
@@ -66,7 +78,10 @@ final class ToolDiscoveryTest extends KernelTestBase {
     );
 
     parent::setUp();
-    $this->installConfig(['utilikit']);
+    $this->installEntitySchema('user');
+    $this->installEntitySchema('node');
+    $this->installSchema('node', ['node_access']);
+    $this->installConfig(['system', 'filter', 'node', 'utilikit']);
   }
 
   /**

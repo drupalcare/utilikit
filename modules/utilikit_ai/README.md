@@ -13,10 +13,24 @@ installable without `drupal/ai`; nothing here is referenced from them.
 | `utilikit_explain_utility` | no | What a prefix does and exactly which values it accepts **on this site** |
 | `utilikit_check_classes` | no | Checks a class string before it goes anywhere near a page |
 | `utilikit_diagnose_setup` | no | Why a valid class still does nothing here |
+| `utilikit_apply_classes` | **yes** | Adds classes to elements in a page's formatted text |
 
-**Nothing in this module writes.** Not to content, not to configuration. Where
-an assistant should *apply* classes depends on a decision that has not been
-made yet — see "What is not here" below.
+### The five rules the writer cannot be configured out of
+
+1. **A new revision every time.** Anything a machine changes in someone's
+   content must be reversible by someone who did not watch it happen.
+2. **It refuses where the text format would strip the class.** Measured on a
+   real site: Basic HTML and Restricted HTML both do. Writing something that is
+   silently discarded is worse than refusing, because it looks like it worked.
+3. **One bad class refuses the whole request.** A partial application leaves
+   content in a state nobody asked for and nobody can see.
+4. **The `utilikit` marker is added automatically**, because without it the
+   element is ignored entirely.
+5. **Every precondition is re-checked by the writer itself**, not trusted from
+   an earlier tool call, because a model can skip those.
+
+It only ever adds a class attribute — never text, never structure, never a
+whole field.
 
 ## Why tools rather than a good prompt
 
@@ -77,12 +91,14 @@ from the page and each has a different fix:
 
 ## What is not here, and why
 
-**Nothing that writes.** An assistant that composes classes is only half the
-job; the other half is putting them somewhere. There are two candidate
-surfaces — the playground, and the WYSIWYG through a CKEditor 5 plugin — and
-which to build is an open decision recorded in
-`docs/UTILIKIT-AI-BRIEF.md` §2. Building a writer before that is settled would
-mean choosing the answer by accident.
+**The WYSIWYG.** `apply_classes` writes into stored content, which is where the
+classes actually live. Applying them *interactively while editing* needs a
+CKEditor 5 plugin, and how that should be built is an open decision recorded in
+`docs/UTILIKIT-AI-BRIEF.md` §2.
+
+**Not the playground.** It was considered as a write surface and is not one:
+the playground is entirely client-side, so there is nothing for a server-side
+tool to write into.
 
 ## Testing
 

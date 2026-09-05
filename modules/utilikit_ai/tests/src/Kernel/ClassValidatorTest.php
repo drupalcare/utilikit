@@ -252,4 +252,31 @@ final class ClassValidatorTest extends KernelTestBase {
     }
   }
 
+  /**
+   * An ambiguous near-miss suggests nothing rather than guessing.
+   *
+   * MEASURED 2026-09-05: "cr" is one edit from ar, br, gr and more, and the
+   * validator answered "Use uk-ar--… instead" — aspect-ratio, for something
+   * that was plainly meant to be a colour. A suggestion nobody can trust is
+   * worse than no suggestion, because it gets followed.
+   */
+  public function testAnAmbiguousNearMissSuggestsNothing(): void {
+    $verdict = $this->validator->check('uk-cr--ffffff');
+
+    self::assertFalse($verdict->valid);
+    self::assertStringNotContainsString('uk-ar', $verdict->line(), 'An unrelated prefix must not be offered.');
+    self::assertStringNotContainsString('instead', $verdict->line());
+  }
+
+  /**
+   * An unambiguous near-miss still suggests, so the guard did not kill it.
+   */
+  public function testAnUnambiguousNearMissStillSuggests(): void {
+    // "bgg" is one edit from bg and nothing else.
+    $verdict = $this->validator->check('uk-bgg--ffffff');
+
+    self::assertFalse($verdict->valid);
+    self::assertStringContainsString('uk-bg', $verdict->line());
+  }
+
 }

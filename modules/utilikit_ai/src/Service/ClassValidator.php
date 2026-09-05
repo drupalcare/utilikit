@@ -322,6 +322,7 @@ final class ClassValidator implements ClassValidatorInterface {
     $wanted = strtolower($wanted);
     $best = '';
     $bestDistance = PHP_INT_MAX;
+    $ties = 0;
 
     foreach ($candidates as $candidate) {
       $distance = levenshtein($wanted, strtolower($candidate));
@@ -329,6 +330,10 @@ final class ClassValidator implements ClassValidatorInterface {
       if ($distance < $bestDistance) {
         $bestDistance = $distance;
         $best = $candidate;
+        $ties = 1;
+      }
+      elseif ($distance === $bestDistance) {
+        $ties++;
       }
     }
 
@@ -336,7 +341,17 @@ final class ClassValidator implements ClassValidatorInterface {
     // different value and a suggestion would be noise.
     $limit = strlen($wanted) <= 4 ? 1 : 2;
 
-    return $bestDistance <= $limit ? $best : '';
+    if ($bestDistance > $limit) {
+      return '';
+    }
+
+    // AND THE WINNER HAS TO BE THE ONLY WINNER. The prefixes are two letters
+    // wide, so "one edit away" is not distinctive: cr is one edit from ar, br,
+    // gr and several more, and returning the first of those means confidently
+    // pointing at aspectRatio when someone typed a colour. MEASURED — that is
+    // exactly what it did before this guard. A tie means we do not know, and
+    // saying nothing is the honest answer.
+    return $ties === 1 ? $best : '';
   }
 
 }

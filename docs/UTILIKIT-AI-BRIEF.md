@@ -105,20 +105,30 @@ from the page:
 
 ## 1d · The tools, and where each writes
 
-Mirrors the two shipped sibling modules: several that read, one that negotiates,
-one that writes.
+WHAT SHIPPED, not what was planned. This table was a plan and three of its rows
+named tools that were never built; it now records the four that exist, verified
+live on sts.local 2026-09-05 (28 checks, every command and every refusal path).
 
 | Tool | Writes? | For |
 |---|---|---|
-| `utilikit_explain_utility` | no | what `pd` does and what values it takes, from the flags |
-| `utilikit_compose_classes` | no | plain English → a validated class string, every class checked against §1a |
-| `utilikit_diagnose_classes` | no | why a class did nothing — bad prefix, bad value, or one of the three causes in §1c |
-| `utilikit_resolve_target` | no | turns a vague request into exact values, or into the questions to ask |
-| `utilikit_apply_classes` | **yes** | writes the classes where the person is working — with the §1b marker |
+| `utilikit_explain_utility` | no | what `pd` does and what values it takes, read from the flags in §1a |
+| `utilikit_check_classes` | no | verdict per class — valid, invalid with the reason, or explicitly unverified |
+| `utilikit_diagnose_setup` | no | why a *correct* class still does nothing here — the three causes in §1c |
+| `utilikit_apply_classes` | **yes** | adds classes to every element of one tag in a page's formatted text |
 
-Two surfaces: the **playground**, where output is visible and nothing on the
-site changes, and the **WYSIWYG**, which needs U1 first — without the plugin
-there is nowhere for the assistant to put anything.
+`apply_classes` is the only writer, and it only ever adds a class attribute —
+never text, never structure, never a whole field. Five rules it cannot be
+configured out of: a new revision every time; refusal where the text format
+would strip the class; one bad class refuses the whole request; the §1b marker
+added automatically; and every precondition re-checked by the writer itself
+rather than trusted from an earlier tool call, because a model can skip those.
+
+THE SURFACES, corrected. The **playground was considered and is not a write
+surface** — it is entirely client-side, so there is nothing there for a
+server-side tool to write into. The two real surfaces are **stored content**,
+which `apply_classes` covers, and the **WYSIWYG**, which still needs U1: without
+the plugin there is nowhere for an assistant to put anything while someone is
+editing.
 
 ## 1 · The one thing that must not be repeated
 
