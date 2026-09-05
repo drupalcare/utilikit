@@ -9,6 +9,6 @@ module.exports = {
     rules: {},
     state: {},
     isDevMode: false,
-    renderingMode: 'inline'
-  }
+    renderingMode: 'inline',
+  },
 };

@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * Main Drupal behavior for UtiliKit initialization and lifecycle management.
  *
@@ -30,9 +33,7 @@
  * - Efficient element querying with targeted selectors
  * - Development features disabled in production
  */
-(function(Drupal, once, drupalSettings) {
-  'use strict';
-
+(function (Drupal, once, drupalSettings) {
   // Ensure UtiliKit namespace exists for behavior integration
   Drupal.utilikit = Drupal.utilikit || {};
 
@@ -49,7 +50,6 @@
    * inline and static rendering modes.
    */
   Drupal.behaviors.utilikitEngine = {
-
     /**
      * Attaches UtiliKit functionality to DOM elements.
      *
@@ -78,7 +78,7 @@
      * // Can be manually triggered for specific contexts
      * Drupal.behaviors.utilikitEngine.attach(container, drupalSettings);
      */
-    attach: function (context, settings) {
+    attach(context, settings) {
       // Perform one-time initialization if not already done
       if (!Drupal.utilikit.initialized) {
         this.initialize();
@@ -114,7 +114,7 @@
      * // Manual initialization (if needed):
      * Drupal.behaviors.utilikitEngine.initialize();
      */
-    initialize: function() {
+    initialize() {
       // Mark as initialized to prevent duplicate initialization
       Drupal.utilikit.initialized = true;
 
@@ -127,25 +127,38 @@
       const renderingMode = drupalSettings.utilikit?.renderingMode || 'inline';
 
       // Initialize responsive system for inline mode
-      if (renderingMode === 'inline' &&
-          typeof Drupal.utilikit.initResizeListener === 'function') {
-        Drupal.utilikit.initResizeListener(document, drupalSettings.utilikit.debounce || 50);
+      if (
+        renderingMode === 'inline' &&
+        typeof Drupal.utilikit.initResizeListener === 'function'
+      ) {
+        Drupal.utilikit.initResizeListener(
+          document,
+          drupalSettings.utilikit.debounce || 50,
+        );
       }
 
       // Development mode initialization and diagnostics
       if (drupalSettings.utilikit.devMode) {
-        Drupal.utilikit.utilikitLog('UtiliKit initialized', {
-          mode: renderingMode,
-          activeBreakpoints: drupalSettings.utilikit.activeBreakpoints
-        }, 'log');
+        Drupal.utilikit.utilikitLog(
+          'UtiliKit initialized',
+          {
+            mode: renderingMode,
+            activeBreakpoints: drupalSettings.utilikit.activeBreakpoints,
+          },
+          'log',
+        );
 
         // Static mode specific diagnostics
         if (renderingMode === 'static') {
           const elements = document.querySelectorAll('.utilikit');
-          Drupal.utilikit.utilikitLog('Static mode active - CSS file loaded', {
-            elementsFound: elements.length,
-            cssTimestamp: drupalSettings.utilikit.cssTimestamp
-          }, 'log');
+          Drupal.utilikit.utilikitLog(
+            'Static mode active - CSS file loaded',
+            {
+              elementsFound: elements.length,
+              cssTimestamp: drupalSettings.utilikit.cssTimestamp,
+            },
+            'log',
+          );
         }
       }
     },
@@ -176,22 +189,26 @@
      * // "Invalid class format: uk-padding-20" (missing double dash)
      * // "Unknown UtiliKit prefix: invalidprefix in class uk-invalidprefix--20"
      */
-    validateClasses: function() {
+    validateClasses() {
       // Skip validation if not in development mode for performance
       if (!drupalSettings.utilikit?.devMode) return;
 
       const elements = document.querySelectorAll('.utilikit');
       let invalidCount = 0;
 
-      elements.forEach(el => {
-        el.classList.forEach(className => {
+      elements.forEach((el) => {
+        el.classList.forEach((className) => {
           // Only validate UtiliKit classes (those starting with 'uk-')
           if (!className.startsWith('uk-')) return;
 
           // Basic format validation - check for required double dash separator
           const parts = className.split('--');
           if (parts.length !== 2) {
-            Drupal.utilikit.utilikitLog('Invalid class format: ' + className, null, 'warn');
+            Drupal.utilikit.utilikitLog(
+              `Invalid class format: ${className}`,
+              null,
+              'warn',
+            );
             invalidCount++;
             return;
           }
@@ -205,10 +222,16 @@
           const prefix = prefixMatch[2];
 
           // Validate against known utility prefixes in rules registry
-          if (typeof Drupal.utilikit !== 'undefined' &&
-              Drupal.utilikit.rules &&
-              !(prefix in Drupal.utilikit.rules)) {
-            Drupal.utilikit.utilikitLog('Unknown UtiliKit prefix: ' + prefix + ' in class ' + className, null, 'warn');
+          if (
+            typeof Drupal.utilikit !== 'undefined' &&
+            Drupal.utilikit.rules &&
+            !(prefix in Drupal.utilikit.rules)
+          ) {
+            Drupal.utilikit.utilikitLog(
+              `Unknown UtiliKit prefix: ${prefix} in class ${className}`,
+              null,
+              'warn',
+            );
             invalidCount++;
           }
         });
@@ -216,9 +239,17 @@
 
       // Provide summary validation results
       if (invalidCount > 0) {
-        Drupal.utilikit.utilikitLog('Found ' + invalidCount + ' invalid classes', null, 'warn');
+        Drupal.utilikit.utilikitLog(
+          `Found ${invalidCount} invalid classes`,
+          null,
+          'warn',
+        );
       } else {
-        Drupal.utilikit.utilikitLog('All UtiliKit classes validated successfully', null, 'log');
+        Drupal.utilikit.utilikitLog(
+          'All UtiliKit classes validated successfully',
+          null,
+          'log',
+        );
       }
     },
 
@@ -252,7 +283,7 @@
      *   Drupal.behaviors.utilikitEngine.processInlineMode(document);
      * });
      */
-    processInlineMode: function(context) {
+    processInlineMode(context) {
       // Ensure CSS application function is available
       if (typeof Drupal.utilikit.applyClasses !== 'function') {
         return;
@@ -263,7 +294,8 @@
 
       if (elements.length > 0) {
         // Re-check rendering mode for safety (may change during runtime)
-        const renderingMode = drupalSettings.utilikit?.renderingMode || 'inline';
+        const renderingMode =
+          drupalSettings.utilikit?.renderingMode || 'inline';
 
         if (renderingMode === 'inline') {
           // Apply dynamic CSS generation for inline mode
@@ -273,9 +305,8 @@
           this.validateClasses();
         }
       }
-    }
+    },
   };
-
 })(Drupal, once, drupalSettings);
 
 /**

@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * UtiliKit CSS Rule Application Engine.
  *
@@ -20,8 +23,7 @@
  * @see utilikit.rules.js for rule definitions
  * @see utilikit.behavior.js for element processing workflow
  */
-(function(Drupal, once, drupalSettings) {
-  'use strict';
+(function (Drupal, once, drupalSettings) {
   Drupal.utilikit = Drupal.utilikit || {};
 
   /**
@@ -45,10 +47,17 @@
    * @param {string} className
    *   The complete utility class name for error reporting.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the rule was successfully applied, FALSE otherwise.
    */
-  Drupal.utilikit.applySidesRule = function(el, rule, prefix, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applySidesRule = function (
+    el,
+    rule,
+    prefix,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     if (!rule.sides) return false;
 
     // Handle keyword sides (e.g., uk-bs--b-dashed → border-block-end-style: dashed).
@@ -57,7 +66,12 @@
       if (keywordMatch) {
         const side = keywordMatch[1];
         const keyword = keywordMatch[2];
-        const sideMap = { t: 'BlockStart', r: 'InlineEnd', b: 'BlockEnd', l: 'InlineStart' };
+        const sideMap = {
+          t: 'BlockStart',
+          r: 'InlineEnd',
+          b: 'BlockEnd',
+          l: 'InlineStart',
+        };
         // borderStyle + BlockEnd → borderBlockEndStyle (side goes before property suffix).
         const baseProp = rule.css;
         const prop = baseProp.replace(/^(border)(.*)$/, `$1${sideMap[side]}$2`);
@@ -72,7 +86,9 @@
     // Convert decimal notation: digit-d-digit becomes digit.digit (e.g., 1d5 -> 1.5).
     const normalizedSuffix = suffix.replace(/(\d)d(\d)/g, '$1.$2');
 
-    const match = normalizedSuffix.match(/^(t|r|b|l)-(auto|\d+(?:\.\d+)?(?:px|pr|em|rem|vh|vw)?)$/);
+    const match = normalizedSuffix.match(
+      /^(t|r|b|l)-(auto|\d+(?:\.\d+)?(?:px|pr|em|rem|vh|vw)?)$/,
+    );
     if (!match) return false;
 
     const side = match[1];
@@ -87,7 +103,7 @@
         if (unit === 'pr') unit = '%';
         value = num + unit;
       } else {
-        value = value + 'px'; // Fallback
+        value += 'px'; // Fallback
       }
     }
 
@@ -104,12 +120,22 @@
         utiliKitProperties.add(prop);
       });
     } else if (prefix === 'bw') {
-      const sideMap = { t: 'borderBlockStartWidth', r: 'borderInlineEndWidth', b: 'borderBlockEndWidth', l: 'borderInlineStartWidth' };
+      const sideMap = {
+        t: 'borderBlockStartWidth',
+        r: 'borderInlineEndWidth',
+        b: 'borderBlockEndWidth',
+        l: 'borderInlineStartWidth',
+      };
       const prop = sideMap[side];
       el.style[prop] = value;
       utiliKitProperties.add(prop);
     } else {
-      const logicalSideMap = { t: 'BlockStart', r: 'InlineEnd', b: 'BlockEnd', l: 'InlineStart' };
+      const logicalSideMap = {
+        t: 'BlockStart',
+        r: 'InlineEnd',
+        b: 'BlockEnd',
+        l: 'InlineStart',
+      };
       const prop = `${rule.css}${logicalSideMap[side]}`;
       el.style[prop] = value;
       utiliKitProperties.add(prop);
@@ -142,10 +168,17 @@
    * @param {string} className
    *   The complete utility class name for error reporting.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the shorthand rule was applied, FALSE otherwise.
    */
-  Drupal.utilikit.applySpacingShorthandRule = function(el, rule, prefix, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applySpacingShorthandRule = function (
+    el,
+    rule,
+    prefix,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     if (!['pd', 'mg', 'bw', 'br'].includes(prefix)) return false;
     if (suffix.match(/^(t|r|b|l)-/)) return false;
 
@@ -157,7 +190,8 @@
     const values = [];
 
     // Parse each part
-    for (let part of parts) {
+    for (let i = 0; i < parts.length; i += 1) {
+      const part = parts[i];
       if (part === 'auto') {
         if (rule.allowAuto && ['mg'].includes(prefix)) {
           values.push('auto');
@@ -182,22 +216,31 @@
     // Apply CSS shorthand logic using logical properties.
     // blockStart = top, inlineEnd = right, blockEnd = bottom,
     // inlineStart = left (in LTR writing mode).
-    let blockStart, inlineEnd, blockEnd, inlineStart;
+    let blockStart;
+    let inlineEnd;
+    let blockEnd;
+    let inlineStart;
 
     switch (values.length) {
       case 1:
         // uk-pd--20 → padding: 20px (all sides)
-        blockStart = inlineEnd = blockEnd = inlineStart = values[0];
+        blockStart = values[0];
+        inlineEnd = values[0];
+        blockEnd = values[0];
+        inlineStart = values[0];
         break;
       case 2:
         // uk-pd--12-24 → padding: 12px 24px (block inline)
-        blockStart = blockEnd = values[0];
-        inlineEnd = inlineStart = values[1];
+        blockStart = values[0];
+        blockEnd = values[0];
+        inlineEnd = values[1];
+        inlineStart = values[1];
         break;
       case 3:
         // uk-pd--12-24-36 → padding: 12px 24px 36px (block-start inline block-end)
         blockStart = values[0];
-        inlineEnd = inlineStart = values[1];
+        inlineEnd = values[1];
+        inlineStart = values[1];
         blockEnd = values[2];
         break;
       case 4:
@@ -258,7 +301,7 @@
    *
    * Handles UtiliKit classes that set CSS properties to predefined keyword
    * values such as display: flex, position: absolute, text-align: center, etc.
-   * Validates against a whitelist of allowed keyword values.
+   * Validates against an allowlist of accepted keyword values.
    *
    * @param {HTMLElement} el
    *   The DOM element to apply the style to.
@@ -271,7 +314,7 @@
    * @param {string} className
    *   The complete utility class name for error reporting.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the keyword rule was applied, FALSE otherwise.
    */
   /**
@@ -291,10 +334,19 @@
    *
    * @type {Object.<string, string[]>}
    */
-  const allowedKeywords = (drupalSettings && drupalSettings.utilikit
-    && drupalSettings.utilikit.keywords) || {};
+  const allowedKeywords =
+    (drupalSettings &&
+      drupalSettings.utilikit &&
+      drupalSettings.utilikit.keywords) ||
+    {};
 
-  Drupal.utilikit.applyKeywordRule = function(el, rule, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applyKeywordRule = function (
+    el,
+    rule,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     if (!rule.isKeyword) return false;
     const match = suffix.match(/^([\w-]+)$/);
     if (!match) return false;
@@ -308,9 +360,9 @@
       let value = keyword;
       if (cssProp === 'justifyContent' || cssProp === 'alignContent') {
         const shorthandMap = {
-          'between': 'space-between',
-          'around': 'space-around',
-          'evenly': 'space-evenly',
+          between: 'space-between',
+          around: 'space-around',
+          evenly: 'space-evenly',
         };
         value = shorthandMap[keyword] || keyword;
       }
@@ -318,8 +370,7 @@
         return false;
       }
       el.style[cssProp] = value;
-    }
-    else {
+    } else {
       // No allowlist defined for this property — reject unknown properties.
       return false;
     }
@@ -347,10 +398,16 @@
    * @param {string} className
    *   The complete utility class name for error reporting.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the transform was applied, FALSE otherwise.
    */
-  Drupal.utilikit.applyTransformRule = function(el, rule, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applyTransformRule = function (
+    el,
+    rule,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     if (!rule.isTransform) return false;
 
     // Updated regex to support decimals with 'd' notation
@@ -363,7 +420,7 @@
     const value = parseFloat(valueStr);
 
     // Validate the numeric value
-    if (isNaN(value)) return false;
+    if (Number.isNaN(value)) return false;
 
     // Apply the transform using the existing helper
     Drupal.utilikit.parseTransform(el, rule.isTransform, value);
@@ -397,16 +454,25 @@
    * @param {string} className
    *   The complete utility class name for error reporting.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the gap was applied successfully, FALSE otherwise.
    */
-Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applyGapRule = function (
+    el,
+    rule,
+    prefix,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     if (prefix !== 'gp') return false;
 
     // Convert decimal notation: digit-d-digit becomes digit.digit (e.g., 1d5 -> 1.5).
     const normalizedSuffix = suffix.replace(/(\d)d(\d)/g, '$1.$2');
 
-    const match = normalizedSuffix.match(/^(\d+(?:\.\d+)?(?:px|pr|em|rem|vh|vw)?)(?:-(\d+(?:\.\d+)?(?:px|pr|em|rem|vh|vw)?))?$/);
+    const match = normalizedSuffix.match(
+      /^(\d+(?:\.\d+)?(?:px|pr|em|rem|vh|vw)?)(?:-(\d+(?:\.\d+)?(?:px|pr|em|rem|vh|vw)?))?$/,
+    );
     if (!match) return false;
 
     // Process first value
@@ -463,10 +529,17 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
    * @param {string} className
    *   The complete utility class name for error reporting.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the style was applied, FALSE if invalid format.
    */
-  Drupal.utilikit.applyNumericRule = function(el, rule, prefix, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applyNumericRule = function (
+    el,
+    rule,
+    prefix,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     // Handle opacity: integer 0–100 → decimal 0–1
     if (rule.isOpacity) {
       const match = suffix.match(/^(\d{1,3})$/);
@@ -499,7 +572,7 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
       return true;
     }
 
-        // Handle numeric + unit: px, %, em, rem – and allow "auto" if flagged
+    // Handle numeric + unit: px, %, em, rem – and allow "auto" if flagged
     if (rule.isNumericFlexible) {
       if (rule.allowAuto && suffix === 'auto') {
         el.style[rule.css] = 'auto';
@@ -511,10 +584,13 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
       const match = suffix.match(/^(\d+(?:d\d+)?)(px|pr|em|rem|vh|vw)?$/);
       if (!match) return false;
 
-      // Keep the viewport-unit whitelist as in your original logic.
+      // Keep the viewport-unit allowlist as in the original logic.
       const viewportAllowedRules = ['wd', 'ht', 'xw', 'xh', 'nw', 'nh', 'fs'];
       const unitRaw = match[2] || '';
-      if ((unitRaw === 'vh' || unitRaw === 'vw') && !viewportAllowedRules.includes(prefix)) {
+      if (
+        (unitRaw === 'vh' || unitRaw === 'vw') &&
+        !viewportAllowedRules.includes(prefix)
+      ) {
         return false;
       }
 
@@ -566,10 +642,16 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
    * @param {string} className
    *   The complete utility class name for error reporting.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the color was applied, FALSE if invalid format.
    */
-  Drupal.utilikit.applyColorRule = function(el, rule, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applyColorRule = function (
+    el,
+    rule,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     if (!rule.isColor) return false;
     const color = Drupal.utilikit.parseColorWithAlpha(suffix);
     if (color === null) {
@@ -598,10 +680,16 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
    * @param {string} className
    *   The complete utility class name for error reporting.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the fractional value was applied, FALSE otherwise.
    */
-  Drupal.utilikit.applyFractionalRule = function(el, rule, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applyFractionalRule = function (
+    el,
+    rule,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     if (!rule.isFractional) return false;
     const match = suffix.match(/^(\d+)fr$/);
     if (!match) return false;
@@ -628,10 +716,16 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
    * @param {string} className
    *   The complete utility class name for error reporting.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the range was applied, FALSE otherwise.
    */
-  Drupal.utilikit.applyRangeRule = function(el, rule, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applyRangeRule = function (
+    el,
+    rule,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     if (!rule.isRange) return false;
     const match = suffix.match(/^(\d+)-(\d+)$/);
     if (!match) return false;
@@ -640,7 +734,7 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
     return true;
   };
 
-   /**
+  /**
    * Applies CSS Grid track list definitions.
    *
    * Processes complex grid template utilities using functions like repeat(),
@@ -660,10 +754,15 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
    * @param {Set} utiliKitProperties
    *   Set tracking modified CSS properties for cleanup.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the grid template was applied, FALSE otherwise.
    */
-  Drupal.utilikit.applyGridTrackListRule = function(el, rule, className, utiliKitProperties) {
+  Drupal.utilikit.applyGridTrackListRule = function (
+    el,
+    rule,
+    className,
+    utiliKitProperties,
+  ) {
     if (!rule.isGridTrackList) return false;
 
     const css = Drupal.utilikit.parseGridTemplateClass(className);
@@ -687,7 +786,7 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
     return true;
   };
 
-   /**
+  /**
    * Main rule application dispatcher function.
    *
    * Coordinates the application of UtiliKit rules by attempting all
@@ -711,30 +810,100 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
    * @param {string} className
    *   The complete utility class name for debugging and logging.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if any rule handler successfully applied the style, FALSE if
    *   no handler could process the given suffix format.
    */
-  Drupal.utilikit.applyRule = function(el, rule, prefix, suffix, utiliKitProperties, className) {
+  Drupal.utilikit.applyRule = function (
+    el,
+    rule,
+    prefix,
+    suffix,
+    utiliKitProperties,
+    className,
+  ) {
     if (!Drupal.utilikit.state) {
       Drupal.utilikit.initEnvironment(document);
     }
 
     // Special handling for grid templates - they need the full className
     if (rule.isGridTrackList) {
-      return Drupal.utilikit.applyGridTrackListRule(el, rule, className, utiliKitProperties);
+      return Drupal.utilikit.applyGridTrackListRule(
+        el,
+        rule,
+        className,
+        utiliKitProperties,
+      );
     }
 
     const success =
-      Drupal.utilikit.applySidesRule(el, rule, prefix, suffix, utiliKitProperties, className) ||
-      Drupal.utilikit.applySpacingShorthandRule(el, rule, prefix, suffix, utiliKitProperties, className) ||
-      Drupal.utilikit.applyKeywordRule(el, rule, suffix, utiliKitProperties, className) ||
-      Drupal.utilikit.applyTransformRule(el, rule, suffix, utiliKitProperties, className) ||
-      Drupal.utilikit.applyGapRule(el, rule, prefix, suffix, utiliKitProperties, className) ||
-      Drupal.utilikit.applyNumericRule(el, rule, prefix, suffix, utiliKitProperties, className) ||
-      Drupal.utilikit.applyColorRule(el, rule, suffix, utiliKitProperties, className) ||
-      Drupal.utilikit.applyFractionalRule(el, rule, suffix, utiliKitProperties, className) ||
-      Drupal.utilikit.applyRangeRule(el, rule, suffix, utiliKitProperties, className);
+      Drupal.utilikit.applySidesRule(
+        el,
+        rule,
+        prefix,
+        suffix,
+        utiliKitProperties,
+        className,
+      ) ||
+      Drupal.utilikit.applySpacingShorthandRule(
+        el,
+        rule,
+        prefix,
+        suffix,
+        utiliKitProperties,
+        className,
+      ) ||
+      Drupal.utilikit.applyKeywordRule(
+        el,
+        rule,
+        suffix,
+        utiliKitProperties,
+        className,
+      ) ||
+      Drupal.utilikit.applyTransformRule(
+        el,
+        rule,
+        suffix,
+        utiliKitProperties,
+        className,
+      ) ||
+      Drupal.utilikit.applyGapRule(
+        el,
+        rule,
+        prefix,
+        suffix,
+        utiliKitProperties,
+        className,
+      ) ||
+      Drupal.utilikit.applyNumericRule(
+        el,
+        rule,
+        prefix,
+        suffix,
+        utiliKitProperties,
+        className,
+      ) ||
+      Drupal.utilikit.applyColorRule(
+        el,
+        rule,
+        suffix,
+        utiliKitProperties,
+        className,
+      ) ||
+      Drupal.utilikit.applyFractionalRule(
+        el,
+        rule,
+        suffix,
+        utiliKitProperties,
+        className,
+      ) ||
+      Drupal.utilikit.applyRangeRule(
+        el,
+        rule,
+        suffix,
+        utiliKitProperties,
+        className,
+      );
 
     if (!success) {
       Drupal.utilikit.logInvalid('Invalid value', suffix, rule, className);
@@ -742,5 +911,5 @@ Drupal.utilikit.applyGapRule = function(el, rule, prefix, suffix, utiliKitProper
     return success;
   };
 
-  //console.log('Current breakpoint:', Drupal.utilikit.getBreakpoint());
+  // console.log('Current breakpoint:', Drupal.utilikit.getBreakpoint());
 })(Drupal, once, drupalSettings);

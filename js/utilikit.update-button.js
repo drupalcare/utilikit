@@ -1,4 +1,6 @@
 /**
+ * @param Drupal
+ * @param drupalSettings
  * @file
  * UtiliKit Update Button System and CSS Regeneration Controller.
  *
@@ -26,9 +28,7 @@
  * @see UtilikitAjaxController.php for server-side processing
  */
 
-(function(Drupal, drupalSettings) {
-  'use strict';
-
+(function (Drupal, drupalSettings) {
   /**
    * UtiliKit Update Button Behavior.
    *
@@ -53,7 +53,7 @@
      * @param {Element} context
      *   The DOM element context for behavior attachment.
      */
-    attach: function(context) {
+    attach(context) {
       if (context !== document) return;
 
       // Check if button already exists
@@ -68,31 +68,31 @@
       fetch('/utilikit/render-button', {
         credentials: 'same-origin',
         headers: {
-          'X-Requested-With': 'XMLHttpRequest'
-        }
+          'X-Requested-With': 'XMLHttpRequest',
+        },
       })
-      .then(response => response.text())
-      .then(html => {
-        if (html.trim()) {
-          // Parse with DOMParser to avoid executing any scripts in the response (XSS-safe).
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const source = doc.body.firstElementChild;
+        .then((response) => response.text())
+        .then((html) => {
+          if (html.trim()) {
+            // Parse with DOMParser to avoid executing any scripts in the response (XSS-safe).
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const source = doc.body.firstElementChild;
 
-          if (source && source.id === 'utilikit-update-button') {
-            const button = document.importNode(source, true);
-            document.body.appendChild(button);
+            if (source && source.id === 'utilikit-update-button') {
+              const button = document.importNode(source, true);
+              document.body.appendChild(button);
 
-            button.addEventListener('click', function() {
-              updateUtilikit();
-            });
+              button.addEventListener('click', function () {
+                updateUtilikit();
+              });
+            }
           }
-        }
-      })
-      .catch(error => {
-        console.error('Failed to load UtiliKit update button:', error);
-      });
-    }
+        })
+        .catch((error) => {
+          console.error('Failed to load UtiliKit update button:', error);
+        });
+    },
   };
 
   /**
@@ -128,8 +128,8 @@
     const allElements = document.querySelectorAll('.utilikit');
     const classes = new Set();
 
-    allElements.forEach(el => {
-      el.classList.forEach(className => {
+    allElements.forEach((el) => {
+      el.classList.forEach((className) => {
         // Collect ALL classes starting with 'uk-' without validation
         if (className.startsWith('uk-')) {
           classes.add(className);
@@ -153,122 +153,129 @@
      * possible response states including success, error, and retry scenarios.
      */
     function attemptUpdate() {
-      fetch('/utilikit/update-css?token=' + encodeURIComponent(csrfToken), {
+      fetch(`/utilikit/update-css?token=${encodeURIComponent(csrfToken)}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify({
           classes: Array.from(classes),
-          mode: mode
-        })
+          mode,
+        }),
       })
-      .then(response => {
-        if (!response.ok) {
-          return response.text().then(text => {
-            try {
-              return JSON.parse(text);
-            } catch (e) {
-              console.error('Server error response:', text);
-              throw new Error('Server error: ' + response.status);
-            }
-          });
-        }
-        return response.json();
-      })
-      .then(data => {
-        const sanitizedData = sanitizeServerResponse(data);
-
-        if (sanitizedData.status === 'locked' && retryCount < maxRetries) {
-          retryCount++;
-
-          showUpdateMessage(
-            `System busy (attempt ${retryCount}/${maxRetries}). Retrying...`,
-            'warning'
-          );
-
-          arrow.innerHTML = '<span class="spinner"></span>';
-          text.textContent = `Waiting... (${retryCount}/${maxRetries})`;
-
-          setTimeout(attemptUpdate, (sanitizedData.retry_after || 2) * 1000);
-
-        } else if (sanitizedData.status === 'locked') {
-          // Max retries reached
-          arrow.innerHTML = originalArrowHtml;
-          text.textContent = originalText;
-          button.disabled = false;
-          button.classList.remove('utilikit-updating');
-
-          showUpdateMessage(
-            'System is busy. Please try again in a few moments.',
-            'error'
-          );
-
-        } else if (sanitizedData.status === 'success') {
-          // Success!
-          arrow.innerHTML = '✓';
-          text.textContent = 'Updated!';
-          button.classList.remove('utilikit-updating');
-          button.classList.add('utilikit-success');
-
-          const message = sanitizedData.message || `Updated ${sanitizedData.count || 0} classes successfully`;
-          showUpdateMessage(message, 'success');
-
-          if (mode === 'static') {
-            refreshStaticCss(sanitizedData.timestamp);
-
-            if (sanitizedData.css) {
-              updateInlineStaticCss(sanitizedData.css);
-            }
-          } else if (mode === 'head') {
-            // Head mode: update the style tag content directly
-            if (sanitizedData.css) {
-              const styleElement = document.getElementById('utilikit-head-mode');
-              if (styleElement) {
-                styleElement.textContent = sanitizedData.css;
+        .then((response) => {
+          if (!response.ok) {
+            return response.text().then((text) => {
+              try {
+                return JSON.parse(text);
+              } catch (e) {
+                console.error('Server error response:', text);
+                throw new Error(`Server error: ${response.status}`);
               }
-            }
-          } else {
-            if (Drupal.utilikit && Drupal.utilikit.applyClasses) {
+            });
+          }
+          return response.json();
+        })
+        .then((data) => {
+          const sanitizedData = sanitizeServerResponse(data);
+
+          if (sanitizedData.status === 'locked' && retryCount < maxRetries) {
+            retryCount++;
+
+            showUpdateMessage(
+              `System busy (attempt ${retryCount}/${maxRetries}). Retrying...`,
+              'warning',
+            );
+
+            arrow.innerHTML = '<span class="spinner"></span>';
+            text.textContent = `Waiting... (${retryCount}/${maxRetries})`;
+
+            setTimeout(attemptUpdate, (sanitizedData.retry_after || 2) * 1000);
+          } else if (sanitizedData.status === 'locked') {
+            // Max retries reached
+            arrow.innerHTML = originalArrowHtml;
+            text.textContent = originalText;
+            button.disabled = false;
+            button.classList.remove('utilikit-updating');
+
+            showUpdateMessage(
+              'System is busy. Please try again in a few moments.',
+              'error',
+            );
+          } else if (sanitizedData.status === 'success') {
+            // Success!
+            arrow.innerHTML = '✓';
+            text.textContent = 'Updated!';
+            button.classList.remove('utilikit-updating');
+            button.classList.add('utilikit-success');
+
+            const message =
+              sanitizedData.message ||
+              `Updated ${sanitizedData.count || 0} classes successfully`;
+            showUpdateMessage(message, 'success');
+
+            if (mode === 'static') {
+              refreshStaticCss(sanitizedData.timestamp);
+
+              if (sanitizedData.css) {
+                updateInlineStaticCss(sanitizedData.css);
+              }
+            } else if (mode === 'head') {
+              // Head mode: update the style tag content directly
+              if (sanitizedData.css) {
+                const styleElement =
+                  document.getElementById('utilikit-head-mode');
+                if (styleElement) {
+                  styleElement.textContent = sanitizedData.css;
+                }
+              }
+            } else if (Drupal.utilikit && Drupal.utilikit.applyClasses) {
               setTimeout(() => {
                 const elements = document.querySelectorAll('.utilikit');
                 Drupal.utilikit.applyClasses(elements);
               }, 100);
             }
-          }
 
-          // Reset button after delay
-          setTimeout(() => {
+            // Reset button after delay
+            setTimeout(() => {
+              arrow.innerHTML = originalArrowHtml;
+              text.textContent = originalText;
+              button.disabled = false;
+              button.classList.remove('utilikit-success');
+            }, 4000);
+          } else if (sanitizedData.status === 'error') {
+            // Error occurred
             arrow.innerHTML = originalArrowHtml;
             text.textContent = originalText;
             button.disabled = false;
-            button.classList.remove('utilikit-success');
-          }, 4000);
+            button.classList.remove('utilikit-updating');
 
-        } else if (sanitizedData.status === 'error') {
-          // Error occurred
+            showUpdateMessage(
+              sanitizedData.message || 'Update failed',
+              'error',
+            );
+          }
+        })
+        .catch((error) => {
           arrow.innerHTML = originalArrowHtml;
           text.textContent = originalText;
           button.disabled = false;
           button.classList.remove('utilikit-updating');
 
-          showUpdateMessage(sanitizedData.message || 'Update failed', 'error');
-        }
-      })
-      .catch(error => {
-        arrow.innerHTML = originalArrowHtml;
-        text.textContent = originalText;
-        button.disabled = false;
-        button.classList.remove('utilikit-updating');
-
-        if (error.message.includes('Server error')) {
-          showUpdateMessage('Server error occurred. Please check the logs.', 'error');
-        } else {
-          showUpdateMessage('Network error. Please check your connection.', 'error');
-        }
-        console.error('UtiliKit update failed:', error);
-      });
+          if (error.message.includes('Server error')) {
+            showUpdateMessage(
+              'Server error occurred. Please check the logs.',
+              'error',
+            );
+          } else {
+            showUpdateMessage(
+              'Network error. Please check your connection.',
+              'error',
+            );
+          }
+          console.error('UtiliKit update failed:', error);
+        });
     }
 
     attemptUpdate();
@@ -284,7 +291,7 @@
    * @param {string} className
    *   The CSS class name to validate.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the class name follows valid UtiliKit format, FALSE otherwise.
    *
    * @example
@@ -293,7 +300,8 @@
    *   isValidUtilityClass('invalid-class');  // false
    */
   function isValidUtilityClass(className) {
-    const pattern = /^uk-(?:(?:sm|md|lg|xl|xxl)-)?[a-z]{2,4}--[a-zA-Z0-9\-_.%]+$/;
+    const pattern =
+      /^uk-(?:(?:sm|md|lg|xl|xxl)-)?[a-z]{2,4}--[a-zA-Z0-9\-_.%]+$/;
     return pattern.test(className) && className.length <= 200;
   }
 
@@ -307,7 +315,7 @@
    * @param {Object} data
    *   The raw server response object to sanitize.
    *
-   * @returns {Object}
+   * @return {Object}
    *   A sanitized response object with validated and cleaned fields.
    *
    * @example
@@ -326,13 +334,22 @@
         sanitized.message = data.message.replace(/[<>&'"]/g, '');
       }
       if (typeof data.count === 'number' || typeof data.count === 'string') {
-        sanitized.count = parseInt(data.count) || 0;
+        sanitized.count = parseInt(data.count, 10) || 0;
       }
-      if (typeof data.timestamp === 'number' || typeof data.timestamp === 'string') {
-        sanitized.timestamp = parseInt(data.timestamp) || 0;
+      if (
+        typeof data.timestamp === 'number' ||
+        typeof data.timestamp === 'string'
+      ) {
+        sanitized.timestamp = parseInt(data.timestamp, 10) || 0;
       }
-      if (typeof data.retry_after === 'number' || typeof data.retry_after === 'string') {
-        sanitized.retry_after = Math.max(1, Math.min(10, parseInt(data.retry_after) || 2));
+      if (
+        typeof data.retry_after === 'number' ||
+        typeof data.retry_after === 'string'
+      ) {
+        sanitized.retry_after = Math.max(
+          1,
+          Math.min(10, parseInt(data.retry_after, 10) || 2),
+        );
       }
       if (typeof data.css === 'string') {
         sanitized.css = data.css;
@@ -359,7 +376,9 @@
    *   showUpdateMessage('Connection failed', 'error');
    */
   function showUpdateMessage(text, type = 'info') {
-    document.querySelectorAll('.utilikit-update-message').forEach(el => el.remove());
+    document
+      .querySelectorAll('.utilikit-update-message')
+      .forEach((el) => el.remove());
 
     const message = document.createElement('div');
     message.className = `utilikit-update-message utilikit-update-message--${type}`;
@@ -398,7 +417,7 @@
    * @param {string} type
    *   The message type ('success', 'warning', 'error', 'info').
    *
-   * @returns {string}
+   * @return {string}
    *   Unicode icon character appropriate for the message type.
    */
   function getMessageIcon(type) {
@@ -406,7 +425,7 @@
       success: '✓',
       warning: '⚠',
       error: '✕',
-      info: 'ℹ'
+      info: 'ℹ',
     };
     return icons[type] || icons.info;
   }
@@ -431,7 +450,9 @@
       const currentUrl = linkElement.href;
       const baseUrl = currentUrl.split('?')[0];
 
-      const newUrl = baseUrl + '?v=' + Math.random().toString(36).substr(2, 9) + '&t=' + (timestamp || Date.now());
+      const newUrl = `${baseUrl}?v=${Math.random()
+        .toString(36)
+        .substr(2, 9)}&t=${timestamp || Date.now()}`;
 
       const newLink = document.createElement('link');
       newLink.id = 'utilikit-static-css-new';
@@ -439,7 +460,7 @@
       newLink.href = newUrl;
       newLink.media = 'all';
 
-      newLink.onload = function() {
+      newLink.onload = function () {
         if (linkElement.parentNode) {
           linkElement.parentNode.removeChild(linkElement);
         }
@@ -450,9 +471,9 @@
 
       // Clear browser caches if Cache API is available
       if ('caches' in window) {
-        caches.keys().then(names => {
-          names.forEach(name => {
-            caches.open(name).then(cache => {
+        caches.keys().then((names) => {
+          names.forEach((name) => {
+            caches.open(name).then((cache) => {
               cache.delete(currentUrl);
               cache.delete(newUrl);
             });
@@ -484,5 +505,4 @@
     }
     styleElement.textContent = css;
   }
-
 })(Drupal, drupalSettings);

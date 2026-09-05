@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * UtiliKit Examples JavaScript behavior.
  *
@@ -7,9 +10,7 @@
  * of global settings to ensure examples display correctly.
  */
 
-(function(Drupal, once, drupalSettings) {
-  'use strict';
-
+(function (Drupal, once, drupalSettings) {
   /**
    * UtiliKit Examples behavior.
    *
@@ -21,7 +22,6 @@
    * @namespace
    */
   Drupal.behaviors.utilikitExamples = {
-
     /**
      * Attaches UtiliKit inline processing to example elements.
      *
@@ -35,40 +35,49 @@
      * @param {object} settings
      *   Drupal settings object containing configuration data.
      *
-     * @returns {void}
+     * @return {void}
      */
-    attach: function(context, settings) {
+    attach(context, settings) {
       // Always use inline mode regardless of global settings
       const elements = once('utilikit-examples', '.utilikit', context);
 
       if (elements.length > 0) {
         // Force apply classes using inline engine to ensure examples
         // display correctly in documentation and testing environments
-        if (typeof Drupal.utilikit !== 'undefined' &&
-            typeof Drupal.utilikit.applyClasses === 'function') {
+        if (
+          typeof Drupal.utilikit !== 'undefined' &&
+          typeof Drupal.utilikit.applyClasses === 'function'
+        ) {
           Drupal.utilikit.applyClasses(elements);
         }
       }
 
       // Attach hover class-swap behavior via data attributes (CSP-safe,
       // replaces inline onmouseover/onmouseout handlers).
-      once('utilikit-hover-demo', '[data-hover-class][data-default-class]', context).forEach(function (el) {
+      once(
+        'utilikit-hover-demo',
+        '[data-hover-class][data-default-class]',
+        context,
+      ).forEach(function (el) {
         el.addEventListener('mouseover', function () {
           this.className = this.dataset.hoverClass;
-          if (typeof Drupal.utilikit !== 'undefined' &&
-              typeof Drupal.utilikit.applyClasses === 'function') {
+          if (
+            typeof Drupal.utilikit !== 'undefined' &&
+            typeof Drupal.utilikit.applyClasses === 'function'
+          ) {
             Drupal.utilikit.applyClasses([this]);
           }
         });
         el.addEventListener('mouseout', function () {
           this.className = this.dataset.defaultClass;
-          if (typeof Drupal.utilikit !== 'undefined' &&
-              typeof Drupal.utilikit.applyClasses === 'function') {
+          if (
+            typeof Drupal.utilikit !== 'undefined' &&
+            typeof Drupal.utilikit.applyClasses === 'function'
+          ) {
             Drupal.utilikit.applyClasses([this]);
           }
         });
       });
-    }
+    },
   };
-
 })(Drupal, once, drupalSettings);

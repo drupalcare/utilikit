@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * UtiliKit Debug Helper - Visual debugging tools and console utilities.
  *
@@ -7,8 +10,6 @@
  * Only activates when drupalSettings.utilikit.devMode is enabled.
  */
 (function (Drupal, once, drupalSettings) {
-  'use strict';
-
   Drupal.behaviors.utilikitDebugHelper = {
     attach(context) {
       if (!drupalSettings.utilikit?.devMode) {
@@ -66,44 +67,69 @@
         document.body.appendChild(debugPanel);
 
         const updateDebugInfo = () => {
-          document.getElementById('uk-current-bp').textContent = Drupal.utilikit.getBreakpoint() || 'base';
-          document.getElementById('uk-current-width').textContent = window.innerWidth;
-          document.getElementById('uk-element-count').textContent = document.querySelectorAll('.utilikit').length;
+          document.getElementById('uk-current-bp').textContent =
+            Drupal.utilikit.getBreakpoint() || 'base';
+          document.getElementById('uk-current-width').textContent =
+            window.innerWidth;
+          document.getElementById('uk-element-count').textContent =
+            document.querySelectorAll('.utilikit').length;
         };
 
         updateDebugInfo();
 
-        document.getElementById('utilikit-force-refresh').addEventListener('click', () => {
-          Drupal.utilikit.utilikitLog('Force refreshing all elements...', null, 'log');
-          const elements = document.querySelectorAll('.utilikit');
-          Drupal.utilikit.applyClasses(elements);
-          updateDebugInfo();
-          Drupal.utilikit.utilikitLog('Force refresh complete', null, 'log');
-        });
+        document
+          .getElementById('utilikit-force-refresh')
+          .addEventListener('click', () => {
+            Drupal.utilikit.utilikitLog(
+              'Force refreshing all elements...',
+              null,
+              'log',
+            );
+            const elements = document.querySelectorAll('.utilikit');
+            Drupal.utilikit.applyClasses(elements);
+            updateDebugInfo();
+            Drupal.utilikit.utilikitLog('Force refresh complete', null, 'log');
+          });
 
-        document.getElementById('utilikit-clear-state').addEventListener('click', () => {
-          Drupal.utilikit.utilikitLog('Clearing state and refreshing...', null, 'log');
-          Drupal.utilikit.state = null;
-          Drupal.utilikit.initEnvironment(document);
-          const elements = document.querySelectorAll('.utilikit');
-          Drupal.utilikit.applyClasses(elements);
-          updateDebugInfo();
-          Drupal.utilikit.utilikitLog('State cleared and refreshed', null, 'log');
-        });
+        document
+          .getElementById('utilikit-clear-state')
+          .addEventListener('click', () => {
+            Drupal.utilikit.utilikitLog(
+              'Clearing state and refreshing...',
+              null,
+              'log',
+            );
+            Drupal.utilikit.state = null;
+            Drupal.utilikit.initEnvironment(document);
+            const elements = document.querySelectorAll('.utilikit');
+            Drupal.utilikit.applyClasses(elements);
+            updateDebugInfo();
+            Drupal.utilikit.utilikitLog(
+              'State cleared and refreshed',
+              null,
+              'log',
+            );
+          });
 
-        document.getElementById('utilikit-log-state').addEventListener('click', () => {
-          Drupal.utilikit.utilikitLog('Current UtiliKit State:', {
-            state: Drupal.utilikit.state,
-            breakpoint: Drupal.utilikit.getBreakpoint(),
-            width: window.innerWidth,
-            elementCount: document.querySelectorAll('.utilikit').length,
-            settings: drupalSettings.utilikit,
-          }, 'log');
-        });
+        document
+          .getElementById('utilikit-log-state')
+          .addEventListener('click', () => {
+            Drupal.utilikit.utilikitLog(
+              'Current UtiliKit State:',
+              {
+                state: Drupal.utilikit.state,
+                breakpoint: Drupal.utilikit.getBreakpoint(),
+                width: window.innerWidth,
+                elementCount: document.querySelectorAll('.utilikit').length,
+                settings: drupalSettings.utilikit,
+              },
+              'log',
+            );
+          });
 
         window.addEventListener('resize', updateDebugInfo);
       });
-    }
+    },
   };
 
   // Expose console debugging utilities in dev mode only.
@@ -134,5 +160,4 @@
   } else {
     window.utilikitDebug = undefined;
   }
-
 })(Drupal, once, drupalSettings);

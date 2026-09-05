@@ -147,21 +147,21 @@ services:
       - '@config.factory'  # For reading optimize_css setting
       - '@?utilikit_test.test_generator'  # Optional: Test class generator (if test module enabled)
 
-# =============================================================================
-# SERVICE DEPENDENCY NOTES
-# =============================================================================
-#
-# Optional Dependencies (prefixed with @?):
-# - cache.page: May not be available in all Drupal configurations
-# - cache.dynamic_page_cache: May not be available in all configurations
-# - utilikit_test.test_generator: Only available when utilikit_test module is enabled
-#
-# Service Relationships:
-# - utilikit.service_provider acts as the main facade coordinating all services
-# - Content scanning feeds into CSS generation which feeds into file management
-# - Cache manager provides cross-cutting caching support for all operations
-# - State manager provides persistent storage for all services
-# - Logger provides centralized monitoring and debugging capabilities
+  # =============================================================================
+  # SERVICE DEPENDENCY NOTES
+  # =============================================================================
+  #
+  # Optional Dependencies (prefixed with @?):
+  # - cache.page: May not be available in all Drupal configurations
+  # - cache.dynamic_page_cache: May not be available in all configurations
+  # - utilikit_test.test_generator: Only available when utilikit_test module is enabled
+  #
+  # Service Relationships:
+  # - utilikit.service_provider acts as the main facade coordinating all services
+  # - Content scanning feeds into CSS generation which feeds into file management
+  # - Cache manager provides cross-cutting caching support for all operations
+  # - State manager provides persistent storage for all services
+  # - Logger provides centralized monitoring and debugging capabilities
 
   # Runtime requirements, moved out of utilikit.install for Drupal 12 (see the
   # class docblock). Autowired so its three dependencies stay injected rather

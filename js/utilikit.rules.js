@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * UtiliKit CSS Rules Definition Registry.
  *
@@ -22,8 +25,7 @@
  * @see utilikit.rules.apply.js for rule application logic
  * @see utilikit.behavior.js for element processing workflow
  */
-(function(Drupal, once, drupalSettings) {
-  'use strict';
+(function (Drupal, once, drupalSettings) {
   Drupal.utilikit = Drupal.utilikit || {};
 
   /**
@@ -61,17 +63,21 @@
    *
    * @type {Object.<string, Object>}
    */
-  var published = (drupalSettings && drupalSettings.utilikit && drupalSettings.utilikit.rules) || null;
+  const published =
+    (drupalSettings &&
+      drupalSettings.utilikit &&
+      drupalSettings.utilikit.rules) ||
+    null;
 
   if (!published) {
     // Not a warning. With no rules, every uk- class silently stops working,
     // and a person would be left inspecting CSS that was never generated.
     console.error(
       'UtiliKit: no rule definitions were delivered to the page. ' +
-      'drupalSettings.utilikit.rules is missing, so no utility class can be ' +
-      'processed. This usually means the utilikit/utilikit.engine library was ' +
-      'attached without the module settings that accompany it — see ' +
-      'utilikit_js_settings_alter() in utilikit.module.'
+        'drupalSettings.utilikit.rules is missing, so no utility class can be ' +
+        'processed. This usually means the utilikit/utilikit.engine library was ' +
+        'attached without the module settings that accompany it — see ' +
+        'utilikit_js_settings_alter() in utilikit.module.',
     );
   }
 
@@ -98,10 +104,12 @@
       return [];
     }
 
-    const keywords = (drupalSettings && drupalSettings.utilikit
-      && drupalSettings.utilikit.keywords) || {};
+    const keywords =
+      (drupalSettings &&
+        drupalSettings.utilikit &&
+        drupalSettings.utilikit.keywords) ||
+      {};
 
     return keywords[rule.css] || [];
   };
-
 })(Drupal, once, drupalSettings);

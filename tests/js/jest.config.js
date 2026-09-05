@@ -6,18 +6,14 @@ module.exports = {
   rootDir: '../..',
 
   // Test file patterns
-  testMatch: [
-    '<rootDir>/tests/js/**/*.test.js'
-  ],
+  testMatch: ['<rootDir>/tests/js/**/*.test.js'],
 
   // Setup files to run before tests
-  setupFilesAfterEnv: [
-    '<rootDir>/tests/js/setup.js'
-  ],
+  setupFilesAfterEnv: ['<rootDir>/tests/js/setup.js'],
 
   // Module name mapping for mocks
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/js/$1'
+    '^@/(.*)$': '<rootDir>/js/$1',
   },
 
   // Coverage configuration
@@ -25,25 +21,21 @@ module.exports = {
     'js/**/*.js',
     '!js/**/*.min.js',
     '!**/node_modules/**',
-    '!**/tests/**'
+    '!**/tests/**',
   ],
 
   // Coverage output directory
   coverageDirectory: '<rootDir>/tests/coverage',
 
   // Coverage reporters
-  coverageReporters: [
-    'html',
-    'text',
-    'lcov'
-  ],
+  coverageReporters: ['html', 'text', 'lcov'],
 
   // Verbose output
   verbose: true,
 
   // Transform configuration (if needed for ES6+)
   transform: {
-    '^.+\\.js$': 'babel-jest'
+    '^.+\\.js$': 'babel-jest',
   },
 
   // Module directories
@@ -53,5 +45,5 @@ module.exports = {
   clearMocks: true,
 
   // Restore mocks after each test
-  restoreMocks: true
+  restoreMocks: true,
 };

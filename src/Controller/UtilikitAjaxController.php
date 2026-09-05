@@ -462,7 +462,7 @@ class UtilikitAjaxController extends ControllerBase {
    *   as a side effect for later background processing.
    */
   private function queueCssUpdate(array $classes): void {
-    // Validate classes before queuing to prevent invalid data from being
+    // Validate classes before queueing to prevent invalid data from being
     // processed later when lock context may differ.
     $validClasses = $this->serviceProvider->getContentScanner()->validateUtilityClasses($classes);
     if (empty($validClasses)) {

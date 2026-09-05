@@ -45,7 +45,8 @@ const SHIM = path.join(__dirname, '..', '..', '..', 'js', 'utilikit.rules.js');
  */
 function loadShim(utilikitSettings) {
   const Drupal = {};
-  const drupalSettings = utilikitSettings === undefined ? {} : { utilikit: utilikitSettings };
+  const drupalSettings =
+    utilikitSettings === undefined ? {} : { utilikit: utilikitSettings };
   const errors = [];
   const fakeConsole = { error: (msg) => errors.push(String(msg)) };
 
@@ -54,18 +55,30 @@ function loadShim(utilikitSettings) {
   // The shim's own closure receives the doubles; nothing global is touched.
   // eslint-disable-next-line no-new-func
   new Function('Drupal', 'once', 'drupalSettings', 'console', source)(
-    Drupal, () => [], drupalSettings, fakeConsole,
+    Drupal,
+    () => [],
+    drupalSettings,
+    fakeConsole,
   );
 
   return { Drupal, errors };
 }
 
 describe('utilikit.rules.js — the registry shim', () => {
-
   test('publishes exactly the rules it is given', () => {
     const payload = {
-      pd: { css: 'padding', sides: true, isNumericFlexible: true, group: 'Box Model' },
-      wd: { css: 'inlineSize', isNumericFlexible: true, allowAuto: true, group: 'Sizing' },
+      pd: {
+        css: 'padding',
+        sides: true,
+        isNumericFlexible: true,
+        group: 'Box Model',
+      },
+      wd: {
+        css: 'inlineSize',
+        isNumericFlexible: true,
+        allowAuto: true,
+        group: 'Sizing',
+      },
     };
 
     const { Drupal, errors } = loadShim({ rules: payload });
@@ -83,7 +96,10 @@ describe('utilikit.rules.js — the registry shim', () => {
     const { Drupal } = loadShim({ rules: payload });
 
     expect(Object.keys(Drupal.utilikit.rules)).toEqual(['zz']);
-    expect(Drupal.utilikit.rules.zz).toEqual({ css: 'somethingUnknown', madeUpFlag: true });
+    expect(Drupal.utilikit.rules.zz).toEqual({
+      css: 'somethingUnknown',
+      madeUpFlag: true,
+    });
   });
 
   test('reports a missing payload loudly rather than failing silently', () => {
@@ -106,13 +122,13 @@ describe('utilikit.rules.js — the registry shim', () => {
   test('always leaves a usable registry, never undefined', () => {
     // Consumers do `prefix in Drupal.utilikit.rules`. An undefined registry
     // would throw inside the engine rather than degrade.
-    for (const settings of [undefined, {}, { rules: null }, { rules: {} }]) {
+    [undefined, {}, { rules: null }, { rules: {} }].forEach((settings) => {
       const { Drupal } = loadShim(settings);
 
       expect(Drupal.utilikit).toBeDefined();
       expect(typeof Drupal.utilikit.rules).toBe('object');
       expect(Drupal.utilikit.rules).not.toBeNull();
-    }
+    });
   });
 
   test('declares no rules of its own', () => {
@@ -122,5 +138,4 @@ describe('utilikit.rules.js — the registry shim', () => {
 
     expect(source).not.toMatch(/\b[a-z]{2,4}\s*:\s*\{\s*css\s*:\s*['"]/);
   });
-
 });

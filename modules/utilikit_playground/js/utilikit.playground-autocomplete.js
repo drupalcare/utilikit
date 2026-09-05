@@ -1,4 +1,6 @@
 /**
+ * @param Drupal
+ * @param once
  * @file
  * Dynamic autocomplete functionality for UtiliKit Playground.
  *
@@ -7,9 +9,7 @@
  * navigation, visual selection, and real-time filtering.
  */
 
-(function(Drupal, once) {
-  'use strict';
-
+(function (Drupal, once) {
   /**
    * UtiliKit rules definition matching PHP rules.
    *
@@ -19,19 +19,19 @@
    *
    * @type {Object.<string, Object>}
    *
-   * @property {string} css - The CSS property name this rule affects
-   * @property {string} group - The functional group for organization
-   * @property {boolean} [sides] - Whether rule supports directional variants
-   * @property {boolean} [isNumericFlexible] - Accepts numeric + unit values
-   * @property {boolean} [allowAuto] - Accepts 'auto' as a value
-   * @property {boolean} [isKeyword] - Uses predefined keyword values
-   * @property {boolean} [isColor] - Accepts color hex values
-   * @property {boolean} [isInteger] - Accepts integer values only
-   * @property {boolean} [isOpacity] - Special handling for opacity values
-   * @property {boolean} [isDecimalFixed] - Accepts decimal values
-   * @property {string} [isTransform] - Transform type ('rotate', 'scale')
-   * @property {boolean} [isGridTrackList] - CSS Grid track definitions
-   * @property {boolean} [isRange] - Range values like grid spans or ratios
+   * @prop {string} css - The CSS property name this rule affects
+   * @prop {string} group - The functional group for organization
+   * @prop {boolean} [sides] - Whether rule supports directional variants
+   * @prop {boolean} [isNumericFlexible] - Accepts numeric + unit values
+   * @prop {boolean} [allowAuto] - Accepts 'auto' as a value
+   * @prop {boolean} [isKeyword] - Uses predefined keyword values
+   * @prop {boolean} [isColor] - Accepts color hex values
+   * @prop {boolean} [isInteger] - Accepts integer values only
+   * @prop {boolean} [isOpacity] - Special handling for opacity values
+   * @prop {boolean} [isDecimalFixed] - Accepts decimal values
+   * @prop {string} [isTransform] - Transform type ('rotate', 'scale')
+   * @prop {boolean} [isGridTrackList] - CSS Grid track definitions
+   * @prop {boolean} [isRange] - Range values like grid spans or ratios
    */
   /**
    * The UtiliKit rules, read from the one place they are declared.
@@ -73,8 +73,12 @@
    *   CSS property => accepted keywords.
    */
   function keywordMapFor() {
-    return (drupalSettings && drupalSettings.utilikit
-      && drupalSettings.utilikit.keywords) || {};
+    return (
+      (drupalSettings &&
+        drupalSettings.utilikit &&
+        drupalSettings.utilikit.keywords) ||
+      {}
+    );
   }
 
   /**
@@ -117,7 +121,7 @@
    * @param {Object} rule
    *   The rule configuration object from utilikitRules().
    *
-   * @returns {string[]}
+   * @return {string[]}
    *   Array of complete UtiliKit class suggestions.
    */
   function generateSuggestionsForPrefix(prefix, rule) {
@@ -125,35 +129,78 @@
 
     if (rule.isNumericFlexible) {
       // Common spacing values
-      const values = [0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72, 80, 96, 128];
-      values.forEach(v => suggestions.push(`uk-${prefix}--${v}`));
+      const values = [
+        0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 48, 56, 64, 72,
+        80, 96, 128,
+      ];
+      values.forEach((v) => suggestions.push(`uk-${prefix}--${v}`));
 
       // Percentage values
-      ['10pr', '20pr', '25pr', '30pr', '33pr', '40pr', '50pr', '60pr', '66pr', '70pr', '75pr', '80pr', '90pr', '100pr'].forEach(v => {
+      [
+        '10pr',
+        '20pr',
+        '25pr',
+        '30pr',
+        '33pr',
+        '40pr',
+        '50pr',
+        '60pr',
+        '66pr',
+        '70pr',
+        '75pr',
+        '80pr',
+        '90pr',
+        '100pr',
+      ].forEach((v) => {
         suggestions.push(`uk-${prefix}--${v}`);
       });
 
       // Viewport units for sizing properties
       if (['wd', 'ht', 'xw', 'xh', 'nw', 'nh', 'fs'].includes(prefix)) {
-        ['25vh', '50vh', '75vh', '100vh', '25vw', '50vw', '75vw', '100vw'].forEach(v => {
+        [
+          '25vh',
+          '50vh',
+          '75vh',
+          '100vh',
+          '25vw',
+          '50vw',
+          '75vw',
+          '100vw',
+        ].forEach((v) => {
           suggestions.push(`uk-${prefix}--${v}`);
         });
       }
 
       // Rem/em values
-      ['0d25rem', '0d5rem', '0d75rem', '1rem', '1d25rem', '1d5rem', '2rem', '2d5rem', '3rem', '4rem', '5rem'].forEach(v => {
+      [
+        '0d25rem',
+        '0d5rem',
+        '0d75rem',
+        '1rem',
+        '1d25rem',
+        '1d5rem',
+        '2rem',
+        '2d5rem',
+        '3rem',
+        '4rem',
+        '5rem',
+      ].forEach((v) => {
         suggestions.push(`uk-${prefix}--${v}`);
       });
 
       // If it supports sides, add directional examples
       if (rule.sides) {
-        ['t', 'r', 'b', 'l'].forEach(dir => {
-          [0, 8, 16, 24, 32].forEach(v => {
+        ['t', 'r', 'b', 'l'].forEach((dir) => {
+          [0, 8, 16, 24, 32].forEach((v) => {
             suggestions.push(`uk-${prefix}--${dir}-${v}`);
           });
         });
         // Two-value shorthand
-        suggestions.push(`uk-${prefix}--16-32`, `uk-${prefix}--20-40`, `uk-${prefix}--24-48`);
+        suggestions.push(
+          `uk-${prefix}--16-32`,
+          `uk-${prefix}--20-40`,
+          `uk-${prefix}--24-48`,
+        );
         // Four-value shorthand
         suggestions.push(`uk-${prefix}--16-24-32-40`);
       }
@@ -162,89 +209,79 @@
       if (rule.allowAuto) {
         suggestions.push(`uk-${prefix}--auto`);
         if (rule.sides) {
-          ['t', 'r', 'b', 'l'].forEach(dir => {
+          ['t', 'r', 'b', 'l'].forEach((dir) => {
             suggestions.push(`uk-${prefix}--${dir}-auto`);
           });
           suggestions.push(`uk-${prefix}--0-auto`);
         }
       }
-    }
-
-    else if (rule.isKeyword) {
+    } else if (rule.isKeyword) {
       const keywords = keywordMapFor()[rule.css] || [];
-      keywords.forEach(keyword => {
+      keywords.forEach((keyword) => {
         suggestions.push(`uk-${prefix}--${keyword}`);
       });
 
       // Side-specific keyword suggestions (e.g., uk-bs--b-dashed).
       if (rule.sides) {
-        ['t', 'r', 'b', 'l'].forEach(dir => {
-          keywords.forEach(keyword => {
+        ['t', 'r', 'b', 'l'].forEach((dir) => {
+          keywords.forEach((keyword) => {
             suggestions.push(`uk-${prefix}--${dir}-${keyword}`);
           });
         });
       }
-    }
-
-    else if (rule.isColor) {
-      commonColors.forEach(color => {
+    } else if (rule.isColor) {
+      commonColors.forEach((color) => {
         suggestions.push(`uk-${prefix}--${color.value}`);
         // Add common opacity variants
-        ['25', '50', '75', '90'].forEach(opacity => {
+        ['25', '50', '75', '90'].forEach((opacity) => {
           suggestions.push(`uk-${prefix}--${color.value}-${opacity}`);
         });
       });
       // Pseudo-state variants for bg and tc only (static/head mode).
       if (prefix === 'bg' || prefix === 'tc') {
-        commonColors.slice(0, 6).forEach(color => {
-          ['h', 'f', 'a'].forEach(state => {
+        commonColors.slice(0, 6).forEach((color) => {
+          ['h', 'f', 'a'].forEach((state) => {
             suggestions.push(`uk-${prefix}--${color.value}-${state}`);
           });
           // Alpha + pseudo-state combo
           suggestions.push(`uk-${prefix}--${color.value}-50-h`);
         });
       }
-    }
-
-    else if (rule.isInteger) {
+    } else if (rule.isInteger) {
       if (rule.isOpacity) {
-        [0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95, 100].forEach(v => {
-          suggestions.push(`uk-${prefix}--${v}`);
-        });
+        [0, 5, 10, 20, 25, 30, 40, 50, 60, 70, 75, 80, 90, 95, 100].forEach(
+          (v) => {
+            suggestions.push(`uk-${prefix}--${v}`);
+          },
+        );
       } else if (prefix === 'fw') {
-        [100, 200, 300, 400, 500, 600, 700, 800, 900].forEach(v => {
+        [100, 200, 300, 400, 500, 600, 700, 800, 900].forEach((v) => {
           suggestions.push(`uk-${prefix}--${v}`);
         });
       } else if (prefix === 'zi') {
-        [-1, 0, 1, 10, 20, 30, 40, 50, 100, 999, 9999].forEach(v => {
+        [-1, 0, 1, 10, 20, 30, 40, 50, 100, 999, 9999].forEach((v) => {
           suggestions.push(`uk-${prefix}--${v}`);
         });
       } else if (prefix === 'or') {
-        [-1, 0, 1, 2, 3, 4, 5].forEach(v => {
+        [-1, 0, 1, 2, 3, 4, 5].forEach((v) => {
           suggestions.push(`uk-${prefix}--${v}`);
         });
       }
-    }
-
-    else if (rule.isDecimalFixed) {
-      [0, '0d5', 1, '1d5', 2, '2d5', 3].forEach(v => {
+    } else if (rule.isDecimalFixed) {
+      [0, '0d5', 1, '1d5', 2, '2d5', 3].forEach((v) => {
         suggestions.push(`uk-${prefix}--${v}`);
       });
-    }
-
-    else if (rule.isTransform) {
+    } else if (rule.isTransform) {
       if (rule.isTransform === 'rotate') {
-        [-180, -90, -45, 0, 45, 90, 180, 270, 360].forEach(v => {
+        [-180, -90, -45, 0, 45, 90, 180, 270, 360].forEach((v) => {
           suggestions.push(`uk-${prefix}--${v}`);
         });
       } else if (rule.isTransform === 'scale') {
-        [0, 50, 75, 90, 95, 100, 105, 110, 125, 150, 200].forEach(v => {
+        [0, 50, 75, 90, 95, 100, 105, 110, 125, 150, 200].forEach((v) => {
           suggestions.push(`uk-${prefix}--${v}`);
         });
       }
-    }
-
-    else if (rule.isGridTrackList) {
+    } else if (rule.isGridTrackList) {
       const examples = [
         '1fr',
         '2fr',
@@ -271,17 +308,31 @@
         'minmax-200px-1fr',
         'minmax-0-1fr',
       ];
-      examples.forEach(v => suggestions.push(`uk-${prefix}--${v}`));
-    }
-
-    else if (rule.isRange) {
+      examples.forEach((v) => suggestions.push(`uk-${prefix}--${v}`));
+    } else if (rule.isRange) {
       if (prefix === 'ar') {
-        ['1-1', '3-2', '4-3', '5-4', '16-9', '21-9', '2-1', '3-1'].forEach(v => {
-          suggestions.push(`uk-${prefix}--${v}`);
-        });
+        ['1-1', '3-2', '4-3', '5-4', '16-9', '21-9', '2-1', '3-1'].forEach(
+          (v) => {
+            suggestions.push(`uk-${prefix}--${v}`);
+          },
+        );
       } else {
         // Grid lines
-        ['1-2', '1-3', '1-4', '1-5', '2-3', '2-4', '2-5', '3-4', '3-5', 'span-1', 'span-2', 'span-3', 'span-4'].forEach(v => {
+        [
+          '1-2',
+          '1-3',
+          '1-4',
+          '1-5',
+          '2-3',
+          '2-4',
+          '2-5',
+          '3-4',
+          '3-5',
+          'span-1',
+          'span-2',
+          'span-3',
+          'span-4',
+        ].forEach((v) => {
           suggestions.push(`uk-${prefix}--${v}`);
         });
       }
@@ -299,7 +350,7 @@
    * @param {string} className
    *   The UtiliKit class name to analyze (e.g., 'uk-pd--20').
    *
-   * @returns {string}
+   * @return {string}
    *   Human-readable property name (e.g., 'padding').
    */
   function getPropertyName(className) {
@@ -359,13 +410,13 @@
     let currentSuggestions = [];
 
     // Input event handler
-    classInput.addEventListener('input', function(e) {
+    classInput.addEventListener('input', function (e) {
       const value = e.target.value;
       const lastClass = value.split(' ').pop();
 
       // Only show suggestions if typing a utility class
       if (lastClass.startsWith('uk-') && lastClass.length >= 3) {
-        let allSuggestions = [];
+        const allSuggestions = [];
 
         // Extract the prefix being typed
         const match = lastClass.match(/^uk-([a-z]+)/);
@@ -375,9 +426,14 @@
           // Find all matching rules
           Object.entries(utilikitRules()).forEach(([rulePrefix, rule]) => {
             if (rulePrefix.startsWith(inputPrefix)) {
-              const suggestions = generateSuggestionsForPrefix(rulePrefix, rule);
+              const suggestions = generateSuggestionsForPrefix(
+                rulePrefix,
+                rule,
+              );
               // Filter to only show suggestions that match what's typed
-              const filtered = suggestions.filter(s => s.startsWith(lastClass));
+              const filtered = suggestions.filter((s) =>
+                s.startsWith(lastClass),
+              );
               allSuggestions.push(...filtered);
             }
           });
@@ -416,23 +472,25 @@
           autocomplete.style.display = 'block';
 
           // Attach click handlers to new items
-          autocomplete.querySelectorAll('.autocomplete-item').forEach(item => {
-            item.addEventListener('click', function() {
-              const suggestion = this.dataset.value;
-              const classes = classInput.value.split(' ');
-              classes[classes.length - 1] = suggestion;
-              classInput.value = classes.join(' ');
-              autocomplete.style.display = 'none';
-              selectedIndex = -1;
-              classInput.focus();
+          autocomplete
+            .querySelectorAll('.autocomplete-item')
+            .forEach((item) => {
+              item.addEventListener('click', function () {
+                const suggestion = this.dataset.value;
+                const classes = classInput.value.split(' ');
+                classes[classes.length - 1] = suggestion;
+                classInput.value = classes.join(' ');
+                autocomplete.style.display = 'none';
+                selectedIndex = -1;
+                classInput.focus();
 
-              // Trigger form submit to update preview
-              const form = document.getElementById('utilikit-preview-form');
-              if (form) {
-                form.dispatchEvent(new Event('submit'));
-              }
+                // Trigger form submit to update preview
+                const form = document.getElementById('utilikit-preview-form');
+                if (form) {
+                  form.dispatchEvent(new Event('submit'));
+                }
+              });
             });
-          });
         } else {
           autocomplete.style.display = 'none';
           currentSuggestions = [];
@@ -444,13 +502,13 @@
     });
 
     // Keyboard navigation
-    classInput.addEventListener('keydown', function(e) {
+    classInput.addEventListener('keydown', function (e) {
       const items = autocomplete.querySelectorAll('.autocomplete-item');
       const isVisible = autocomplete.style.display !== 'none';
 
       if (!isVisible || items.length === 0) return;
 
-      switch(e.key) {
+      switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
           selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
@@ -489,7 +547,7 @@
     });
 
     // Hide autocomplete when clicking outside
-    classInput.addEventListener('blur', function() {
+    classInput.addEventListener('blur', function () {
       // Delay to allow click events on autocomplete items
       setTimeout(() => {
         autocomplete.style.display = 'none';
@@ -499,7 +557,7 @@
     });
 
     // Focus management
-    classInput.addEventListener('focus', function() {
+    classInput.addEventListener('focus', function () {
       // Re-trigger suggestions if input has a partial class
       if (this.value) {
         this.dispatchEvent(new Event('input'));
@@ -519,11 +577,14 @@
    *   Attaches autocomplete functionality to playground wrapper elements.
    */
   Drupal.behaviors.utilikitPlaygroundAutocomplete = {
-    attach: function(context, settings) {
-      once('utilikit-playground-autocomplete', '.utilikit-playground-wrapper', context).forEach(wrapper => {
+    attach(context, settings) {
+      once(
+        'utilikit-playground-autocomplete',
+        '.utilikit-playground-wrapper',
+        context,
+      ).forEach((wrapper) => {
         initAutocomplete(wrapper);
       });
-    }
+    },
   };
-
 })(Drupal, once);

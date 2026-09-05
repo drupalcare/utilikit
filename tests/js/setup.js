@@ -12,7 +12,7 @@ if (typeof document !== 'undefined') {
 Object.defineProperty(global, 'innerWidth', {
   writable: true,
   configurable: true,
-  value: 1024
+  value: 1024,
 });
 
 // Ensure window exists
@@ -20,7 +20,7 @@ if (typeof window !== 'undefined') {
   Object.defineProperty(window, 'innerWidth', {
     writable: true,
     configurable: true,
-    value: 1024
+    value: 1024,
   });
 }
 
@@ -29,7 +29,7 @@ global.console = {
   ...console,
   log: jest.fn(),
   warn: jest.fn(),
-  error: jest.fn()
+  error: jest.fn(),
 };
 
 // Mock requestAnimationFrame

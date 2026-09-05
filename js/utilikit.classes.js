@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * Utility class parsing and CSS application engine for UtiliKit.
  *
@@ -29,9 +32,7 @@
  * - Efficient element processing with minimal DOM manipulation
  * - Static mode detection to skip unnecessary processing
  */
-(function(Drupal, once, drupalSettings) {
-  'use strict';
-
+(function (Drupal, once, drupalSettings) {
   // Ensure UtiliKit namespace exists for utility class processing
   Drupal.utilikit = Drupal.utilikit || {};
 
@@ -57,7 +58,7 @@
    *   naming convention: 'uk-[breakpoint-]gc/gr--value-pattern'.
    *   Examples: 'uk-gc--repeat-3-1fr', 'uk-md-gc--minmax-200px-1fr'
    *
-   * @returns {string|null}
+   * @return {string|null}
    *   Returns a complete CSS declaration string for grid-template-columns
    *   or grid-template-rows, or null if the className is not a valid
    *   grid template class or cannot be parsed.
@@ -82,7 +83,7 @@
    * parseGridTemplateClass('uk-gc--fitc-200px-1fr-auto')
    * // Returns: 'grid-template-columns: fit-content(200px) 1fr auto;'
    */
-  Drupal.utilikit.parseGridTemplateClass = function(className) {
+  Drupal.utilikit.parseGridTemplateClass = function (className) {
     // Quick validation - must be UtiliKit class with double dash separator
     if (!className.startsWith('uk-') || !className.includes('--')) {
       return null;
@@ -108,9 +109,9 @@
      * should not be separated during parsing.
      *
      * @param {string} str The string to tokenize
-     * @returns {Array<string>} Array of tokens preserving compound keywords
+     * @return {Array<string>} Array of tokens preserving compound keywords
      */
-    const smartSplit = function(str) {
+    const smartSplit = function (str) {
       const tokens = [];
       let current = '';
 
@@ -118,9 +119,12 @@
         if (str[i] === '-') {
           // Check if this forms a compound keyword
           const nextPart = str.substring(i + 1).split('-')[0];
-          if (current === 'auto' && (nextPart === 'fit' || nextPart === 'fill')) {
+          if (
+            current === 'auto' &&
+            (nextPart === 'fit' || nextPart === 'fill')
+          ) {
             // Preserve auto-fit and auto-fill as single tokens
-            current += '-' + nextPart;
+            current += `-${nextPart}`;
             i += nextPart.length;
           } else if (current) {
             tokens.push(current);
@@ -138,13 +142,13 @@
 
     // Keywords mapping for CSS Grid values and legacy aliases
     const keywords = {
-      'minc': 'min-content',
-      'maxc': 'max-content',
-      'auto': 'auto',
-      'auto-fit': 'auto-fit',      // Modern syntax
-      'auto-fill': 'auto-fill',    // Modern syntax
-      'autofit': 'auto-fit',       // Legacy support for backwards compatibility
-      'autofill': 'auto-fill',     // Legacy support for backwards compatibility
+      minc: 'min-content',
+      maxc: 'max-content',
+      auto: 'auto',
+      'auto-fit': 'auto-fit', // Modern syntax
+      'auto-fill': 'auto-fill', // Modern syntax
+      autofit: 'auto-fit', // Legacy support for backwards compatibility
+      autofill: 'auto-fill', // Legacy support for backwards compatibility
     };
 
     // Parse tokens into CSS Grid syntax
@@ -299,8 +303,12 @@
    * const elements = container.querySelectorAll('.utilikit');
    * Drupal.utilikit.applyClasses(elements);
    */
-  Drupal.utilikit.applyClasses = function(elements) {
-    Drupal.utilikit.utilikitLog('Starting to process ' + elements.length + ' elements', { mode: drupalSettings.utilikit?.renderingMode || 'inline' }, 'log');
+  Drupal.utilikit.applyClasses = function (elements) {
+    Drupal.utilikit.utilikitLog(
+      `Starting to process ${elements.length} elements`,
+      { mode: drupalSettings.utilikit?.renderingMode || 'inline' },
+      'log',
+    );
 
     // Initialize environment if not already done
     if (!Drupal.utilikit.state) {
@@ -308,7 +316,11 @@
 
       // Verify initialization succeeded before proceeding
       if (!Drupal.utilikit.state || !Drupal.utilikit.rules) {
-        Drupal.utilikit.utilikitLog('Failed to initialize - missing state or rules', null, 'warn');
+        Drupal.utilikit.utilikitLog(
+          'Failed to initialize - missing state or rules',
+          null,
+          'warn',
+        );
         return;
       }
     }
@@ -319,7 +331,11 @@
     const isStaticMode = renderingMode === 'static';
 
     elements.forEach((el) => {
-      Drupal.utilikit.utilikitLog('Processing element with ' + el.classList.length + ' classes', { mode: renderingMode }, 'log');
+      Drupal.utilikit.utilikitLog(
+        `Processing element with ${el.classList.length} classes`,
+        { mode: renderingMode },
+        'log',
+      );
       const appliedProps = new Set();
 
       // Collect and categorize all applicable utility classes
@@ -350,14 +366,22 @@
 
         // Development mode breakpoint debugging
         if (bp) {
-          Drupal.utilikit.utilikitLog('Processing breakpoint class: ' + className, { bp: bp, active: Drupal.utilikit.activeBreakpoints.includes(bp) }, 'log');
+          Drupal.utilikit.utilikitLog(
+            `Processing breakpoint class: ${className}`,
+            { bp, active: Drupal.utilikit.activeBreakpoints.includes(bp) },
+            'log',
+          );
         }
 
         // Skip classes for breakpoints that don't apply to current screen size
         if (bp && !Drupal.utilikit.breakpointApplies(bp)) return;
 
         // Skip classes for disabled breakpoints in configuration
-        if (bp && Drupal.utilikit.activeBreakpoints && !Drupal.utilikit.activeBreakpoints.includes(bp)) {
+        if (
+          bp &&
+          Drupal.utilikit.activeBreakpoints &&
+          !Drupal.utilikit.activeBreakpoints.includes(bp)
+        ) {
           return;
         }
 
@@ -365,7 +389,7 @@
         if (!(prefix in Drupal.utilikit.rules)) return;
 
         // Determine breakpoint priority for sorting (mobile-first cascade)
-        const breakpointOrder = { '': 0, 'sm': 1, 'md': 2, 'lg': 3, 'xl': 4, 'xxl': 5 };
+        const breakpointOrder = { '': 0, sm: 1, md: 2, lg: 3, xl: 4, xxl: 5 };
         const priority = breakpointOrder[bp || ''] || 0;
 
         classesToApply.push({
@@ -374,7 +398,7 @@
           suffix,
           bp,
           priority,
-          rule: Drupal.utilikit.rules[prefix]
+          rule: Drupal.utilikit.rules[prefix],
         });
       });
 
@@ -386,26 +410,42 @@
       classesToApply.forEach(({ className, prefix, suffix, rule }) => {
         if (isStaticMode) {
           // Static mode: track classes for debugging but don't apply styles
-          Drupal.utilikit.utilikitLog('Static mode - class detected: ' + className, null, 'log');
+          Drupal.utilikit.utilikitLog(
+            `Static mode - class detected: ${className}`,
+            null,
+            'log',
+          );
           appliedProps.add(rule.css); // Track for data attribute
         } else {
           // Inline mode: apply styles dynamically
-          Drupal.utilikit.applyRule(el, rule, prefix, suffix, appliedProps, className);
+          Drupal.utilikit.applyRule(
+            el,
+            rule,
+            prefix,
+            suffix,
+            appliedProps,
+            className,
+          );
         }
       });
 
       // Clean up stale inline styles from previous processing runs
-      const previousProps = el.dataset.utilikitProps ? el.dataset.utilikitProps.split(',') : [];
+      const previousProps = el.dataset.utilikitProps
+        ? el.dataset.utilikitProps.split(',')
+        : [];
       previousProps.forEach((prop) => {
         if (!appliedProps.has(prop)) el.style[prop] = '';
       });
 
       // Update tracking data for next processing run
       el.dataset.utilikitProps = Array.from(appliedProps).join(',');
-      Drupal.utilikit.utilikitLog('Element completed: ' + appliedProps.size + ' properties applied', Array.from(appliedProps), 'log');
+      Drupal.utilikit.utilikitLog(
+        `Element completed: ${appliedProps.size} properties applied`,
+        Array.from(appliedProps),
+        'log',
+      );
     });
   };
-
 })(Drupal, once, drupalSettings);
 
 /**

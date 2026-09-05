@@ -22,7 +22,7 @@ form.utilikit-settings-form .form-wrapper .form-checkboxes {
 }
 
 /* Tablet: 2 Columns */
-@media (min-width:768px) {
+@media (min-width: 768px) {
   #edit-developer > .details-wrapper,
   #edit-triggers > .details-wrapper,
   #edit-scope > .details-wrapper,
@@ -38,11 +38,10 @@ form.utilikit-settings-form .form-wrapper .form-checkboxes {
   #edit-performance > .details-wrapper > *:first-child {
     grid-column: 1 / -1;
   }
-
 }
 
 /* Desktop: 3 Columns */
-@media (min-width:1024px) {
+@media (min-width: 1024px) {
   #edit-developer > .details-wrapper,
   #edit-triggers > .details-wrapper,
   #edit-scope > .details-wrapper,
@@ -64,9 +63,8 @@ form.utilikit-settings-form .form-wrapper .form-checkboxes {
   #edit-performance > .details-wrapper > *:first-child {
     grid-column: 1 / -1;
   }
-
 }
 
-#edit-rendering-mode--wrapper .form-radios input[type="radio"]:checked+label {
-  color: #009900!important;
+#edit-rendering-mode--wrapper .form-radios input[type="radio"]:checked + label {
+  color: #090 !important;
 }

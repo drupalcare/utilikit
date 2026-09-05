@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * UtiliKit Enhanced Logging and Development Debugging System.
  *
@@ -30,9 +33,7 @@
  * @see utilikit.behavior.js for core logging integration
  * @see utilikit.helpers.js for base logging infrastructure
  */
-(function(Drupal, once, drupalSettings) {
-  'use strict';
-
+(function (Drupal, once, drupalSettings) {
   // Ensure UtiliKit namespace exists for logging functionality
   Drupal.utilikit = Drupal.utilikit || {};
 
@@ -58,7 +59,7 @@
    *   The function's return value will be preserved and returned by
    *   this wrapper.
    *
-   * @returns {*}
+   * @return {*}
    *   The exact return value of the executed callback function, enabling
    *   transparent integration with existing code paths.
    *
@@ -88,15 +89,19 @@
    *     });
    *   });
    */
-  Drupal.utilikit.logWithTiming = function(operation, callback) {
+  Drupal.utilikit.logWithTiming = function (operation, callback) {
     const startTime = performance.now();
-    Drupal.utilikit.utilikitLog('Starting: ' + operation, null, 'log');
+    Drupal.utilikit.utilikitLog(`Starting: ${operation}`, null, 'log');
 
     const result = callback();
 
     const endTime = performance.now();
     const duration = (endTime - startTime).toFixed(2);
-    Drupal.utilikit.utilikitLog('Completed: ' + operation + ' in ' + duration + 'ms', null, 'log');
+    Drupal.utilikit.utilikitLog(
+      `Completed: ${operation} in ${duration}ms`,
+      null,
+      'log',
+    );
 
     return result;
   };
@@ -158,17 +163,36 @@
    *     true
    *   );
    */
-  Drupal.utilikit.logRuleApplication = function(element, rule, value, success) {
+  Drupal.utilikit.logRuleApplication = function (
+    element,
+    rule,
+    value,
+    success,
+  ) {
     if (success) {
-      Drupal.utilikit.utilikitLog('Applied CSS: ' + rule + ' = ' + value, {
-        element: element.tagName.toLowerCase() + (element.id ? '#' + element.id : ''),
-        classes: Array.from(element.classList).filter(c => c.startsWith('uk-')).join(' ')
-      }, 'log');
+      Drupal.utilikit.utilikitLog(
+        `Applied CSS: ${rule} = ${value}`,
+        {
+          element:
+            element.tagName.toLowerCase() +
+            (element.id ? `#${element.id}` : ''),
+          classes: Array.from(element.classList)
+            .filter((c) => c.startsWith('uk-'))
+            .join(' '),
+        },
+        'log',
+      );
     } else {
-      Drupal.utilikit.utilikitLog('Failed to apply CSS: ' + rule + ' = ' + value, {
-        element: element.tagName.toLowerCase() + (element.id ? '#' + element.id : ''),
-        reason: 'Invalid value or rule'
-      }, 'warn');
+      Drupal.utilikit.utilikitLog(
+        `Failed to apply CSS: ${rule} = ${value}`,
+        {
+          element:
+            element.tagName.toLowerCase() +
+            (element.id ? `#${element.id}` : ''),
+          reason: 'Invalid value or rule',
+        },
+        'warn',
+      );
     }
   };
 
@@ -225,12 +249,15 @@
    *     'Performance optimization: switching to static for production'
    *   );
    */
-  Drupal.utilikit.logModeSwitch = function(fromMode, toMode, reason) {
-    Drupal.utilikit.utilikitLog('Mode switch: ' + fromMode + ' → ' + toMode, {
-      reason: reason || 'User initiated'
-    }, 'log');
+  Drupal.utilikit.logModeSwitch = function (fromMode, toMode, reason) {
+    Drupal.utilikit.utilikitLog(
+      `Mode switch: ${fromMode} → ${toMode}`,
+      {
+        reason: reason || 'User initiated',
+      },
+      'log',
+    );
   };
-
 })(Drupal, once, drupalSettings);
 
 /**

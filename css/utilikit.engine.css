@@ -2,11 +2,10 @@
  * @file
  * Contains Code for utilikit.
  *
- * Filename: utiliki.engine.css
+ * Filename: utilikit.engine.css
  * Website: https://www.flashwebcenter.com
  * Developer: Alaa Haddad https://www.alaahaddad.com.
  */
-
 
 /* =============================================================================
    Mode-Specific Styling
@@ -18,7 +17,8 @@ body.utilikit-inline-mode .utilikit:not([data-utilikit-props]) {
 }
 
 /* Alternative rule for backwards compatibility */
-body:not(.utilikit-static-mode):not(.utilikit-head-mode) .utilikit:not([data-utilikit-props]) {
+body:not(.utilikit-static-mode, .utilikit-head-mode)
+  .utilikit:not([data-utilikit-props]) {
   visibility: hidden;
 }
 
@@ -42,7 +42,7 @@ body.utilikit-head-mode .utilikit {
 
 /* Visual debugging - admin preview mode */
 body.uk-admin .utilikit {
-  outline: 2px dashed rgba(0, 123, 255, 0.7) !important;
+  outline: 2px dashed rgb(0, 123, 255, 0.7) !important;
   outline-offset: 2px;
 }
 
@@ -53,14 +53,14 @@ body.uk-dev .utilikit {
 
 /* Add a small dev indicator in dev mode */
 body.uk-dev .utilikit::before {
-  content: '🛠️';
   position: absolute;
+  z-index: 1000;
   top: -15px;
   left: -15px;
-  font-size: 10px;
-  opacity: 0.5;
+  content: "🛠️";
   pointer-events: none;
-  z-index: 1000;
+  opacity: 0.5;
+  font-size: 10px;
 }
 
 /* =============================================================================
@@ -105,11 +105,14 @@ body.utilikit-head-mode .utilikit {
    Accessibility & Debug Features
    ========================================================================== */
 
-/* High contrast mode for accessibility testing */
-@media (prefers-contrast: high) {
+/* High contrast mode for accessibility testing.
+   `more` is the value Media Queries Level 5 defines. `high` was an early draft
+   name that only old Safari ever shipped; every engine that honours this query
+   today honours `more`. */
+@media (prefers-contrast: more) {
   body.uk-admin .utilikit {
-    outline-color: #000000;
     outline-width: 3px;
+    outline-color: #000;
   }
 }
 
@@ -122,18 +125,18 @@ body.utilikit-head-mode .utilikit {
 
 /* Debug information tooltip */
 body.uk-dev .utilikit[data-utilikit-props]:hover::after {
-  content: 'Props: ' attr(data-utilikit-props);
   position: absolute;
+  z-index: 1001;
   bottom: 100%;
   left: 0;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
   padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
+  content: "Props: " attr(data-utilikit-props);
   white-space: nowrap;
-  z-index: 1001;
   pointer-events: none;
+  color: white;
+  border-radius: 4px;
+  background: rgb(0, 0, 0, 0.8);
+  font-size: 11px;
 }
 
 /* =============================================================================
@@ -143,7 +146,7 @@ body.uk-dev .utilikit[data-utilikit-props]:hover::after {
 /* Elements with processing errors */
 .utilikit.uk-error {
   outline: 2px solid #dc3545 !important;
-  background-color: rgba(220, 53, 69, 0.1) !important;
+  background-color: rgb(220, 53, 69, 0.1) !important;
 }
 
 /* =============================================================================
@@ -156,24 +159,29 @@ body.utilikit-inline-mode .utilikit:not([data-utilikit-props]) {
 }
 
 body.utilikit-inline-mode .utilikit:not([data-utilikit-props])::before {
-  content: '';
   position: absolute;
   top: 0;
-  left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.1), transparent);
+  left: 0;
+  content: "";
   animation: utilikit-loading 1.5s infinite;
   pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(0, 123, 255, 0.1),
+    transparent
+  );
 }
 
 @keyframes utilikit-loading {
   0% {
     transform: translateX(-100%);
-}
+  }
   100% {
     transform: translateX(100%);
-}
+  }
 }
 
 /* Remove loading animation once processed */

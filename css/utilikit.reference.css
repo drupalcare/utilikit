@@ -5,56 +5,57 @@
 
 /* Reference page wrapper */
 .utilikit-reference-page {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   margin: 0 auto;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 /* Cheatsheet styles */
-.out-wrapper{
-  background: #f8f9fa;
-  border-radius: 12px;
-  padding: 16px;
+.out-wrapper {
   margin-bottom: 40px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 16px;
+  border-radius: 12px;
+  background: #f8f9fa;
+  box-shadow: 0 2px 8px rgb(0, 0, 0, 0.08);
 }
 
 .utilikit-cheatsheet h3 {
   margin-top: 0;
-  color: #2c3e50;
-  font-size: 24px;
   margin-bottom: 20px;
-  border-bottom: 2px solid #e9ecef;
   padding-bottom: 10px;
+  color: #2c3e50;
+  border-bottom: 2px solid #e9ecef;
+  font-size: 24px;
 }
 
 /* Syntax group */
 .syntax-group {
   margin-bottom: 20px;
-  background: white;
   padding: 20px;
-  border-radius: 8px;
   border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: white;
 }
 
 .syntax-group-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #495057;
-  margin-bottom: 15px;
   display: flex;
   align-items: center;
+  margin-bottom: 15px;
+  color: #495057;
+  font-size: 18px;
+  font-weight: 600;
   gap: 10px;
 }
 
 .syntax-group-icon {
-  width: 24px;
-  height: 24px;
-  background: #007bff;
-  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 24px;
+  height: 24px;
   color: white;
+  border-radius: 50%;
+  background: #007bff;
   font-size: 14px;
   font-weight: bold;
 }
@@ -64,35 +65,36 @@
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  font-family: 'SF Mono', Monaco, Consolas, 'Courier New', monospace;
+  font-family: "SF Mono", Monaco, Consolas, "Courier New", monospace;
   font-size: 14px;
 }
 
 .syntax-item {
   display: flex;
   align-items: baseline;
-  gap: 8px;
   padding: 8px 12px;
-  background: #f8f9fa;
-  border-radius: 6px;
-  border: 1px solid #dee2e6;
   transition: all 0.2s ease;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #f8f9fa;
+  gap: 8px;
 }
 
 .syntax-item:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-color: #adb5bd;
+  background: #e9ecef;
+  box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
 }
 
 /* Property name */
 html .property-name {
-  color: #6c757d!important;
-  font-size: 13px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-weight: 500;
   min-width: 100px;
+  color: #6c757d !important;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 /* Syntax colors */
@@ -103,23 +105,23 @@ html .property-name {
 }
 
 html .syntax-uk {
-  color: #0056b3!important;
-  font-weight: 700!important;
+  color: #0056b3 !important;
+  font-weight: 700 !important;
 }
 
 html .syntax-dash {
-  color: #adb5bd!important;
-  margin: 0 1px!important;
+  margin: 0 1px !important;
+  color: #adb5bd !important;
 }
 
 html .syntax-prefix {
-  color: #28a745!important;
-  font-weight: 700!important;
+  color: #28a745 !important;
+  font-weight: 700 !important;
 }
 
 html .syntax-value {
-  color: #dc3545!important;
   opacity: 0.8;
+  color: #dc3545 !important;
   font-weight: 400;
   font-style: italic;
 }
@@ -128,23 +130,23 @@ html .syntax-value {
 html .interactive-example {
   margin-top: 30px;
   padding: 20px;
-  background: white;
+  border: 1px solid #dee2e6 !important;
   border-radius: 8px;
-  border: 1px solid #dee2e6!important;
+  background: white;
 }
 
 html .example-title {
+  margin-bottom: 15px;
+  color: #343a40 !important;
   font-size: 16px;
   font-weight: 600;
-  margin-bottom: 15px;
-  color: #343a40!important;
 }
 
 .example-playground {
   display: flex;
-  gap: 20px;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
 }
 
 .example-input {
@@ -155,79 +157,78 @@ html .example-title {
 html .example-input input {
   width: 100%;
   padding: 12px 16px;
-  font-size: 14px;
-  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  transition: border-color 0.2s;
+  color: #333 !important;
   border: 2px solid #dee2e6;
   border-radius: 6px;
-  transition: border-color 0.2s;
   background: white;
-  color: #333!important;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 14px;
 }
 
 .example-input input:focus {
-  outline: none;
   border-color: #007bff;
+  outline: none;
   background: #f8f9fa;
 }
 
 html .example-preview {
-  padding: 20px;
-  background: #f8f9fa!important;
-  border-radius: 6px;
-  min-width: 200px;
-  min-height: 60px;
-  text-align: center;
-  font-size: 16px;
-  border: 2px solid #dee2e6;
-  color: #333!important;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 200px;
+  min-height: 60px;
+  padding: 20px;
+  text-align: center;
+  color: #333 !important;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  background: #f8f9fa !important;
+  font-size: 16px;
 }
 
 .example-preview.utilikit {
   transition: all 0.3s ease;
 }
 
-
 /* Table improvements */
 .utilikit-admin-reference {
+  overflow: hidden;
   width: 100%;
   border-collapse: collapse;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border-radius: 8px;
-  overflow: hidden;
+  box-shadow: 0 2px 8px rgb(0, 0, 0, 0.08);
 }
 
 html .utilikit-admin-reference th {
-  background: #007bff!important;
-  color: white;
   padding: 15px;
   text-align: start;
-  font-weight: 600;
-  font-size: 14px;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: white;
+  background: #007bff !important;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 html .utilikit-admin-reference td {
   padding: 12px 15px;
-  border-bottom: 1px solid #e9ecef;
   vertical-align: middle;
+  border-bottom: 1px solid #e9ecef;
 }
 
 html .utilikit-admin-reference tbody tr:hover {
-  background: #f8f9fa!important;
+  background: #f8f9fa !important;
 }
 
 html .utilikit-admin-reference code {
   padding: 3px 8px;
-  background: #f1f3f5!important;
-  border-radius: 4px;
-  font-family: 'SF Mono', Monaco, Consolas, monospace;
-  font-size: 13px;
   color: #495057;
   border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background: #f1f3f5 !important;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 13px;
 }
 
 /* Example code blocks */
@@ -235,17 +236,17 @@ html .interactive-example code {
   display: inline-block;
   margin: 2px 0;
   padding: 3px 8px;
-  background: #f1f3f5!important;
-  border-radius: 4px;
-  font-size: 12px;
-  color: #495057!important;
   cursor: pointer;
   transition: all 0.2s;
+  color: #495057 !important;
+  border-radius: 4px;
+  background: #f1f3f5 !important;
+  font-size: 12px;
 }
 
 html .interactive-example code:hover {
-  background: #e9ecef!important;
   transform: translateX(5px);
+  background: #e9ecef !important;
 }
 
 .interactive-example * {
@@ -254,14 +255,14 @@ html .interactive-example code:hover {
 
 /* Group headers */
 .reference-group-header {
-  margin: 40px 0 20px;
-  padding: 15px 20px;
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-  color: white;
-  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin: 40px 0 20px;
+  padding: 15px 20px;
+  color: white;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
 }
 
 .reference-group-header h2 {
@@ -271,9 +272,9 @@ html .interactive-example code:hover {
 }
 
 .group-count {
-  background: rgba(255, 255, 255, 0.2);
   padding: 4px 12px;
   border-radius: 20px;
+  background: rgb(255, 255, 255, 0.2);
   font-size: 14px;
 }
 
@@ -283,22 +284,22 @@ html .interactive-example code:hover {
 }
 
 .syntax-item.is-expanded {
-  background: #e2e6ea;
   border-color: #007bff;
-  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.15);
+  background: #e2e6ea;
+  box-shadow: 0 2px 8px rgb(0, 123, 255, 0.15);
 }
 
 .expand-panel {
-  width: 100%;
-  background: #343a40;
-  color: #fff;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 14px;
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 16px;
+  width: 100%;
+  padding: 8px 12px;
+  color: #fff;
+  border-radius: 6px;
+  background: #343a40;
+  font-size: 14px;
   line-height: 1.6;
+  gap: 4px 16px;
 }
 
 .expand-row {
@@ -309,59 +310,59 @@ html .interactive-example code:hover {
 }
 
 html .expand-label {
-  color: #adb5bd!important;
-  font-size: 11px;
   white-space: nowrap;
+  color: #adb5bd !important;
+  font-size: 11px;
 }
 
 html .expand-class {
-  font-family: 'SF Mono', Monaco, Consolas, monospace;
-  font-size: 12px;
-  color: #69db7c!important;
-  background: rgba(255, 255, 255, 0.1)!important;
   padding: 2px 8px;
-  border-radius: 9999px;
   cursor: pointer;
   transition: all 0.15s;
-  border: 1px solid transparent;
   white-space: nowrap;
+  color: #69db7c !important;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: rgb(255, 255, 255, 0.1) !important;
+  font-family: "SF Mono", Monaco, Consolas, monospace;
+  font-size: 12px;
 }
 
 html .expand-class:hover {
-  background: #007bff!important;
-  color: #fff!important;
+  color: #fff !important;
+  background: #007bff !important;
 }
 
 html .expand-class.copied {
-  background: #28a745!important;
-  color: #fff!important;
+  color: #fff !important;
+  background: #28a745 !important;
 }
 
 .expand-copy-all {
-  width: 120px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 120px;
   margin-top: 4px;
   padding: 4px 0;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.15s;
   color: #adb5bd;
   border: none;
   border-radius: 999px;
-  cursor: pointer;
-  transition: all 0.15s;
+  background: rgb(255, 255, 255, 0.1);
+  font-size: 11px;
+  font-weight: 600;
 }
 
 html .expand-copy-all:hover {
-  background: #007bff!important;
-  color: #fff!important;
+  color: #fff !important;
+  background: #007bff !important;
 }
 
 html .expand-copy-all.copied {
-  background: #28a745!important;
-  color: #fff!important;
+  color: #fff !important;
+  background: #28a745 !important;
 }
 
 @media (max-width: 768px) {
@@ -373,14 +374,14 @@ html .expand-copy-all.copied {
 
 /* Legend */
 html .syntax-legend {
+  display: flex;
+  flex-wrap: wrap;
   margin-top: 25px;
   padding: 15px;
-  background: #e9ecef!important;
   border-radius: 6px;
-  display: flex;
-  gap: 30px;
+  background: #e9ecef !important;
   font-size: 13px;
-  flex-wrap: wrap;
+  gap: 30px;
 }
 
 .legend-item {
@@ -392,8 +393,8 @@ html .syntax-legend {
 .legend-color {
   width: 20px;
   height: 20px;
+  border: 1px solid rgb(0, 0, 0, 0.1);
   border-radius: 4px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Responsive */
@@ -403,8 +404,8 @@ html .syntax-legend {
   }
 
   .syntax-item {
-    font-size: 12px;
     padding: 6px 10px;
+    font-size: 12px;
   }
 
   .property-name {
@@ -428,9 +429,9 @@ html .syntax-legend {
 
 /* Loading animation */
 .loading-shimmer {
+  animation: shimmer 1.5s ease-in-out infinite;
   background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
 }
 
 @keyframes shimmer {
@@ -460,5 +461,5 @@ html .syntax-legend {
 }
 
 html .utilikit-reference-page h3 {
-  margin: 16px 0 4px 0!important;
+  margin: 16px 0 4px 0 !important;
 }

@@ -1,0 +1,42 @@
+{
+  // ESLint configuration for UtiliKit.
+  //
+  // drupal.org CI links core's .eslintrc.passing.json as the PARENT config, so
+  // this file adds to core's rules rather than replacing them. Everything here
+  // is an addition with a reason; nothing is switched off to make a number go
+  // down.
+  "rules": {
+    // WHY functions ARE ALLOWED BEFORE THEIR DEFINITION, and variables are not.
+    //
+    // A function declaration is hoisted: calling it above its definition is a
+    // language guarantee, not a hazard. A `const`, `let` or `class` is NOT —
+    // it sits in the temporal dead zone and throws a ReferenceError. Leaving
+    // this rule fully on treats those two as the same thing, and they are not.
+    //
+    // MEASURED 2026-09-05 against core's config: 63 findings in this project,
+    // 61 of them hoisted function declarations and 2 a class used before its
+    // definition. The class was a genuine latent fault and is fixed — the
+    // behaviour that instantiated it now sits below it. The other 61 are the
+    // conventional Drupal file shape: behaviours at the top, helpers beneath,
+    // in top-down reading order. Satisfying the rule for those would mean
+    // inverting five files so helpers come first and entry points last, which
+    // is harder to read and changes no behaviour whatsoever.
+    //
+    // So the rule stays ON for the case that can actually throw.
+    "no-use-before-define": ["error", { "functions": false }]
+  },
+  "overrides": [
+    {
+      // Jest supplies describe/test/expect; without this they read as globals
+      // that nothing defines.
+      "files": ["tests/js/**/*.js"],
+      "env": {
+        "jest": true
+      },
+      "rules": {
+        // Nested describe/test blocks are how a Jest suite is structured.
+        "max-nested-callbacks": "off"
+      }
+    }
+  ]
+}

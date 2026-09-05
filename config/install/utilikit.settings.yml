@@ -305,7 +305,7 @@ experimental_features:
 # 1. Disable all developer tools ('dev_mode', 'admin_preview', 'show_page_errors')
 # 2. Set 'log_level' to 'off' or 'warnings'
 # 3. Enable 'optimize_css' for better performance
-# 4. Enable 'use_important' for better forcing the sytle.
+# 4. Enable 'use_important' for better forcing the style.
 # 5. Consider 'static' rendering mode for high-traffic sites
 # 6. Configure appropriate cache TTL based on content update frequency
 #

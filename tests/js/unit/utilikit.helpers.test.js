@@ -9,14 +9,18 @@ describe('UtiliKit Helpers', () => {
     global.Drupal = {
       utilikit: {
         // Mock helper functions with actual implementations for testing
-        parseColorWithAlpha: function(suffix) {
+        parseColorWithAlpha(suffix) {
           let match;
 
           // Match 6-digit hex color with optional alpha percentage (0-100)
-          if ((match = suffix.match(/^([0-9a-fA-F]{6})(?:-(\d{1,3}))?$/))) {
+          match = suffix.match(/^([0-9a-fA-F]{6})(?:-(\d{1,3}))?$/);
+
+          if (match) {
             const hex = match[1];
             const hasAlpha = match[2] !== undefined;
-            const alpha = hasAlpha ? Math.min(parseInt(match[2], 10), 100) / 100 : 1;
+            const alpha = hasAlpha
+              ? Math.min(parseInt(match[2], 10), 100) / 100
+              : 1;
             const r = parseInt(hex.substring(0, 2), 16);
             const g = parseInt(hex.substring(2, 4), 16);
             const b = parseInt(hex.substring(4, 6), 16);
@@ -24,11 +28,18 @@ describe('UtiliKit Helpers', () => {
           }
 
           // Match 3-digit hex color with optional alpha percentage (0-100)
-          if ((match = suffix.match(/^([0-9a-fA-F]{3})(?:-(\d{1,3}))?$/))) {
+          match = suffix.match(/^([0-9a-fA-F]{3})(?:-(\d{1,3}))?$/);
+
+          if (match) {
             // Expand 3-digit hex to 6-digit by doubling each character
-            const hex = match[1].split('').map(ch => ch + ch).join('');
+            const hex = match[1]
+              .split('')
+              .map((ch) => ch + ch)
+              .join('');
             const hasAlpha = match[2] !== undefined;
-            const alpha = hasAlpha ? Math.min(parseInt(match[2], 10), 100) / 100 : 1;
+            const alpha = hasAlpha
+              ? Math.min(parseInt(match[2], 10), 100) / 100
+              : 1;
             const r = parseInt(hex.substring(0, 2), 16);
             const g = parseInt(hex.substring(2, 4), 16);
             const b = parseInt(hex.substring(4, 6), 16);
@@ -38,12 +49,15 @@ describe('UtiliKit Helpers', () => {
           return null; // Invalid format
         },
 
-        breakpointApplies: function(bp) {
+        breakpointApplies(bp) {
           const minWidth = this.breakpoints[bp];
-          return typeof minWidth === 'number' && (global.innerWidth || window.innerWidth) >= minWidth;
+          return (
+            typeof minWidth === 'number' &&
+            (global.innerWidth || window.innerWidth) >= minWidth
+          );
         },
 
-        convertDecimalNotation: function(value) {
+        convertDecimalNotation(value) {
           return value.replace(/d/g, '.');
         },
 
@@ -53,9 +67,9 @@ describe('UtiliKit Helpers', () => {
           md: 768,
           lg: 992,
           xl: 1200,
-          xxl: 1400
-        }
-      }
+          xxl: 1400,
+        },
+      },
     };
 
     // Set up global window width for testing
@@ -117,7 +131,7 @@ describe('UtiliKit Helpers', () => {
         md: 768,
         lg: 992,
         xl: 1200,
-        xxl: 1400
+        xxl: 1400,
       };
     });
 

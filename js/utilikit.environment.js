@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * Environment initialization and core utilities for UtiliKit.
  *
@@ -30,9 +33,7 @@
  * - Integration with CSS media query specifications
  * - Support for custom breakpoint configurations
  */
-(function(Drupal, once, drupalSettings) {
-  'use strict';
-
+(function (Drupal, once, drupalSettings) {
   // Ensure UtiliKit namespace exists for environment setup
   Drupal.utilikit = Drupal.utilikit || {};
 
@@ -71,7 +72,8 @@
    * Controls whether UtiliKit adds smooth CSS transitions to utility
    * class changes for polished visual effects during dynamic updates.
    */
-  Drupal.utilikit.enableTransitions = !!Drupal.utilikit.settings.enableTransitions;
+  Drupal.utilikit.enableTransitions =
+    !!Drupal.utilikit.settings.enableTransitions;
 
   /**
    * Debounce delay for resize events in milliseconds.
@@ -103,7 +105,8 @@
    * Determines whether UtiliKit generates CSS dynamically on the client
    * (inline) or uses pre-generated CSS files (static) for optimal performance.
    */
-  Drupal.utilikit.renderingMode = Drupal.utilikit.settings.renderingMode ?? 'inline';
+  Drupal.utilikit.renderingMode =
+    Drupal.utilikit.settings.renderingMode ?? 'inline';
 
   /**
    * Active responsive breakpoints for utility class generation.
@@ -111,9 +114,10 @@
    * Array of breakpoint names that are enabled for responsive utility
    * class variants. Disabled breakpoints are excluded for performance optimization.
    */
-  Drupal.utilikit.activeBreakpoints = (drupalSettings.utilikit && drupalSettings.utilikit.activeBreakpoints)
-    ? drupalSettings.utilikit.activeBreakpoints
-    : ['sm', 'md', 'lg', 'xl', 'xxl'];
+  Drupal.utilikit.activeBreakpoints =
+    drupalSettings.utilikit && drupalSettings.utilikit.activeBreakpoints
+      ? drupalSettings.utilikit.activeBreakpoints
+      : ['sm', 'md', 'lg', 'xl', 'xxl'];
 
   // ======================================================================= */
   // RESPONSIVE BREAKPOINT SYSTEM
@@ -134,10 +138,10 @@
    * - xxl (1400px): Extra extra large devices (wide monitors)
    */
   Drupal.utilikit.breakpoints = {
-    sm: 576,   // Small screens and up
-    md: 768,   // Medium screens and up
-    lg: 992,   // Large screens and up
-    xl: 1200,  // Extra large screens and up
+    sm: 576, // Small screens and up
+    md: 768, // Medium screens and up
+    lg: 992, // Large screens and up
+    xl: 1200, // Extra large screens and up
     xxl: 1400, // Extra extra large screens and up
   };
 
@@ -154,7 +158,7 @@
    * width meets or exceeds, or an empty string for viewports smaller
    * than the smallest defined breakpoint (base/mobile).
    *
-   * @returns {string}
+   * @return {string}
    *   The current active breakpoint name ('sm', 'md', 'lg', 'xl', 'xxl')
    *   or empty string for base mobile viewport (< 576px).
    *
@@ -173,7 +177,7 @@
    * // Check if at least medium size
    * const isAtLeastMedium = ['md', 'lg', 'xl', 'xxl'].includes(Drupal.utilikit.getBreakpoint());
    */
-  Drupal.utilikit.getBreakpoint = function() {
+  Drupal.utilikit.getBreakpoint = function () {
     const width = window.innerWidth;
     if (width >= Drupal.utilikit.breakpoints.xxl) return 'xxl';
     if (width >= Drupal.utilikit.breakpoints.xl) return 'xl';
@@ -231,7 +235,7 @@
    *   elementsProcessed: 42
    * }, 'log');
    */
-  Drupal.utilikit.utilikitLog = function(message, data = null, type = 'log') {
+  Drupal.utilikit.utilikitLog = function (message, data = null, type = 'log') {
     const isDevMode = Drupal.utilikit.isDevMode;
     const logLevel = Drupal.utilikit.logLevel ?? 'off';
 
@@ -241,10 +245,9 @@
     }
 
     // Determine if this log message should be output based on level and type
-    const allowLog = (
+    const allowLog =
       (type === 'log' && logLevel === 'detailed') ||
-      (type === 'warn' && (logLevel === 'warnings' || logLevel === 'detailed'))
-    );
+      (type === 'warn' && (logLevel === 'warnings' || logLevel === 'detailed'));
 
     if (!allowLog) {
       return;
@@ -303,16 +306,16 @@
    * // Update drupalSettings.utilikit configuration, then:
    * Drupal.utilikit.initEnvironment(document);
    */
-  Drupal.utilikit.initEnvironment = function(context) {
+  Drupal.utilikit.initEnvironment = function (context) {
     // Initialize or validate core state management object
     if (!Drupal.utilikit.state || !Drupal.utilikit.state.initialized) {
       Drupal.utilikit.state = {
-        resizeTimeout: null,        // Debounce timer for resize events
-        resizeFrame: null,          // Animation frame for smooth updates
+        resizeTimeout: null, // Debounce timer for resize events
+        resizeFrame: null, // Animation frame for smooth updates
         lastWidth: window.innerWidth, // Track viewport changes
         lastBreakpoint: Drupal.utilikit.getBreakpoint(), // Track breakpoint changes
         resizeListenerAttached: false, // Prevent duplicate listeners
-        initialized: true           // Initialization completion flag
+        initialized: true, // Initialization completion flag
       };
     }
 
@@ -326,37 +329,63 @@
         logLevel: Drupal.utilikit.logLevel,
         adminPreview: Drupal.utilikit.adminPreview,
         activeBreakpoints: Drupal.utilikit.activeBreakpoints,
-        breakpoints: Drupal.utilikit.breakpoints
+        breakpoints: Drupal.utilikit.breakpoints,
       });
       Drupal.utilikit.logged = true; // Prevent duplicate logging
     }
 
     // Apply admin preview mode body class for visual debugging
-    if (Drupal.utilikit.adminPreview && !document.body.classList.contains('uk-admin')) {
+    if (
+      Drupal.utilikit.adminPreview &&
+      !document.body.classList.contains('uk-admin')
+    ) {
       document.body.classList.add('uk-admin');
     }
 
     // Apply transitions enablement body class for CSS integration
-    if (Drupal.utilikit.enableTransitions && !document.body.classList.contains('uk-trans')) {
+    if (
+      Drupal.utilikit.enableTransitions &&
+      !document.body.classList.contains('uk-trans')
+    ) {
       document.body.classList.add('uk-trans');
     }
 
     // Apply rendering mode specific body classes for CSS targeting
     if (Drupal.utilikit.renderingMode === 'static') {
-      document.body.classList.remove('utilikit-inline-mode', 'utilikit-head-mode');
+      document.body.classList.remove(
+        'utilikit-inline-mode',
+        'utilikit-head-mode',
+      );
       document.body.classList.add('utilikit-static-mode');
-      Drupal.utilikit.utilikitLog('Body class added: utilikit-static-mode', null, 'log');
+      Drupal.utilikit.utilikitLog(
+        'Body class added: utilikit-static-mode',
+        null,
+        'log',
+      );
     } else if (Drupal.utilikit.renderingMode === 'head') {
-      document.body.classList.remove('utilikit-inline-mode', 'utilikit-static-mode');
+      document.body.classList.remove(
+        'utilikit-inline-mode',
+        'utilikit-static-mode',
+      );
       document.body.classList.add('utilikit-head-mode');
-      Drupal.utilikit.utilikitLog('Body class added: utilikit-head-mode', null, 'log');
+      Drupal.utilikit.utilikitLog(
+        'Body class added: utilikit-head-mode',
+        null,
+        'log',
+      );
     } else {
-      document.body.classList.remove('utilikit-static-mode', 'utilikit-head-mode');
+      document.body.classList.remove(
+        'utilikit-static-mode',
+        'utilikit-head-mode',
+      );
       document.body.classList.add('utilikit-inline-mode');
-      Drupal.utilikit.utilikitLog('Body class added: utilikit-inline-mode', null, 'log');
+      Drupal.utilikit.utilikitLog(
+        'Body class added: utilikit-inline-mode',
+        null,
+        'log',
+      );
     }
   };
-
 })(Drupal, once, drupalSettings);
 
 /**

@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * UtiliKit Security Framework and XSS Prevention System.
  *
@@ -24,9 +27,7 @@
  * @see utilikit.reference.js for secure copy functionality
  */
 
-(function(Drupal, once, drupalSettings) {
-  'use strict';
-
+(function (Drupal, once, drupalSettings) {
   Drupal.utilikit = Drupal.utilikit || {};
 
   /**
@@ -39,7 +40,6 @@
    * @namespace
    */
   Drupal.utilikit.security = {
-
     /**
      * Sanitizes text content to prevent XSS attacks.
      *
@@ -50,7 +50,7 @@
      * @param {string} text
      *   The text content to sanitize.
      *
-     * @returns {string}
+     * @return {string}
      *   The sanitized text with HTML entities encoded.
      *
      * @example
@@ -60,7 +60,7 @@
      *   const safe = Drupal.utilikit.security.sanitizeText(userInput);
      *   // Result: '&lt;script&gt;alert("xss")&lt;/script&gt;'
      */
-    sanitizeText: function(text) {
+    sanitizeText(text) {
       if (typeof text !== 'string') {
         return '';
       }
@@ -84,7 +84,7 @@
      * @param {Array<string>} allowedTags
      *   Array of allowed HTML tag names (lowercase). Defaults to empty array.
      *
-     * @returns {string}
+     * @return {string}
      *   The sanitized HTML with only allowed tags preserved.
      *
      * @example
@@ -95,7 +95,7 @@
      *   );
      *   // Result: '<p>Safe text</p>alert("bad")'
      */
-    sanitizeHtml: function(html, allowedTags = []) {
+    sanitizeHtml(html, allowedTags = []) {
       if (typeof html !== 'string') {
         return '';
       }
@@ -112,7 +112,7 @@
 
       // Remove all non-allowed elements (walk in reverse so removal doesn't break iteration)
       const allElements = Array.from(root.querySelectorAll('*'));
-      allElements.forEach(element => {
+      allElements.forEach((element) => {
         if (!allowedTags.includes(element.tagName.toLowerCase())) {
           const textNode = doc.createTextNode(element.textContent);
           element.parentNode.replaceChild(textNode, element);
@@ -136,7 +136,7 @@
      * @param {string} className
      *   The CSS class name to validate.
      *
-     * @returns {string|null}
+     * @return {string|null}
      *   The validated class name if safe, null if invalid or dangerous.
      *
      * @example
@@ -146,7 +146,7 @@
      *   const dangerousName = Drupal.utilikit.security.validateClassName('class;color:red');
      *   // Result: null
      */
-    validateClassName: function(className) {
+    validateClassName(className) {
       if (typeof className !== 'string') {
         return null;
       }
@@ -175,14 +175,14 @@
      * @param {string} selector
      *   The CSS selector string to escape.
      *
-     * @returns {string}
+     * @return {string}
      *   The escaped CSS selector safe for use in stylesheets.
      *
      * @example
      *   const selector = Drupal.utilikit.security.escapeCssSelector('my:class');
      *   // Result: 'my\\:class'
      */
-    escapeCssSelector: function(selector) {
+    escapeCssSelector(selector) {
       if (typeof selector !== 'string') {
         return '';
       }
@@ -206,7 +206,7 @@
      * @param {string} className
      *   The class name to validate against UtiliKit patterns.
      *
-     * @returns {boolean}
+     * @return {boolean}
      *   TRUE if the class follows valid UtiliKit format, FALSE otherwise.
      *
      * @example
@@ -216,7 +216,7 @@
      *   const isInvalid = Drupal.utilikit.security.isValidUtilityClass('malicious-class');
      *   // Result: false
      */
-    isValidUtilityClass: function(className) {
+    isValidUtilityClass(className) {
       if (typeof className !== 'string') {
         return false;
       }
@@ -227,7 +227,8 @@
       }
 
       // Validate against the pattern
-      const pattern = /^uk-(?:(?:sm|md|lg|xl|xxl)-)?[a-z]{2,4}--[a-zA-Z0-9\-_.%]+$/;
+      const pattern =
+        /^uk-(?:(?:sm|md|lg|xl|xxl)-)?[a-z]{2,4}--[a-zA-Z0-9\-_.%]+$/;
       return pattern.test(className);
     },
 
@@ -241,7 +242,7 @@
      * @param {*} response
      *   The server response object to sanitize.
      *
-     * @returns {Object}
+     * @return {Object}
      *   A sanitized response object with validated fields.
      *
      * @example
@@ -253,7 +254,7 @@
      *   const safe = Drupal.utilikit.security.sanitizeServerResponse(serverResponse);
      *   // Result: { message: '&lt;script&gt;...', count: 42 }
      */
-    sanitizeServerResponse: function(response) {
+    sanitizeServerResponse(response) {
       const sanitized = {};
 
       if (response && typeof response === 'object') {
@@ -265,10 +266,10 @@
           sanitized.status = this.sanitizeText(response.status);
         }
         if (response.count !== undefined) {
-          sanitized.count = parseInt(response.count) || 0;
+          sanitized.count = parseInt(response.count, 10) || 0;
         }
         if (response.timestamp !== undefined) {
-          sanitized.timestamp = parseInt(response.timestamp) || 0;
+          sanitized.timestamp = parseInt(response.timestamp, 10) || 0;
         }
       }
 
@@ -289,7 +290,7 @@
      * @param {Object} attributes
      *   Object of attributes to set (will be filtered and validated).
      *
-     * @returns {Element}
+     * @return {Element}
      *   A safe DOM element with sanitized content and attributes.
      *
      * @example
@@ -299,9 +300,18 @@
      *     { class: 'btn-primary', id: 'safe-button' }
      *   );
      */
-    createSafeElement: function(tagName, textContent = '', attributes = {}) {
+    createSafeElement(tagName, textContent = '', attributes = {}) {
       // Validate tag name
-      const allowedTags = ['div', 'span', 'p', 'button', 'strong', 'em', 'code', 'pre'];
+      const allowedTags = [
+        'div',
+        'span',
+        'p',
+        'button',
+        'strong',
+        'em',
+        'code',
+        'pre',
+      ];
       if (!allowedTags.includes(tagName.toLowerCase())) {
         tagName = 'div'; // Default to safe tag
       }
@@ -314,8 +324,18 @@
       }
 
       // Set safe attributes (setAttribute escapes automatically; do not double-encode).
-      const allowedAttributes = ['class', 'id', 'title', 'aria-label', 'aria-describedby', 'aria-live', 'aria-hidden', 'role', 'type'];
-      Object.keys(attributes).forEach(attr => {
+      const allowedAttributes = [
+        'class',
+        'id',
+        'title',
+        'aria-label',
+        'aria-describedby',
+        'aria-live',
+        'aria-hidden',
+        'role',
+        'type',
+      ];
+      Object.keys(attributes).forEach((attr) => {
         if (allowedAttributes.includes(attr.toLowerCase())) {
           const value = attributes[attr];
           if (value !== undefined && value !== null && value !== '') {
@@ -325,7 +345,7 @@
       });
 
       return element;
-    }
+    },
   };
 
   /**
@@ -352,7 +372,7 @@
    *   );
    *   // Only the <p> tag will be preserved
    */
-  Drupal.utilikit.safeSetHtml = function(element, html, allowedTags = []) {
+  Drupal.utilikit.safeSetHtml = function (element, html, allowedTags = []) {
     if (!element || !element.nodeType) {
       return;
     }
@@ -382,26 +402,42 @@
    *     '<span class="icon-check"></span>'
    *   );
    */
-  Drupal.utilikit.showSafeMessage = function(text, type = 'info', iconHtml = '') {
-    const messageContainer = Drupal.utilikit.security.createSafeElement('div', '', {
-      'class': `utilikit-update-message utilikit-update-message--${type}`,
-      'role': 'alert',
-      'aria-live': 'polite'
-    });
+  Drupal.utilikit.showSafeMessage = function (
+    text,
+    type = 'info',
+    iconHtml = '',
+  ) {
+    const messageContainer = Drupal.utilikit.security.createSafeElement(
+      'div',
+      '',
+      {
+        class: `utilikit-update-message utilikit-update-message--${type}`,
+        role: 'alert',
+        'aria-live': 'polite',
+      },
+    );
 
     // Create icon element safely
     if (iconHtml) {
-      const iconElement = Drupal.utilikit.security.createSafeElement('span', iconHtml, {
-        'class': 'message-icon',
-        'aria-hidden': 'true'
-      });
+      const iconElement = Drupal.utilikit.security.createSafeElement(
+        'span',
+        iconHtml,
+        {
+          class: 'message-icon',
+          'aria-hidden': 'true',
+        },
+      );
       messageContainer.appendChild(iconElement);
     }
 
     // Create text element safely
-    const textElement = Drupal.utilikit.security.createSafeElement('span', text, {
-      'class': 'message-text'
-    });
+    const textElement = Drupal.utilikit.security.createSafeElement(
+      'span',
+      text,
+      {
+        class: 'message-text',
+      },
+    );
     messageContainer.appendChild(textElement);
 
     document.body.appendChild(messageContainer);
@@ -413,10 +449,12 @@
       }
     }, 3000);
   };
-
 })(Drupal, once, drupalSettings);
 
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * Security Patches for Existing UtiliKit Functions.
  *
@@ -425,9 +463,7 @@
  * These patches wrap existing functionality with security checks without
  * breaking the original API.
  */
-(function(Drupal, once, drupalSettings) {
-  'use strict';
-
+(function (Drupal, once, drupalSettings) {
   /**
    * Security patch for UtiliKit Reference page behavior.
    *
@@ -437,16 +473,22 @@
    */
   if (Drupal.behaviors.utilikitReference) {
     const originalAttach = Drupal.behaviors.utilikitReference.attach;
-    Drupal.behaviors.utilikitReference.attach = function(context, settings) {
+    Drupal.behaviors.utilikitReference.attach = function (context, settings) {
       // Call original but with security patches
       originalAttach.call(this, context, settings);
 
       // Patch any unsafe innerHTML usage
-      context.querySelectorAll('.utilikit-reference-page [data-unsafe-html]').forEach(element => {
-        const unsafeHtml = element.getAttribute('data-unsafe-html');
-        element.removeAttribute('data-unsafe-html');
-        Drupal.utilikit.safeSetHtml(element, unsafeHtml, ['strong', 'em', 'code']);
-      });
+      context
+        .querySelectorAll('.utilikit-reference-page [data-unsafe-html]')
+        .forEach((element) => {
+          const unsafeHtml = element.getAttribute('data-unsafe-html');
+          element.removeAttribute('data-unsafe-html');
+          Drupal.utilikit.safeSetHtml(element, unsafeHtml, [
+            'strong',
+            'em',
+            'code',
+          ]);
+        });
     };
   }
 
@@ -455,26 +497,35 @@
    *
    * Defers until applyClasses is defined (classes.js loads after security.js),
    * then wraps it to validate elements and CSS classes before processing.
+   * @param attempts
    */
   (function tryPatchApplyClasses(attempts) {
-    if (Drupal.utilikit && Drupal.utilikit.applyClasses && !Drupal.utilikit.applyClasses._securityWrapped) {
+    if (
+      Drupal.utilikit &&
+      Drupal.utilikit.applyClasses &&
+      !Drupal.utilikit.applyClasses._securityWrapped
+    ) {
       const originalApplyClasses = Drupal.utilikit.applyClasses;
-      Drupal.utilikit.applyClasses = function(elements) {
+      Drupal.utilikit.applyClasses = function (elements) {
         try {
-          const safeElements = Array.from(elements).filter(el => {
+          const safeElements = Array.from(elements).filter((el) => {
             if (!el || !el.classList) return false;
             const classes = Array.from(el.classList);
-            return classes.every(className => {
-              return Drupal.utilikit.security.isValidUtilityClass(className) ||
-                     className === 'utilikit' ||
-                     Drupal.utilikit.security.validateClassName(className);
+            return classes.every((className) => {
+              return (
+                Drupal.utilikit.security.isValidUtilityClass(className) ||
+                className === 'utilikit' ||
+                Drupal.utilikit.security.validateClassName(className)
+              );
             });
           });
           if (safeElements.length > 0) {
             originalApplyClasses.call(this, safeElements);
           }
           if (safeElements.length < elements.length) {
-            console.warn('UtiliKit: Some elements filtered out for security reasons');
+            console.warn(
+              'UtiliKit: Some elements filtered out for security reasons',
+            );
           }
         } catch (error) {
           console.error('UtiliKit: Security error in applyClasses:', error);
@@ -484,7 +535,9 @@
       return;
     }
     if (attempts < 50) {
-      setTimeout(function() { tryPatchApplyClasses(attempts + 1); }, 20);
+      setTimeout(function () {
+        tryPatchApplyClasses(attempts + 1);
+      }, 20);
     }
   })(0);
 
@@ -499,5 +552,4 @@
     // This would need to be applied to the update button code
     console.warn('UtiliKit: Update button needs security patching');
   }
-
 })(Drupal, once, drupalSettings);

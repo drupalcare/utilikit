@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * Utility helper functions for UtiliKit CSS processing and validation.
  *
@@ -28,9 +31,7 @@
  * - Development-friendly error messages with actionable feedback
  * - Cross-browser compatibility for all supported operations
  */
-(function(Drupal, once, drupalSettings) {
-  'use strict';
-
+(function (Drupal, once, drupalSettings) {
   // Ensure UtiliKit namespace exists for helper functions
   Drupal.utilikit = Drupal.utilikit || {};
 
@@ -53,8 +54,8 @@
    *   The color value suffix from a utility class, containing the hex color
    *   and optional alpha value. Examples: "ff0000", "ff0000-50", "f00-25"
    *
-   * @returns {string|null}
-   *   Returns a valid CSS color string ("#hexvalue" or "rgba(r, g, b, a)")
+   * @return {string|null}
+   *   Returns a valid CSS color string ("#rrggbb" or "rgba(r, g, b, a)")
    *   or null if the input format is invalid or cannot be parsed.
    *
    * @example
@@ -77,16 +78,21 @@
    * parseColorWithAlpha('invalid')
    * // Returns: null
    */
-  Drupal.utilikit.parseColorWithAlpha = function(suffix) {
+  Drupal.utilikit.parseColorWithAlpha = function (suffix) {
     let match;
 
     // Match 6-digit hex color with optional alpha (0-100) and optional
     // pseudo-state suffix (-h, -f, -a). In inline mode the pseudo-state
     // is silently ignored; it only takes effect in static/head modes
     // where the PHP generator appends :hover/:focus/:active to the selector.
-    if ((match = suffix.match(/^([0-9a-fA-F]{6})(?:-(\d{1,3}))?(?:-(h|f|a))?$/))) {
+    match = suffix.match(/^([0-9a-fA-F]{6})(?:-(\d{1,3}))?(?:-(h|f|a))?$/);
+
+    if (match) {
       const hex = match[1];
-      const alpha = match[2] !== undefined && match[2] !== '' ? Math.min(parseInt(match[2], 10), 100) / 100 : 1;
+      const alpha =
+        match[2] !== undefined && match[2] !== ''
+          ? Math.min(parseInt(match[2], 10), 100) / 100
+          : 1;
       const r = parseInt(hex.substring(0, 2), 16);
       const g = parseInt(hex.substring(2, 4), 16);
       const b = parseInt(hex.substring(4, 6), 16);
@@ -94,10 +100,18 @@
     }
 
     // Match 3-digit hex color with optional alpha and pseudo-state suffix
-    if ((match = suffix.match(/^([0-9a-fA-F]{3})(?:-(\d{1,3}))?(?:-(h|f|a))?$/))) {
+    match = suffix.match(/^([0-9a-fA-F]{3})(?:-(\d{1,3}))?(?:-(h|f|a))?$/);
+
+    if (match) {
       // Expand 3-digit hex to 6-digit by doubling each character
-      const hex = match[1].split('').map(ch => ch + ch).join('');
-      const alpha = match[2] !== undefined && match[2] !== '' ? Math.min(parseInt(match[2], 10), 100) / 100 : 1;
+      const hex = match[1]
+        .split('')
+        .map((ch) => ch + ch)
+        .join('');
+      const alpha =
+        match[2] !== undefined && match[2] !== ''
+          ? Math.min(parseInt(match[2], 10), 100) / 100
+          : 1;
       const r = parseInt(hex.substring(0, 2), 16);
       const g = parseInt(hex.substring(2, 4), 16);
       const b = parseInt(hex.substring(4, 6), 16);
@@ -124,7 +138,7 @@
    *   The breakpoint identifier to check. Must be one of the configured
    *   breakpoint names: 'sm', 'md', 'lg', 'xl', 'xxl'.
    *
-   * @returns {boolean}
+   * @return {boolean}
    *   TRUE if the current viewport width is greater than or equal to
    *   the breakpoint's minimum width threshold, FALSE otherwise.
    *
@@ -145,7 +159,7 @@
    *   return; // Skip processing for inapplicable breakpoint
    * }
    */
-  Drupal.utilikit.breakpointApplies = function(bp) {
+  Drupal.utilikit.breakpointApplies = function (bp) {
     const minWidth = Drupal.utilikit.breakpoints[bp];
     return typeof minWidth === 'number' && window.innerWidth >= minWidth;
   };
@@ -166,7 +180,7 @@
    *   A value string that may contain 'd' characters as decimal separators.
    *   Examples: "0d5", "1d25", "2d75fr"
    *
-   * @returns {string}
+   * @return {string}
    *   The same value with all 'd' characters replaced by '.' for standard
    *   CSS decimal notation. Examples: "0.5", "1.25", "2.75fr"
    *
@@ -190,7 +204,7 @@
    * convertDecimalNotation('100px')
    * // Returns: "100px"
    */
-  Drupal.utilikit.convertDecimalNotation = function(value) {
+  Drupal.utilikit.convertDecimalNotation = function (value) {
     // Only replace digit-d-digit (decimal notation) with digit.digit; do not replace every 'd'.
     return value.replace(/(\d)d(\d)/g, '$1.$2');
   };
@@ -235,7 +249,7 @@
    * Drupal.utilikit.parseTransform(element, 'rotate', 90);
    * // Result: Previous rotation is replaced, scale is preserved
    */
-  Drupal.utilikit.parseTransform = function(el, type, value) {
+  Drupal.utilikit.parseTransform = function (el, type, value) {
     let transform = el.style.transform || '';
 
     // Remove any existing transform of the same type to prevent duplicates
@@ -310,7 +324,7 @@
    *   'uk-op--150'
    * );
    */
-  Drupal.utilikit.logInvalid = function(message, suffix, rule, className) {
+  Drupal.utilikit.logInvalid = function (message, suffix, rule, className) {
     const errorMsg = `UtiliKit: ${message} "${suffix}" for "${rule.css}" in class "${className}".`;
     const settings = drupalSettings.utilikit || {};
     const isDevMode = !!settings.devMode;
@@ -330,12 +344,11 @@
       if (showPageErrors && typeof Drupal.Message === 'function') {
         const messages = new Drupal.Message();
         messages.add(errorMsg, {
-          type: 'warning'
+          type: 'warning',
         });
       }
     }
   };
-
 })(Drupal, once, drupalSettings);
 
 /**

@@ -14,38 +14,52 @@ describe('UtiliKit Classes', () => {
         rules: {
           pd: { css: 'padding', sides: true, isNumericFlexible: true },
           mg: { css: 'margin', sides: true, isNumericFlexible: true },
-          bg: { css: 'backgroundColor', isColor: true }
+          bg: { css: 'backgroundColor', isColor: true },
         },
         applyRule: jest.fn(),
         getBreakpoint: jest.fn().mockReturnValue('md'),
         isDevMode: false,
         utilikitLog: jest.fn(),
         // Add a simple applyClasses implementation for testing
-        applyClasses: function(elements) {
+        applyClasses(elements) {
           // Check if in static mode
-          if (global.drupalSettings && global.drupalSettings.utilikit &&
-              global.drupalSettings.utilikit.renderingMode === 'static') {
+          if (
+            global.drupalSettings &&
+            global.drupalSettings.utilikit &&
+            global.drupalSettings.utilikit.renderingMode === 'static'
+          ) {
             return; // Skip applying styles in static mode
           }
 
-          elements.forEach(element => {
+          elements.forEach((element) => {
             if (!element.classList.contains('utilikit')) return;
 
             const classes = Array.from(element.classList);
-            const utilityClasses = classes.filter(cls => cls.startsWith('uk-'));
+            const utilityClasses = classes.filter((cls) =>
+              cls.startsWith('uk-'),
+            );
 
-            utilityClasses.forEach(cls => {
-              const match = cls.match(/^uk-(?:(sm|md|lg|xl|xxl)-)?([a-z]+)--(.+)$/);
+            utilityClasses.forEach((cls) => {
+              const match = cls.match(
+                /^uk-(?:(sm|md|lg|xl|xxl)-)?([a-z]+)--(.+)$/,
+              );
               if (match) {
                 const [, breakpoint, prefix, value] = match;
                 if (this.rules[prefix]) {
-                  this.applyRule(element, this.rules[prefix], prefix, value, breakpoint || null, cls);
+                  this.applyRule(
+                    element,
+                    this.rules[prefix],
+                    prefix,
+                    value,
+                    breakpoint || null,
+                    cls,
+                  );
                 }
               }
             });
           });
-        }
-      }
+        },
+      },
     };
 
     global.once = jest.fn((id, selector) => {
@@ -54,8 +68,8 @@ describe('UtiliKit Classes', () => {
 
     global.drupalSettings = {
       utilikit: {
-        renderingMode: 'inline'
-      }
+        renderingMode: 'inline',
+      },
     };
   });
 
@@ -65,7 +79,8 @@ describe('UtiliKit Classes', () => {
 
   test('should extract and sort utility classes correctly', () => {
     const element = document.createElement('div');
-    element.className = 'utilikit uk-pd--20 uk-mg--10 uk-bg--ff0000 non-utility';
+    element.className =
+      'utilikit uk-pd--20 uk-mg--10 uk-bg--ff0000 non-utility';
     document.body.appendChild(element);
 
     // Trigger class processing
@@ -76,7 +91,7 @@ describe('UtiliKit Classes', () => {
 
     // Check that the correct classes were processed
     const calls = Drupal.utilikit.applyRule.mock.calls;
-    const processedClasses = calls.map(call => call[5]); // 6th argument is the full class name
+    const processedClasses = calls.map((call) => call[5]); // 6th argument is the full class name
     expect(processedClasses).toContain('uk-pd--20');
     expect(processedClasses).toContain('uk-mg--10');
     expect(processedClasses).toContain('uk-bg--ff0000');
@@ -94,7 +109,7 @@ describe('UtiliKit Classes', () => {
 
     // Check that all classes were processed
     const calls = Drupal.utilikit.applyRule.mock.calls;
-    const processedClasses = calls.map(call => call[5]); // 6th argument is the full class name
+    const processedClasses = calls.map((call) => call[5]); // 6th argument is the full class name
     expect(processedClasses).toContain('uk-pd--10');
     expect(processedClasses).toContain('uk-md-pd--20');
     expect(processedClasses).toContain('uk-lg-pd--30');
@@ -115,7 +130,7 @@ describe('UtiliKit Classes', () => {
       'pd',
       '20',
       null,
-      'uk-pd--20'
+      'uk-pd--20',
     );
   });
 

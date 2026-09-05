@@ -1,4 +1,7 @@
 /**
+ * @param Drupal
+ * @param once
+ * @param drupalSettings
  * @file
  * Responsive breakpoint handling and window resize optimization for UtiliKit.
  *
@@ -29,9 +32,7 @@
  * - Handles orientation change events for mobile optimization
  * - Compatible with UtiliKit's core functionality requirements
  */
-(function(Drupal, once, drupalSettings) {
-  'use strict';
-
+(function (Drupal, once, drupalSettings) {
   // Ensure UtiliKit namespace exists for resize functionality
   Drupal.utilikit = Drupal.utilikit || {};
 
@@ -104,11 +105,11 @@
 
     // Target only elements with responsive utility classes for efficiency
     const selector = [
-      '.utilikit[class*="uk-sm-"]',   // Small breakpoint classes
-      '.utilikit[class*="uk-md-"]',   // Medium breakpoint classes
-      '.utilikit[class*="uk-lg-"]',   // Large breakpoint classes
-      '.utilikit[class*="uk-xl-"]',   // Extra large breakpoint classes
-      '.utilikit[class*="uk-xxl-"]'   // Extra extra large breakpoint classes
+      '.utilikit[class*="uk-sm-"]', // Small breakpoint classes
+      '.utilikit[class*="uk-md-"]', // Medium breakpoint classes
+      '.utilikit[class*="uk-lg-"]', // Large breakpoint classes
+      '.utilikit[class*="uk-xl-"]', // Extra large breakpoint classes
+      '.utilikit[class*="uk-xxl-"]', // Extra extra large breakpoint classes
     ].join(', ');
 
     const responsiveElements = (context || document).querySelectorAll(selector);
@@ -127,7 +128,7 @@
         Drupal.utilikit.utilikitLog(
           `Breakpoint changed to '${currentBreakpoint}', reprocessing ${responsiveElements.length} responsive elements`,
           null,
-          'log'
+          'log',
         );
       }
     }
@@ -214,7 +215,6 @@
       }, 100); // 100ms delay allows browser to complete orientation change
     });
   };
-
 })(Drupal, once, drupalSettings);
 
 /**

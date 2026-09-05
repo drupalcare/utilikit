@@ -1,44 +1,44 @@
 #utilikit-update-button {
   position: fixed;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 12px;
-  cursor: pointer;
   z-index: 9999;
+  top: 50%;
+  right: 0;
   display: flex;
+  overflow: hidden;
   flex-direction: row;
   align-items: center;
+  width: 36px;
+  padding: 12px;
+  cursor: pointer;
   transition: all 0.3s ease;
+  transform: translateY(-50%);
+  color: white;
   border-radius: 9999px 0 0 9999px;
+  background: rgb(0, 0, 0, 0.7);
   font-size: 14px;
   line-height: 1.2;
-  overflow: hidden;
-  width: 36px;
 }
 
 #utilikit-update-button:hover {
   width: auto;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgb(0, 0, 0, 0.85);
 }
 
 .utilikit-update-text,
 .utilikit-update-arrow {
   display: inline-flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
 }
 
 .utilikit-update-arrow {
-  font-size: 24px;
   transition: transform 0.3s ease;
+  font-size: 24px;
 }
 
 #utilikit-update-button:hover .utilikit-update-arrow {
-  transform: rotate(90deg);
   margin-inline-end: 8px;
+  transform: rotate(90deg);
 }
 
 #utilikit-update-button.utilikit-success:hover .utilikit-update-arrow {
@@ -46,10 +46,10 @@
 }
 
 .utilikit-update-text {
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
   opacity: 0;
   font-size: 14px;
-  white-space: nowrap;
-  transition: opacity 0.3s ease;
 }
 
 #utilikit-update-button:hover .utilikit-update-text {
@@ -69,31 +69,30 @@
   100% {
     transform: rotate(360deg);
   }
-
 }
 
 .utilikit-update-message {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 500;
   position: fixed;
+  z-index: 10000;
   top: 20px;
   right: 20px;
-  background: #4caf50;
-  color: white;
+  display: flex;
+  align-items: center;
   padding: 15px 25px;
-  border-radius: 4px;
-  font-size: 14px;
-  z-index: 10000;
-  opacity: 0;
-  transform: translateX(100%);
   transition: all 0.3s ease;
+  transform: translateX(100%);
+  opacity: 0;
+  color: white;
+  border-radius: 4px;
+  background: #4caf50;
+  font-size: 14px;
+  font-weight: 500;
+  gap: 8px;
 }
 
 .utilikit-update-message-show {
-  opacity: 1;
   transform: translateX(0);
+  opacity: 1;
 }
 
 body.toolbar-vertical #utilikit-update-button,
@@ -114,18 +113,17 @@ body.toolbar-vertical.toolbar-tray-open #utilikit-update-button {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  border-top-color: white;
-  animation: spin 0.8s linear infinite;
   margin-inline-end: 5px;
+  animation: spin 0.8s linear infinite;
+  border: 2px solid rgb(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
 }
 
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
-
 }
 
 /* Message types */
@@ -134,8 +132,8 @@ body.toolbar-vertical.toolbar-tray-open #utilikit-update-button {
 }
 
 .utilikit-update-message--warning {
-  background: #ffc107;
   color: #333;
+  background: #ffc107;
 }
 
 .utilikit-update-message--error {
@@ -153,13 +151,13 @@ body.toolbar-vertical.toolbar-tray-open #utilikit-update-button {
 
 /* Button states */
 #utilikit-update-button:disabled {
-  opacity: 0.7;
   cursor: not-allowed;
+  opacity: 0.7;
 }
 
 #utilikit-update-button.utilikit-success {
-  background: #28a745 !important;
   border-color: #28a745 !important;
+  background: #28a745 !important;
 }
 
 #utilikit-update-button.utilikit-success .utilikit-update-arrow {

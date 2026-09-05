@@ -1,4 +1,6 @@
 /**
+ * @param Drupal
+ * @param once
  * @file
  * UtiliKit Help Page JavaScript.
  *
@@ -7,8 +9,6 @@
  */
 
 (function (Drupal, once) {
-  'use strict';
-
   /**
    * UtiliKit Help - Force inline rendering for examples.
    */
@@ -18,7 +18,7 @@
       if (elements.length > 0 && Drupal.utilikit?.applyClasses) {
         Drupal.utilikit.applyClasses(elements);
       }
-    }
+    },
   };
 
   /**
@@ -26,10 +26,16 @@
    */
   Drupal.behaviors.utilikitHelp = {
     attach(context) {
-      for (const helpPage of once('utilikit-help', '.utilikit-help-page', context)) {
+      const helpPageList = once(
+        'utilikit-help',
+        '.utilikit-help-page',
+        context,
+      );
+      for (let i = 0; i < helpPageList.length; i += 1) {
+        const helpPage = helpPageList[i];
         initializeHelpPage(helpPage);
       }
-    }
+    },
   };
 
   function initializeHelpPage(helpPage) {
@@ -71,7 +77,9 @@
     const tabButtons = tabsWrapper.querySelectorAll('.tab-button');
     const tabContents = tabsWrapper.querySelectorAll('.tab-content');
 
-    for (const button of tabButtons) {
+    const buttonList = tabButtons;
+    for (let i = 0; i < buttonList.length; i += 1) {
+      const button = buttonList[i];
       button.addEventListener('click', function () {
         switchToTab(this.dataset.tab, tabButtons, tabContents, tabsWrapper);
       });
@@ -99,18 +107,24 @@
   }
 
   function switchToTab(targetTab, tabButtons, tabContents, tabsWrapper) {
-    for (const btn of tabButtons) {
+    const btnList = tabButtons;
+    for (let i = 0; i < btnList.length; i += 1) {
+      const btn = btnList[i];
       btn.classList.remove('active');
       btn.setAttribute('aria-selected', 'false');
     }
 
-    for (const content of tabContents) {
+    const contentList = tabContents;
+    for (let i = 0; i < contentList.length; i += 1) {
+      const content = contentList[i];
       content.classList.remove('active');
     }
 
     // Use dataset comparison instead of string-interpolated selector to prevent
     // CSS selector injection from URL hash values.
-    const activeButton = Array.from(tabButtons).find((btn) => btn.dataset.tab === targetTab);
+    const activeButton = Array.from(tabButtons).find(
+      (btn) => btn.dataset.tab === targetTab,
+    );
     const activeContent = document.getElementById(targetTab);
 
     if (activeButton && activeContent) {
@@ -118,10 +132,11 @@
       activeButton.setAttribute('aria-selected', 'true');
       activeContent.classList.add('active');
 
-      history.replaceState?.(null, null, `#${targetTab}`);
+      window.history.replaceState?.(null, null, `#${targetTab}`);
 
       // Scroll to the top of the tab content area so the user sees it from the beginning.
-      const scrollTarget = tabsWrapper.querySelector('.vertical-tabs-content') ?? tabsWrapper;
+      const scrollTarget =
+        tabsWrapper.querySelector('.vertical-tabs-content') ?? tabsWrapper;
       setTimeout(() => {
         scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 50);
@@ -156,7 +171,9 @@
   // ── Code copy buttons ─────────────────────────────────────────────
 
   function initializeCodeCopy(helpPage) {
-    for (const codeBlock of helpPage.querySelectorAll('pre code')) {
+    const codeBlockList = helpPage.querySelectorAll('pre code');
+    for (let i = 0; i < codeBlockList.length; i += 1) {
+      const codeBlock = codeBlockList[i];
       const pre = codeBlock.parentElement;
       if (pre.querySelector('.code-copy-btn')) continue;
 
@@ -179,7 +196,9 @@
   // ── Expandable code details ───────────────────────────────────────
 
   function initializeExpandableCode(helpPage) {
-    for (const detail of helpPage.querySelectorAll('details.code-details')) {
+    const detailList = helpPage.querySelectorAll('details.code-details');
+    for (let i = 0; i < detailList.length; i += 1) {
+      const detail = detailList[i];
       const summary = detail.querySelector('summary');
       if (!summary) continue;
 
@@ -192,7 +211,9 @@
         } else {
           setTimeout(() => {
             detail.style.maxHeight = `${detail.scrollHeight}px`;
-            setTimeout(() => { detail.style.maxHeight = ''; }, 300);
+            setTimeout(() => {
+              detail.style.maxHeight = '';
+            }, 300);
           }, 0);
         }
       });
@@ -202,7 +223,9 @@
   // ── Click-to-copy inline code ─────────────────────────────────────
 
   function initializeClickToCopy(helpPage) {
-    for (const code of helpPage.querySelectorAll('code:not(pre code)')) {
+    const codeList = helpPage.querySelectorAll('code:not(pre code)');
+    for (let i = 0; i < codeList.length; i += 1) {
+      const code = codeList[i];
       code.classList.add('is-copyable');
       code.title = 'Click to copy';
 
@@ -234,7 +257,11 @@
     document.body.appendChild(ta);
     ta.select();
     let ok = false;
-    try { ok = document.execCommand('copy'); } catch { /* noop */ }
+    try {
+      ok = document.execCommand('copy');
+    } catch {
+      /* noop */
+    }
     document.body.removeChild(ta);
     showFeedback(el, ok);
   }
@@ -245,5 +272,4 @@
       el.classList.remove('copy-success', 'copy-error');
     }, 1500);
   }
-
 })(Drupal, once);

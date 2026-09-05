@@ -12,27 +12,27 @@
    --------------------------------------------------------------- */
 .utilikit-test-summary {
   display: flex !important;
-  gap: 16px;
-  margin-bottom: 16px;
   flex-wrap: wrap;
+  margin-bottom: 16px;
+  gap: 16px;
 }
 
 .utilikit-test-stat {
   flex: 1;
   min-width: 100px;
-  text-align: center;
   padding: 12px 16px;
+  text-align: center;
   border: 1px solid var(--gin-border-color, var(--color-gray-200, #d3d8de));
   border-radius: 4px;
 }
 
 .utilikit-test-stat__label {
   display: block;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
   margin-bottom: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .utilikit-test-stat__value {
@@ -60,18 +60,18 @@
    --------------------------------------------------------------- */
 .utilikit-test-progress {
   position: relative;
+  overflow: hidden;
   height: 24px;
+  margin-bottom: 16px;
   border: 1px solid var(--gin-border-color, var(--color-gray-200, #d3d8de));
   border-radius: 4px;
-  margin-bottom: 16px;
-  overflow: hidden;
 }
 
 .utilikit-test-progress__fill {
-  height: 100% !important;
   width: 0%;
-  background: #007bff !important;
+  height: 100% !important;
   transition: width 0.15s ease;
+  background: #007bff !important;
 }
 
 .utilikit-test-progress__fill.has-failures {
@@ -88,13 +88,13 @@
 
 .utilikit-test-progress__text {
   position: absolute !important;
-  inset: 0 !important;
   display: flex !important;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
   font-size: 12px;
   font-weight: 600;
-  pointer-events: none;
+  inset: 0 !important;
 }
 
 /* ---------------------------------------------------------------
@@ -102,20 +102,20 @@
    --------------------------------------------------------------- */
 .utilikit-test-toolbar {
   display: flex !important;
-  align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 20px;
   padding: 12px;
   border: 1px solid var(--gin-border-color, var(--color-gray-200, #d3d8de));
   border-radius: 4px;
+  gap: 12px;
 }
 
 .utilikit-test-toolbar__filters {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .utilikit-test-toolbar__filters label {
@@ -129,10 +129,10 @@
 
 .utilikit-test-toolbar__actions {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-inline-start: auto;
   flex-wrap: wrap;
+  align-items: center;
+  margin-inline-start: auto;
+  gap: 8px;
 }
 
 /* ---------------------------------------------------------------
@@ -140,61 +140,62 @@
    --------------------------------------------------------------- */
 .utilikit-test-group {
   margin-bottom: 16px;
+  padding: 16px;
   border: 1px solid var(--gin-border-color, var(--color-gray-200, #d3d8de));
   border-radius: 4px;
-  padding: 16px;
 }
 
 .utilikit-test-group__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   margin: 0 0 12px;
   font-size: 18px;
-  display: flex;
-  align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
 }
 
 .utilikit-test-group__count {
+  opacity: 0.6;
   font-size: 13px;
   font-weight: normal;
-  opacity: 0.6;
 }
 
 /* Per-group pass/fail badge */
 .utilikit-test-group__badge {
-  font-size: 12px !important;
-  font-weight: 600;
+  display: none !important;
   padding: 2px 8px !important;
   border-radius: 10px !important;
-  display: none !important;
+  font-size: 12px !important;
+  font-weight: 600;
 }
 
 .utilikit-test-group__badge.is-pass {
   display: inline !important;
-  background: #28a745 !important;
   color: #fff !important;
+  background: #28a745 !important;
 }
 
 .utilikit-test-group__badge.is-fail {
   display: inline !important;
-  background: #dc3545 !important;
   color: #fff !important;
+  background: #dc3545 !important;
 }
 
 /* ---------------------------------------------------------------
    Test rules (accordion items within a group)
    --------------------------------------------------------------- */
 .utilikit-test-rule {
-  margin: 8px 0;
-  border: 1px solid var(--gin-border-color-light, var(--color-gray-100, #e9ecef));
-  border-radius: 4px;
   overflow: hidden;
+  margin: 8px 0;
+  border: 1px solid
+    var(--gin-border-color-light, var(--color-gray-100, #e9ecef));
+  border-radius: 4px;
 }
 
 .utilikit-test-rule__header {
   display: flex !important;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 8px 12px;
 }
 
@@ -204,13 +205,13 @@
 }
 
 .utilikit-test-rule__count {
-  font-weight: normal;
   opacity: 0.6;
+  font-weight: normal;
 }
 
 .utilikit-test-rule__body {
-  padding: 12px;
   overflow-x: auto;
+  padding: 12px;
 }
 
 /* ---------------------------------------------------------------
@@ -218,37 +219,39 @@
    --------------------------------------------------------------- */
 .utilikit-test-table {
   width: 100%;
+  table-layout: auto;
   border-collapse: collapse;
   font-size: 13px;
-  table-layout: auto;
 }
 
 .utilikit-test-table th {
   padding: 8px;
   text-align: start;
-  font-weight: 600;
   white-space: nowrap;
-  border-bottom: 2px solid var(--gin-border-color, var(--color-gray-200, #d3d8de));
+  border-bottom: 2px solid
+    var(--gin-border-color, var(--color-gray-200, #d3d8de));
+  font-weight: 600;
 }
 
 .utilikit-test-table td {
   padding: 8px;
-  border-bottom: 1px solid var(--gin-border-color-light, var(--color-gray-100, #e9ecef));
   vertical-align: middle;
   white-space: nowrap;
+  border-bottom: 1px solid
+    var(--gin-border-color-light, var(--color-gray-100, #e9ecef));
 }
 
 .utilikit-test-table code {
-  font-size: 12px;
   white-space: nowrap;
+  font-size: 12px;
 }
 
 .utilikit-test-table tbody tr.is-passed {
-  background: rgba(40, 167, 69, 0.08) !important;
+  background: rgb(40, 167, 69, 0.08) !important;
 }
 
 .utilikit-test-table tbody tr.is-failed {
-  background: rgba(220, 53, 69, 0.08) !important;
+  background: rgb(220, 53, 69, 0.08) !important;
 }
 
 /* ---------------------------------------------------------------
@@ -257,26 +260,26 @@
 .utilikit-test-badge {
   display: inline-block !important;
   padding: 2px 8px !important;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
   border-radius: 10px !important;
   font-size: 11px !important;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
 }
 
 .utilikit-test-badge--pending {
-  background: #ffc107 !important;
   color: #856404 !important;
+  background: #ffc107 !important;
 }
 
 .utilikit-test-badge--passed {
-  background: #28a745 !important;
   color: #fff !important;
+  background: #28a745 !important;
 }
 
 .utilikit-test-badge--failed {
-  background: #dc3545 !important;
   color: #fff !important;
+  background: #dc3545 !important;
 }
 
 /* ---------------------------------------------------------------
@@ -296,31 +299,46 @@
 }
 
 .utilikit-test-log h2 {
-  font-size: 16px;
   margin: 0 0 8px;
+  font-size: 16px;
 }
 
 .utilikit-test-log__output {
+  overflow-y: auto;
+  height: 180px;
+  margin-bottom: 8px;
+  padding: 12px;
   border: 1px solid var(--gin-border-color, var(--color-gray-200, #d3d8de));
   border-radius: 4px;
-  padding: 12px;
-  height: 180px;
-  overflow-y: auto;
-  margin-bottom: 8px;
   font-family: monospace;
   font-size: 12px;
 }
 
-.utilikit-test-log .log-entry.error { color: #dc3545 !important; }
-.utilikit-test-log .log-entry.success { color: #28a745 !important; }
-.utilikit-test-log .log-entry.info { color: #17a2b8 !important; }
-.utilikit-test-log .log-entry.warn { color: #e0a800 !important; }
+.utilikit-test-log .log-entry.error {
+  color: #dc3545 !important;
+}
+.utilikit-test-log .log-entry.success {
+  color: #28a745 !important;
+}
+.utilikit-test-log .log-entry.info {
+  color: #17a2b8 !important;
+}
+.utilikit-test-log .log-entry.warn {
+  color: #e0a800 !important;
+}
 
 /* ---------------------------------------------------------------
    Responsive
    --------------------------------------------------------------- */
 @media (max-width: 768px) {
-  .utilikit-test-summary { flex-direction: column; }
-  .utilikit-test-toolbar { flex-direction: column; align-items: stretch; }
-  .utilikit-test-toolbar__actions { margin-inline-start: 0; }
+  .utilikit-test-summary {
+    flex-direction: column;
+  }
+  .utilikit-test-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .utilikit-test-toolbar__actions {
+    margin-inline-start: 0;
+  }
 }

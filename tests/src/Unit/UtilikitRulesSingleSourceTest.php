@@ -136,7 +136,7 @@ final class UtilikitRulesSingleSourceTest extends UnitTestCase {
 
       // A literal list assigned to a name containing "keyword" is the shape
       // being outlawed. Reading one from settings is fine and does not match.
-      if (preg_match('/\b\w*[kK]eywords?\w*\s*=\s*\{\s*\n\s*\w+:\s*\[/', $source)) {
+      if (preg_match('/\b\w*keywords?\w*\s*=\s*\{\s*\n\s*\w+:\s*\[/i', $source)) {
         $offenders[] = str_replace($this->moduleRoot() . '/', '', $path);
       }
     }
