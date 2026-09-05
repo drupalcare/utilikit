@@ -68,8 +68,7 @@
 .utilikit-textarea {
   width: 100%;
   margin-bottom: var(--gin-spacing-m, var(--space-m, 1rem));
-  padding: var(--gin-spacing-xs, var(--space-xs, 0.6rem))
-    var(--gin-spacing-s, var(--space-s, 0.75rem));
+  padding: var(--gin-spacing-xs, var(--space-xs, 0.6rem)) var(--gin-spacing-s, var(--space-s, 0.75rem));
   color: var(--gin-color-text, var(--color-text, inherit));
   border: 1px solid var(--gin-border-color, var(--color-gray-300, currentColor));
   border-radius: var(--gin-border-s, var(--border-radius, 6px));
@@ -124,8 +123,7 @@
   display: flex;
   gap: 0;
   margin-bottom: var(--gin-spacing-m, var(--space-m, 20px));
-  border-bottom: 2px solid
-    var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-bottom: 2px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
 }
 
 .playground-tab {
@@ -146,14 +144,8 @@
 }
 
 .playground-tab.active {
-  color: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
-  border-bottom-color: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
+  color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  border-bottom-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
 }
 
 .playground-tab--help {
@@ -174,14 +166,8 @@
 
 .playground-tab--help:hover {
   color: #fff !important;
-  border-color: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
-  background: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
 }
 
 .playground-tab-content {
@@ -278,8 +264,7 @@
 
 .preset-btn {
   margin: 0 !important;
-  padding: var(--gin-spacing-s, var(--space-s, 10px))
-    var(--gin-spacing-s, var(--space-s, 15px)) !important;
+  padding: var(--gin-spacing-s, var(--space-s, 10px)) var(--gin-spacing-s, var(--space-s, 15px)) !important;
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: start !important;
@@ -292,10 +277,7 @@
 
 .preset-btn:hover {
   transform: translateY(-2px);
-  border-color: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  );
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
   background: var(--gin-bg-item-hover, var(--gin-bg-layer, #f8f9fa));
   box-shadow: 0 4px 12px rgb(0, 123, 255, 0.15);
 }
@@ -312,14 +294,8 @@
 .preset-btn.active {
   transform: translateY(-2px);
   color: #fff !important;
-  border-color: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
-  background: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
   box-shadow: 0 4px 12px rgb(0, 123, 255, 0.25);
 }
 
@@ -352,8 +328,7 @@
   left: 0;
   overflow-y: auto;
   max-height: 200px;
-  border: 2px solid
-    var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+  border: 2px solid var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
   border-top: none;
   border-radius: 0 0 6px 6px;
   background: var(--gin-bg-layer, var(--color-white, #fff));
@@ -408,10 +383,7 @@
   height: 24px !important;
   color: #fff !important;
   border-radius: 50% !important;
-  background: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
   font-size: 12px !important;
   font-weight: bold;
 }
@@ -423,8 +395,7 @@
 }
 
 .builder-chip {
-  padding: var(--gin-spacing-xxs, 6px)
-    var(--gin-spacing-xs, var(--space-xs, 12px)) !important;
+  padding: var(--gin-spacing-xxs, 6px) var(--gin-spacing-xs, var(--space-xs, 12px)) !important;
   cursor: pointer;
   transition: all 0.2s ease;
   color: var(--gin-color-text, var(--color-text, inherit));
@@ -442,14 +413,8 @@
 
 .builder-chip.active {
   color: #fff !important;
-  border-color: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
-  background: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
 }
 
 /* ---------------------------------------------------------------
@@ -502,8 +467,7 @@
 
 #utilikit-color-value {
   width: 100px;
-  padding: var(--gin-spacing-xs, var(--space-xs, 0.5rem))
-    var(--gin-spacing-s, var(--space-s, 0.75rem));
+  padding: var(--gin-spacing-xs, var(--space-xs, 0.5rem)) var(--gin-spacing-s, var(--space-s, 0.75rem));
   cursor: pointer;
   transition:
     border-color 0.2s ease,
@@ -525,10 +489,7 @@
 
 #utilikit-color-value:active,
 #utilikit-color-value:focus {
-  border-color: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  );
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
   outline: none;
 }
 
@@ -569,10 +530,7 @@
 }
 
 .color-swatch.selected {
-  border-color: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  );
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
   box-shadow: 0 0 0 3px rgb(0, 123, 255, 0.25);
 }
 
@@ -656,14 +614,8 @@
 
 .viewport-btn.active {
   color: #fff !important;
-  border-color: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
-  background: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
+  border-color: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
 }
 
 .viewport-icon {
@@ -689,8 +641,7 @@
   min-height: 400px;
   padding: 20px;
   transition: all 0.3s ease;
-  border: 1px solid
-    var(--gin-border-color-light, var(--color-gray-100, #f0f0f0));
+  border: 1px solid var(--gin-border-color-light, var(--color-gray-100, #f0f0f0));
   border-radius: var(--gin-border-s, var(--border-radius, 6px));
   background: var(--gin-bg-item, var(--color-white, #fff));
   box-shadow: 0 4px 12px rgb(0, 0, 0, 0.1);
@@ -715,10 +666,7 @@
   padding: 4px 8px !important;
   color: #fff !important;
   border-radius: 4px !important;
-  background: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
   font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
   font-size: 11px !important;
   line-height: 1.1;
@@ -768,8 +716,7 @@
 .style-group-title {
   margin-bottom: 10px;
   padding-bottom: 5px;
-  border-bottom: 1px solid
-    var(--gin-border-color, var(--color-gray-200, #dee2e6));
+  border-bottom: 1px solid var(--gin-border-color, var(--color-gray-200, #dee2e6));
   font-size: 14px;
   font-weight: 600;
 }
@@ -804,8 +751,7 @@
   display: flex;
   align-items: center;
   padding: 8px 0;
-  border-bottom: 1px solid
-    var(--gin-border-color-light, var(--color-gray-100, #f0f0f0));
+  border-bottom: 1px solid var(--gin-border-color-light, var(--color-gray-100, #f0f0f0));
   font-size: 13px;
   gap: 10px;
 }
@@ -855,10 +801,7 @@
   text-align: center;
   color: #fff !important;
   border-radius: 4px !important;
-  background: var(
-    --gin-color-primary,
-    var(--color-button-primary-bg, #007bff)
-  ) !important;
+  background: var(--gin-color-primary, var(--color-button-primary-bg, #007bff)) !important;
   font-family: var(--gin-font-mono, var(--font-family-monospace, monospace));
   font-size: 12px !important;
   font-weight: 600;
@@ -1040,8 +983,7 @@
   margin: -10px 0 0 -10px;
   content: "";
   animation: utilikit-playground-spin 0.8s linear infinite;
-  border: 2px solid
-    var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
+  border: 2px solid var(--gin-color-primary, var(--color-button-primary-bg, #007bff));
   border-top-color: transparent;
   border-radius: 50%;
 }

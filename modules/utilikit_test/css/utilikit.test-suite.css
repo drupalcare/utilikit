@@ -187,8 +187,7 @@
 .utilikit-test-rule {
   overflow: hidden;
   margin: 8px 0;
-  border: 1px solid
-    var(--gin-border-color-light, var(--color-gray-100, #e9ecef));
+  border: 1px solid var(--gin-border-color-light, var(--color-gray-100, #e9ecef));
   border-radius: 4px;
 }
 
@@ -228,8 +227,7 @@
   padding: 8px;
   text-align: start;
   white-space: nowrap;
-  border-bottom: 2px solid
-    var(--gin-border-color, var(--color-gray-200, #d3d8de));
+  border-bottom: 2px solid var(--gin-border-color, var(--color-gray-200, #d3d8de));
   font-weight: 600;
 }
 
@@ -237,8 +235,7 @@
   padding: 8px;
   vertical-align: middle;
   white-space: nowrap;
-  border-bottom: 1px solid
-    var(--gin-border-color-light, var(--color-gray-100, #e9ecef));
+  border-bottom: 1px solid var(--gin-border-color-light, var(--color-gray-100, #e9ecef));
 }
 
 .utilikit-test-table code {

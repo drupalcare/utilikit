@@ -17,8 +17,7 @@ body.utilikit-inline-mode .utilikit:not([data-utilikit-props]) {
 }
 
 /* Alternative rule for backwards compatibility */
-body:not(.utilikit-static-mode, .utilikit-head-mode)
-  .utilikit:not([data-utilikit-props]) {
+body:not(.utilikit-static-mode, .utilikit-head-mode) .utilikit:not([data-utilikit-props]) {
   visibility: hidden;
 }
 
@@ -167,12 +166,7 @@ body.utilikit-inline-mode .utilikit:not([data-utilikit-props])::before {
   content: "";
   animation: utilikit-loading 1.5s infinite;
   pointer-events: none;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(0, 123, 255, 0.1),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgb(0, 123, 255, 0.1), transparent);
 }
 
 @keyframes utilikit-loading {
