@@ -1,0 +1,30 @@
+services:
+  # Every utility this site has, read from UtilikitRules and nothing else.
+  # A service rather than logic inside a tool plugin, so it can be tested
+  # without the AI stack present — the same reason the two sibling modules
+  # separate theirs.
+  utilikit_ai.rule_catalogue:
+    class: Drupal\utilikit_ai\Service\RuleCatalogue
+
+  Drupal\utilikit_ai\Service\RuleCatalogueInterface: '@utilikit_ai.rule_catalogue'
+
+  # Decides whether a candidate class will actually produce CSS here. Holds no
+  # rule data of its own; it asks the catalogue.
+  utilikit_ai.class_validator:
+    class: Drupal\utilikit_ai\Service\ClassValidator
+    arguments:
+      - '@utilikit_ai.rule_catalogue'
+
+  Drupal\utilikit_ai\Service\ClassValidatorInterface: '@utilikit_ai.class_validator'
+
+  # Why a valid class still does nothing: the mode, the auto-update settings,
+  # or a text filter. None of the three is visible from the page, and a model
+  # asked "why isn't my class working?" will guess the most common one and be
+  # wrong most of the time.
+  utilikit_ai.setup_doctor:
+    class: Drupal\utilikit_ai\Service\SetupDoctor
+    arguments:
+      - '@config.factory'
+      - '@entity_type.manager'
+
+  Drupal\utilikit_ai\Service\SetupDoctorInterface: '@utilikit_ai.setup_doctor'

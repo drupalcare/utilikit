@@ -51,9 +51,9 @@ a prompt.
 | Flag | n | Means |
 |---|---|---|
 | `isNumericFlexible` | 19 | any number + any unit — `16px`, `3d75rem`, `87vw` |
-| `isKeyword` | 15 | a fixed keyword — `uk-fw--bold`, not `uk-fw--700` |
+| `isKeyword` | 15 | a fixed keyword — `uk-ta--center`, and only from the site's list |
 | `sides` | 5 | directional forms — `uk-pd--t-16` |
-| `isInteger` | 4 | whole numbers only |
+| `isInteger` | 4 | whole numbers only — `fw` is one of these, so `uk-fw--700` is right and `uk-fw--bold` is not |
 | `allowAuto` | 4 | `auto` permitted |
 | `isColor` | 3 | a hex colour, no `#` — `uk-bg--3b82f6` |
 | `isRange` | 3 | grid line span — `uk-gl--1-3` |
