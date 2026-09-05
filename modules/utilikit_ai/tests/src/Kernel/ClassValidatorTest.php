@@ -172,6 +172,43 @@ final class ClassValidatorTest extends KernelTestBase {
   }
 
   /**
+   * A value whose grammar belongs to UtiliKit is reported as unchecked.
+   *
+   * MEASURED 2026-09-05: `uk-gc--banana` produces
+   * `grid-template-columns: banana;` in the generated stylesheet, which the
+   * browser discards. An earlier version of this validator answered a plain
+   * "valid" there — a false pass on exactly the failure it exists to catch.
+   * Re-implementing UtiliKit's grid grammar here would be a second opinion
+   * about it, so the truthful answer is that it was not checked.
+   */
+  public function testGrammarOwnedByUtilikitIsReportedAsUnchecked(): void {
+    foreach (['uk-gc--repeat-3-1fr', 'uk-gc--banana'] as $class) {
+      $verdict = $this->validator->check($class);
+
+      self::assertTrue($verdict->valid, $class . ' should not be rejected outright.');
+      self::assertNotSame('', $verdict->caveat, $class . ' must say it was not fully checked.');
+      self::assertStringContainsString('grid track list', $verdict->caveat);
+      self::assertStringContainsString('UNSURE', $verdict->line());
+    }
+  }
+
+  /**
+   * A fully checked class carries no caveat.
+   *
+   * The counterpart to the test above: if everything came back "unsure" the
+   * state would be useless.
+   */
+  public function testFullyCheckedClassCarriesNoCaveat(): void {
+    foreach (['uk-pd--16px', 'uk-dp--flex', 'uk-bg--3b82f6'] as $class) {
+      $verdict = $this->validator->check($class);
+
+      self::assertTrue($verdict->valid);
+      self::assertSame('', $verdict->caveat, $class . ' was checked in full and should say so.');
+      self::assertStringContainsString('OK', $verdict->line());
+    }
+  }
+
+  /**
    * Every rejection is a sentence a person can act on.
    */
   public function testEveryRejectionReadsAsPlainSentence(): void {

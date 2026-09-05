@@ -30,12 +30,16 @@ final readonly class ClassVerdict {
    *   Why not, as a complete sentence. Empty when valid.
    * @param string $suggestion
    *   A class to use instead, when one is obvious. Empty otherwise.
+   * @param string $caveat
+   *   What could not be checked, when the value's grammar is UtiliKit's own.
+   *   Empty when the class was checked fully.
    */
   private function __construct(
     public string $class,
     public bool $valid,
     public string $reason = '',
     public string $suggestion = '',
+    public string $caveat = '',
   ) {}
 
   /**
@@ -49,6 +53,34 @@ final readonly class ClassVerdict {
    */
   public static function valid(string $class): self {
     return new self($class, TRUE);
+  }
+
+  /**
+   * The class is well formed, but its value could not be fully checked.
+   *
+   * WHY THIS STATE EXISTS. Grid track lists — `uk-gc--repeat-3-1fr` — are
+   * parsed by UtiliKit itself, and re-implementing that grammar here would be a
+   * second opinion about it, which is the defect this whole module was built
+   * after removing. But answering a plain "OK" is worse: MEASURED 2026-09-05,
+   * `uk-gc--banana` produces `grid-template-columns: banana;` in the generated
+   * stylesheet, which the browser discards. Saying "valid" there tells a model
+   * the class works when it does nothing.
+   *
+   * "I could not check this" is the truthful answer, and it is more useful than
+   * either a false pass or a false rejection.
+   *
+   * @param string $class
+   *   The class.
+   * @param string $caveat
+   *   What could not be checked, and what to look at instead.
+   *
+   * @return self
+   *   The verdict.
+   */
+  public static function unverified(string $class, string $caveat): self {
+    assert($caveat !== '', 'An unverified class must say what could not be checked.');
+
+    return new self($class, TRUE, '', '', $caveat);
   }
 
   /**
@@ -78,7 +110,9 @@ final readonly class ClassVerdict {
    */
   public function line(): string {
     if ($this->valid) {
-      return sprintf('  OK       %s', $this->class);
+      return $this->caveat === ''
+        ? sprintf('  OK       %s', $this->class)
+        : sprintf('  UNSURE   %s — %s', $this->class, $this->caveat);
     }
 
     $line = sprintf('  REJECTED %s — %s', $this->class, $this->reason);

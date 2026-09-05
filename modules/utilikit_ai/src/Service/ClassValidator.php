@@ -6,6 +6,7 @@ namespace Drupal\utilikit_ai\Service;
 
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\utilikit_ai\Model\ClassVerdict;
+use Drupal\utilikit_ai\Model\Utility;
 
 /**
  * Decides whether a candidate class will actually produce CSS on this site.
@@ -214,7 +215,7 @@ final class ClassValidator implements ClassValidatorInterface {
    * @return \Drupal\utilikit_ai\Model\ClassVerdict
    *   The verdict.
    */
-  private function checkValue(string $class, $utility, string $value): ClassVerdict {
+  private function checkValue(string $class, Utility $utility, string $value): ClassVerdict {
     $flags = $utility->flags;
 
     if ($value === 'auto') {
@@ -266,9 +267,25 @@ final class ClassValidator implements ClassValidatorInterface {
           );
     }
 
-    // isGridTrackList and anything else: UtiliKit parses these itself, and
-    // guessing at the grammar here would be a second opinion about it.
-    return ClassVerdict::valid($class);
+    if (!empty($flags['isGridTrackList'])) {
+      // UtiliKit parses this grammar itself and re-implementing it here would
+      // be a second opinion about it. But a plain "valid" would be a false
+      // pass: measured 2026-09-05, `uk-gc--banana` yields
+      // `grid-template-columns: banana;`, which the browser discards.
+      return ClassVerdict::unverified(
+        $class,
+        'the grid track list is not checked here; it should look like '
+        . 'repeat-3-1fr or minmax-100px-1fr, and anything else silently '
+        . 'produces no layout',
+      );
+    }
+
+    // Anything with no flag describing its values. Saying "valid" would be a
+    // guess; saying so is not.
+    return ClassVerdict::unverified(
+      $class,
+      sprintf('no rule flag describes what %s accepts, so its value was not checked', $utility->prefix),
+    );
   }
 
   /**

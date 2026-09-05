@@ -126,9 +126,22 @@ final class CheckClasses extends FunctionCallBase implements ExecutableFunctionC
     }
 
     $lines[] = '';
-    $lines[] = $bad === []
-      ? 'Every class is valid on this site.'
-      : sprintf('%d class(es) will produce no CSS. Fix those before using this string.', count($bad));
+    $unsure = array_values(array_filter($verdicts, static fn($v): bool => $v->valid && $v->caveat !== ''));
+
+    if ($bad !== []) {
+      $lines[] = sprintf('%d class(es) will produce no CSS. Fix those before using this string.', count($bad));
+    }
+    elseif ($unsure !== []) {
+      // Not "every class is valid". Saying that of a class whose value was
+      // never checked is the false pass this tool exists to prevent.
+      $lines[] = sprintf(
+        'No class was rejected, but %d could not be checked in full — see UNSURE above.',
+        count($unsure),
+      );
+    }
+    else {
+      $lines[] = 'Every class is valid on this site.';
+    }
 
     $this->setOutput(implode("\n", $lines));
   }
