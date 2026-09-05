@@ -50,8 +50,20 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
     array $configuration,
     string $plugin_id,
     array $plugin_definition,
-    protected readonly LoggerInterface $logger,
-    protected readonly UtilikitServiceProvider $serviceProvider,
+    // NOT READONLY, and that is forced rather than stylistic.
+    // DependencySerializationTrait re-injects these from the container on wake,
+    // and __wakeup() lives in the PARENT class — PHP before 8.4 forbids writing
+    // a child's readonly property from there, so the object comes back broken.
+    // Reported by PHPStan on drupal.org as
+    // dependencySerializationTraitProperty.unsupportedReadOnlyProperty, and
+    // invisible on this machine twice over: the local PHPStan is 1.x, which
+    // does not report it, and PHP here is 8.5, where the restriction is lifted.
+    // The bug is real on every site running 8.3.
+    //
+    // Third instance of this in the project — the same fix landed in
+    // paragraphs_bundles and vvj_core on 2026-09-05.
+    protected LoggerInterface $logger,
+    protected UtilikitServiceProvider $serviceProvider,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
   }

@@ -8,6 +8,7 @@ use Drupal\ai\Service\FunctionCalling\ExecutableFunctionCallInterface;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Tests\utilikit_ai\Traits\UtilikitAiOptionalModulesTrait;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Every tool is discoverable, and answers when called with nothing.
@@ -29,6 +30,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @license SPDX-License-Identifier: GPL-2.0-or-later
  */
 #[Group('utilikit')]
+#[RunTestsInSeparateProcesses]
 final class ToolDiscoveryTest extends KernelTestBase {
 
   use UtilikitAiOptionalModulesTrait;

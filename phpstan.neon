@@ -39,6 +39,21 @@ parameters:
     # vvj_core and paragraphs_bundles. The command is a thin wrapper; its
     # logic lives in the analysed services.
     - src/Commands
+    # The AI tool plugins extend `Drupal\ai\Base\FunctionCallBase` and carry
+    # `Drupal\ai\Attribute\FunctionCall`. drupal/ai is a dependency of the
+    # utilikit_ai SUBMODULE and deliberately not required by this project, so it
+    # is absent whenever utilikit is built from its own composer.json — which is
+    # what drupal.org CI does. One unresolvable base class produced every
+    # finding in those files on 2026-09-05, burying the real ones.
+    #
+    # Same reasoning as src/Commands above, and the same trade: the classes are
+    # thin. Every decision they make lives in the analysed, unit-tested services
+    # (RuleCatalogue, ClassValidator, SetupDoctor), and the plugins themselves
+    # are covered at runtime by ToolDiscoveryTest wherever drupal/ai exists.
+    - modules/utilikit_ai/src/Plugin/AiFunctionCall
+    # SafeContextTrait reads a FunctionCallBase context and is meaningless
+    # without it, for the same reason.
+    - modules/utilikit_ai/src/Tool
     # Tests are validated by PHPUnit; PHPStan scopes to shipped code, the same
     # split paragraphs_bundles makes. Measured 2026-09-03: the test suite
     # carries 51 findings of its own — mock and trait-resolution artefacts,

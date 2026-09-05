@@ -58,11 +58,23 @@ class UtilikitSettingsForm extends ConfigFormBase {
   public function __construct(
     ConfigFactoryInterface $configFactory,
     TypedConfigManagerInterface $typedConfigManager,
-    protected readonly EntityTypeManagerInterface $entityTypeManager,
-    protected readonly DateFormatterInterface $dateFormatter,
-    protected readonly ModuleHandlerInterface $moduleHandler,
-    protected readonly UtilikitServiceProvider $serviceProvider,
-    protected readonly FileSystemInterface $fileSystem,
+    // NOT READONLY, and that is forced rather than stylistic.
+    // DependencySerializationTrait re-injects these from the container on wake,
+    // and __wakeup() lives in the PARENT class — PHP before 8.4 forbids writing
+    // a child's readonly property from there, so the object comes back broken.
+    // Reported by PHPStan on drupal.org as
+    // dependencySerializationTraitProperty.unsupportedReadOnlyProperty, and
+    // invisible on this machine twice over: the local PHPStan is 1.x, which
+    // does not report it, and PHP here is 8.5, where the restriction is lifted.
+    // The bug is real on every site running 8.3.
+    //
+    // Third instance of this in the project — the same fix landed in
+    // paragraphs_bundles and vvj_core on 2026-09-05.
+    protected EntityTypeManagerInterface $entityTypeManager,
+    protected DateFormatterInterface $dateFormatter,
+    protected ModuleHandlerInterface $moduleHandler,
+    protected UtilikitServiceProvider $serviceProvider,
+    protected FileSystemInterface $fileSystem,
   ) {
     parent::__construct($configFactory, $typedConfigManager);
   }

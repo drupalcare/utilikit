@@ -8,6 +8,7 @@ use Drupal\KernelTests\KernelTestBase;
 use Drupal\utilikit_ai\Service\ClassValidatorInterface;
 use Drupal\utilikit_ai\Service\RuleCatalogueInterface;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * The two mistakes a model makes with utility classes, and the marker.
@@ -23,6 +24,7 @@ use PHPUnit\Framework\Attributes\Group;
  * @license SPDX-License-Identifier: GPL-2.0-or-later
  */
 #[Group('utilikit')]
+#[RunTestsInSeparateProcesses]
 final class ClassValidatorTest extends KernelTestBase {
 
   /**
