@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * @file
+ * Install and uninstall routines for UtiliKit CKEditor.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_uninstall().
+ *
+ * REMOVES THE TOOLBAR ITEM THIS MODULE ADDED, because nothing else will.
+ *
+ * MEASURED 2026-09-06 on sts.local: uninstalling this module left `utilikit`
+ * sitting in `editor.editor.full_html`'s toolbar, pointing at a CKEditor 5
+ * plugin that no longer exists. The text format then carries a broken item —
+ * visible in the format's configuration form, and nothing on the site says why.
+ *
+ * IT IS NOT DRUPAL FORGETTING. `Editor::calculateDependencies()` records a
+ * dependency on the EDITOR plugin's provider only — `ckeditor5` — and core's
+ * ckeditor5 module adds no dependency calculation of its own. Core carries a
+ * `@todo` at Editor.php:138 acknowledging that plugin configuration and its
+ * provider dependency are not managed. So no config dependency exists for the
+ * uninstall machinery to act on, and every contributed CKEditor 5 plugin has
+ * the same residue.
+ *
+ * Cleaning up after ourselves is cheap; leaving a dangling toolbar item in
+ * somebody's text format is not.
+ */
+function utilikit_ckeditor_uninstall(): void {
+  $storage = \Drupal::entityTypeManager()->getStorage('editor');
+
+  foreach ($storage->loadMultiple() as $editor) {
+    $settings = $editor->getSettings();
+    $items = $settings['toolbar']['items'] ?? [];
+
+    if (!is_array($items) || !in_array('utilikit', $items, TRUE)) {
+      continue;
+    }
+
+    $settings['toolbar']['items'] = array_values(
+      array_filter($items, static fn($item): bool => $item !== 'utilikit'),
+    );
+    unset($settings['plugins']['utilikit_ckeditor_classes']);
+
+    $editor->setSettings($settings);
+    $editor->save();
+
+    \Drupal::logger('utilikit_ckeditor')->notice(
+      'Removed the UtiliKit toolbar item from the %format text format during uninstall.',
+      ['%format' => $editor->id()],
+    );
+  }
+}

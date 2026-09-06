@@ -176,4 +176,42 @@ final class UtilikitCkeditorPluginTest extends KernelTestBase {
     );
   }
 
+  /**
+   * Uninstalling takes the toolbar item with it.
+   *
+   * WHY THIS IS THE MODULE'S JOB AND NOT CORE'S, measured on Drupal 11.4.
+   * `Editor::calculateDependencies()` records a dependency on the EDITOR
+   * plugin's provider only — `ckeditor5` — and core's ckeditor5 module adds
+   * no dependency calculation of its own; core carries a `@todo` in
+   * Editor.php saying plugin configuration and its provider dependency are
+   * not managed. Saving the editor through the normal entity path with this
+   * module INSTALLED still produced `module: [ckeditor5]` and nothing else,
+   * so there is no config dependency for the uninstall machinery to act on.
+   *
+   * Without hook_uninstall(), the format keeps a toolbar item pointing at a
+   * plugin that no longer exists — a broken button and nothing saying why.
+   */
+  public function testUninstallRemovesTheToolbarItem(): void {
+    // Uninstalling ANY module makes user_modules_uninstalled() clear that
+    // module's rows from users_data, so the table has to exist first.
+    $this->installSchema('user', ['users_data']);
+
+    $storage = \Drupal::entityTypeManager()->getStorage('editor');
+
+    self::assertContains(
+      'utilikit',
+      $storage->load('utilikit_test')->getSettings()['toolbar']['items'],
+      'The fixture starts with the toolbar item in place.',
+    );
+
+    $this->container->get('module_installer')->uninstall(['utilikit_ckeditor']);
+    $storage->resetCache(['utilikit_test']);
+
+    self::assertNotContains(
+      'utilikit',
+      $storage->load('utilikit_test')->getSettings()['toolbar']['items'],
+      'Uninstalling removed the toolbar item it had added.',
+    );
+  }
+
 }
