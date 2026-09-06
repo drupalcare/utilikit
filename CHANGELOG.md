@@ -55,6 +55,13 @@ the record for those.
 - A class used before its definition in the test-suite runner. Classes are not
   hoisted the way functions are, so it worked only because Drupal runs
   `attach()` long after the file executes.
+- **`utilikit_ckeditor` left its toolbar item behind on uninstall.** The text
+  format kept a `utilikit` button pointing at a plugin that no longer existed.
+  This is core behaviour rather than an oversight — `Editor::calculateDependencies()`
+  records only the *editor* plugin's provider, so no config dependency on a
+  CKEditor 5 plugin's module ever exists for the uninstall machinery to act on
+  (core carries a `@todo` about it). The module now removes its own item, and
+  a kernel test fails if that stops happening.
 
 ### Changed
 
