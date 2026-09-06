@@ -23,7 +23,7 @@ trait FormHelperTrait {
    *
    * @param string $type
    *   The form field type (e.g., 'textfield', 'checkbox', 'select').
-   * @param array $config
+   * @param array<string, mixed> $config
    *   Configuration array with the following optional keys:
    *   - title: Field title/label
    *   - description: Field description/help text
@@ -38,7 +38,7 @@ trait FormHelperTrait {
    *   - prefix: HTML prefix for the field
    *   - suffix: HTML suffix for the field.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Form field render array with configured properties.
    */
   protected function createFormField(string $type, array $config): array {
@@ -100,10 +100,10 @@ trait FormHelperTrait {
    *   The checkbox description/help text.
    * @param bool $defaultValue
    *   The default checked state (TRUE for checked, FALSE for unchecked).
-   * @param array $options
+   * @param array<string, mixed> $options
    *   Optional additional configuration (states, attributes, etc.).
    *
-   * @return array
+   * @return array<string, mixed>
    *   Checkbox form field render array.
    */
   protected function createCheckboxField(string|\Stringable $title, string|\Stringable $description, bool $defaultValue, array $options = []): array {
@@ -126,7 +126,7 @@ trait FormHelperTrait {
    *   The field description/help text.
    * @param int $defaultValue
    *   The default numeric value.
-   * @param array $options
+   * @param array<string, mixed> $options
    *   Optional additional configuration including:
    *   - min: Minimum allowed value
    *   - max: Maximum allowed value
@@ -134,7 +134,7 @@ trait FormHelperTrait {
    *   - field_suffix: Text to display after the input (e.g., "px", "ms")
    *   - attributes: HTML attributes for styling.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Number input form field render array.
    */
   protected function createNumberField(string|\Stringable $title, string|\Stringable $description, int $defaultValue, array $options = []): array {
@@ -155,15 +155,15 @@ trait FormHelperTrait {
    *   The field label/title.
    * @param string $description
    *   The field description/help text.
-   * @param array $optionsList
+   * @param array<string, string|\Stringable> $optionsList
    *   Associative array of options where keys are values and values are
    *   labels (e.g., ['sm' => 'Small', 'md' => 'Medium']).
-   * @param array $defaultValue
+   * @param array<int|string, string> $defaultValue
    *   Array of default selected values (keys from $optionsList).
-   * @param array $options
+   * @param array<string, mixed> $options
    *   Optional additional configuration (states, attributes, etc.).
    *
-   * @return array
+   * @return array<string, mixed>
    *   Checkboxes form field render array.
    */
   protected function createCheckboxesField(string|\Stringable $title, string|\Stringable $description, array $optionsList, array $defaultValue, array $options = []): array {
@@ -185,15 +185,15 @@ trait FormHelperTrait {
    *   The field label/title.
    * @param string $description
    *   The field description/help text.
-   * @param array $optionsList
+   * @param array<string, string|\Stringable> $optionsList
    *   Associative array of options where keys are values and values are
    *   labels (e.g., ['off' => 'Disabled', 'on' => 'Enabled']).
    * @param string $defaultValue
    *   The default selected value (key from $optionsList).
-   * @param array $options
+   * @param array<string, mixed> $options
    *   Optional additional configuration (states, attributes, etc.).
    *
-   * @return array
+   * @return array<string, mixed>
    *   Select form field render array.
    */
   protected function createSelectField(string|\Stringable $title, string|\Stringable $description, array $optionsList, string $defaultValue, array $options = []): array {
@@ -213,16 +213,16 @@ trait FormHelperTrait {
    *
    * @param string $value
    *   The button text/label.
-   * @param array $submit
+   * @param list<string> $submit
    *   Array of submit handler methods (e.g., ['::methodName']).
-   * @param array $classes
+   * @param list<string> $classes
    *   Optional array of CSS classes to apply to the button
    *   (e.g., ['button--primary', 'button--danger']).
-   * @param array $attributes
+   * @param array<string, mixed> $attributes
    *   Optional array of HTML attributes to apply to the button
    *   (e.g., ['onclick' => 'return confirm("Are you sure?")']').
    *
-   * @return array
+   * @return array<string, mixed>
    *   Submit button form element render array.
    */
   protected function createSubmitButton(string|\Stringable $value, array $submit, array $classes = [], array $attributes = []): array {

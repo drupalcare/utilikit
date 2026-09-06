@@ -17,7 +17,7 @@ class ExamplesController extends ControllerBase {
   /**
    * Renders the UtiliKit examples demonstration page.
    *
-   * @return array
+   * @return array<string, mixed>
    *   A Drupal render array for the examples page.
    */
   public function render(): array {

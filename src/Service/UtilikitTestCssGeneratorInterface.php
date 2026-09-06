@@ -23,7 +23,7 @@ interface UtilikitTestCssGeneratorInterface {
    * The generated file is saved as 'utilikit-test-complete.css' in the
    * standard UtiliKit CSS directory.
    *
-   * @return array
+   * @return array<string, mixed>
    *   An associative array containing the operation result:
    *   - 'success': (bool) TRUE if CSS generation succeeded, FALSE otherwise
    *   - 'error': (string) Error message if success is FALSE
@@ -39,7 +39,7 @@ interface UtilikitTestCssGeneratorInterface {
    * Retrieves every possible utility class without generating CSS. Useful for
    * enumerating classes for external tools or validation.
    *
-   * @return array
+   * @return list<string>
    *   Array of all possible utility class names, or an empty array when the
    *   test generator is not available.
    */
@@ -57,7 +57,7 @@ interface UtilikitTestCssGeneratorInterface {
   /**
    * Gets information about the test CSS file.
    *
-   * @return array
+   * @return array<string, mixed>
    *   An associative array with file information:
    *   - 'exists': (bool) Whether the file exists
    *   - 'size': (int|null) File size in bytes, NULL if the file is absent

@@ -54,7 +54,7 @@ class UtilikitService {
    *   The configuration key to retrieve.
    * @param mixed $default
    *   The default value to return if the key is not set.
-   * @param array $allowedValues
+   * @param list<string> $allowedValues
    *   Optional array of allowed values for validation.
    *
    * @return mixed
@@ -113,7 +113,7 @@ class UtilikitService {
   /**
    * Gets the list of active responsive breakpoints.
    *
-   * @return array
+   * @return list<int|string> mixed>
    *   Array of active breakpoint keys (e.g., ['sm', 'md', 'lg']).
    */
   public function getActiveBreakpoints(): array {
@@ -138,7 +138,7 @@ class UtilikitService {
   /**
    * Gets the pixel values for responsive breakpoints.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Array mapping breakpoint keys to their pixel values.
    */
   public function getBreakpointValues(): array {
@@ -240,7 +240,7 @@ class UtilikitService {
   /**
    * Gets the list of enabled content types.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Array of content type machine names that have UtiliKit enabled.
    */
   public function getEnabledContentTypes(): array {

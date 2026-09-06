@@ -36,7 +36,7 @@ use Drupal\utilikit\Service\UtilikitConstants;
  * inline rendering mode, global scope disabled on admin routes, and
  * conservative settings for rate limiting and batch processing.
  */
-function utilikit_install() {
+function utilikit_install(): void {
   // Create CSS directory using constants.
   $directory = UtilikitConstants::CSS_DIRECTORY;
   $file_system = \Drupal::service('file_system');
@@ -160,7 +160,7 @@ function utilikit_install() {
  * and ensure complete cleanup even if individual steps fail. All operations
  * are logged for troubleshooting and verification.
  */
-function utilikit_uninstall() {
+function utilikit_uninstall(): void {
   // Step 1: Delete configuration FIRST to prevent any file recreation.
   \Drupal::configFactory()->getEditable('utilikit.settings')->delete();
 

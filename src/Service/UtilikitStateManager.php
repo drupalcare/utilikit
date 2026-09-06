@@ -36,7 +36,7 @@ class UtilikitStateManager {
   /**
    * Gets the list of known utility classes.
    *
-   * @return array
+   * @return list<string> mixed>
    *   An array of utility class names that have been discovered and
    *   validated. Returns an empty array if no classes are known.
    */
@@ -47,7 +47,7 @@ class UtilikitStateManager {
   /**
    * Sets the list of known utility classes.
    *
-   * @param array $classes
+   * @param list<string> $classes
    *   An array of utility class names to store. Duplicates will be removed
    *   automatically.
    */
@@ -61,10 +61,10 @@ class UtilikitStateManager {
    * This method merges new classes with existing ones, removes duplicates,
    * and updates the stored list.
    *
-   * @param array $newClasses
+   * @param list<string> $newClasses
    *   An array of new utility class names to add to the known classes.
    *
-   * @return array
+   * @return list<string> mixed>
    *   The complete merged array of known classes after adding the new ones.
    */
   public function addKnownClasses(array $newClasses): array {
@@ -157,7 +157,7 @@ class UtilikitStateManager {
    * @param string $key
    *   The rate limit key identifier (e.g., 'ajax_update', 'css_generation').
    *
-   * @return array
+   * @return array<string, mixed>
    *   An associative array containing:
    *   - 'current': Current usage count for the rate limit period
    *   - 'reset_time': Unix timestamp when the rate limit period resets
@@ -202,7 +202,7 @@ class UtilikitStateManager {
    *
    * This is useful for cleanup operations and debugging.
    *
-   * @return array
+   * @return list<string> mixed>
    *   An array of state key names used by UtiliKit for core operations.
    *   Does not include rate limiting keys as they are dynamic.
    */
@@ -221,7 +221,7 @@ class UtilikitStateManager {
    * Provides a summary of UtiliKit's current state for debugging,
    * monitoring, and administrative display purposes.
    *
-   * @return array
+   * @return array<string, mixed>
    *   An associative array containing:
    *   - 'known_classes_count': Number of utility classes stored
    *   - 'generated_css_size': Size of generated CSS in bytes

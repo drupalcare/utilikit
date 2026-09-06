@@ -21,7 +21,7 @@ class UtilikitRules {
    * property names used internally and the standard kebab-case CSS property
    * names used in generated stylesheets.
    *
-   * @var array
+   * @var array<string, string>
    */
   const CSS_PROPERTY_MAP = [
     'borderWidth' => 'border-width',
@@ -85,7 +85,7 @@ class UtilikitRules {
    * - allowAuto: Allows 'auto' keyword for numeric properties
    * - group: Category for organizational purposes
    *
-   * @return array
+   * @return array<string, mixed>
    *   Array of utility class rules keyed by prefix abbreviation.
    */
   public static function getRules(): array {

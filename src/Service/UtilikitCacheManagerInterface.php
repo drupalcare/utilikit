@@ -48,7 +48,7 @@ interface UtilikitCacheManagerInterface {
    * - aggressive: Full cache clearing with optional data preservation
    * - standard: Default CSS-focused cache clearing.
    *
-   * @param array $options
+   * @param array<string, mixed> $options
    *   Options array with the following keys:
    *   - strategy: Cache clearing strategy ('conservative', 'aggressive',
    *     'standard')
@@ -64,7 +64,7 @@ interface UtilikitCacheManagerInterface {
    * that cached content using Utilikit classes is regenerated with the
    * latest CSS rules and configurations.
    *
-   * @param array $tags
+   * @param list<string> $tags
    *   Additional cache tags to invalidate beyond the default Utilikit tags.
    */
   public function invalidateUtilikitTags(array $tags = []): void;
@@ -83,7 +83,7 @@ interface UtilikitCacheManagerInterface {
    * Provides information about the current state of Utilikit caches
    * including counts, sizes, and timestamps for monitoring purposes.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Statistics array containing:
    *   - known_classes_count: Number of tracked utility classes
    *   - generated_css_size: Size of generated CSS in bytes
@@ -98,7 +98,7 @@ interface UtilikitCacheManagerInterface {
    * Reports which cache services are available and properly configured
    * for debugging and monitoring purposes.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Service status array containing boolean values for:
    *   - render_cache: Render cache service availability
    *   - page_cache: Page cache service availability

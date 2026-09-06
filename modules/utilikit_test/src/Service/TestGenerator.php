@@ -36,7 +36,7 @@ class TestGenerator {
    * use cases, edge cases, and boundary conditions for different value
    * types used throughout the UtiliKit system.
    *
-   * @var array
+   * @var array<string, list<int|string>|array<string, list<int>>>
    */
   private array $testValues = [
     'numeric' => [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64, 100],
@@ -62,7 +62,7 @@ class TestGenerator {
    * These mappings ensure test coverage for all supported keyword
    * combinations and help validate keyword-based utility classes.
    *
-   * @var array
+   * @var array<string, list<string>>
    */
   private array $keywordMap = [
     'display' => ['none', 'block', 'inline', 'inline-block', 'flex', 'inline-flex', 'grid', 'inline-grid'],
@@ -90,7 +90,7 @@ class TestGenerator {
    * and edge cases. The generated test cases include metadata for
    * automated testing and validation frameworks.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test case groups, each containing:
    *   - prefix: The UtiliKit prefix being tested
    *   - rule: Complete rule definition from UtilikitRules
@@ -127,11 +127,11 @@ class TestGenerator {
    *
    * @param string $prefix
    *   The UtiliKit prefix identifier (e.g., 'pd', 'mg', 'bg').
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The complete rule definition array containing CSS property
    *   and behavior flags.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test case objects for the specified rule.
    */
   private function generateTestCasesForRule(string $prefix, array $rule): array {
@@ -195,10 +195,10 @@ class TestGenerator {
    *
    * @param string $prefix
    *   The UtiliKit prefix being tested.
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing CSS property and behavior flags.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test cases covering numeric value scenarios.
    */
   private function generateNumericTests(string $prefix, array $rule): array {
@@ -424,10 +424,10 @@ class TestGenerator {
    *
    * @param string $prefix
    *   The UtiliKit prefix being tested.
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing CSS property information.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test cases for integer value scenarios.
    */
   private function generateIntegerTests(string $prefix, array $rule): array {
@@ -466,10 +466,10 @@ class TestGenerator {
    *
    * @param string $prefix
    *   The UtiliKit prefix being tested.
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing CSS property information.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test cases for decimal value scenarios.
    */
   private function generateDecimalTests(string $prefix, array $rule): array {
@@ -509,10 +509,10 @@ class TestGenerator {
    *
    * @param string $prefix
    *   The UtiliKit prefix being tested.
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing CSS property information.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test cases for keyword value scenarios.
    */
   private function generateKeywordTests(string $prefix, array $rule): array {
@@ -575,10 +575,10 @@ class TestGenerator {
    *
    * @param string $prefix
    *   The UtiliKit prefix being tested.
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing CSS property information.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test cases for color value scenarios.
    */
   private function generateColorTests(string $prefix, array $rule): array {
@@ -664,10 +664,10 @@ class TestGenerator {
    *
    * @param string $prefix
    *   The UtiliKit prefix being tested.
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing transform type information.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test cases for transform scenarios.
    */
   private function generateTransformTests(string $prefix, array $rule): array {
@@ -729,10 +729,10 @@ class TestGenerator {
    *
    * @param string $prefix
    *   The UtiliKit prefix being tested (gc for columns, gr for rows).
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing CSS property information.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test cases for grid template scenarios.
    */
   private function generateGridTests(string $prefix, array $rule): array {
@@ -911,10 +911,10 @@ class TestGenerator {
    *
    * @param string $prefix
    *   The UtiliKit prefix being tested.
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing CSS property information.
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test cases for range value scenarios.
    */
   private function generateRangeTests(string $prefix, array $rule): array {
@@ -980,7 +980,7 @@ class TestGenerator {
    * @param string|null $breakpoint
    *   The responsive breakpoint if applicable.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Structured test case array with all metadata.
    */
   private function createTestCase(
@@ -1011,7 +1011,7 @@ class TestGenerator {
    * @param string $prefix
    *   The UtiliKit prefix being tested (should be 'op').
    *
-   * @return array
+   * @return list<array<string, mixed>>
    *   Array of test cases for opacity scenarios.
    */
   private function generateOpacityTests(string $prefix): array {
@@ -1054,7 +1054,7 @@ class TestGenerator {
    * about test coverage, distribution across categories, and breakpoint
    * coverage for quality assurance and reporting purposes.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Comprehensive statistics including:
    *   - totalTests: Total number of test cases generated
    *   - byGroup: Test distribution by rule group/category
@@ -1094,7 +1094,7 @@ class TestGenerator {
    * suitable for CSS generation, validation systems, and bulk
    * processing operations. Removes duplicates and filters empty values.
    *
-   * @return array
+   * @return list<string>
    *   Array of unique, valid UtiliKit class names ready for CSS generation
    *   or validation processing.
    */

@@ -123,7 +123,7 @@ class UtilikitServiceProvider {
    * state, generates new CSS, and ensures the static CSS file is current.
    * It also invalidates relevant caches to ensure changes are visible.
    *
-   * @param array $classes
+   * @param list<string> $classes
    *   An array of utility class names to process and add to the CSS.
    *
    * @return bool
@@ -236,7 +236,7 @@ class UtilikitServiceProvider {
    * - Generating and saving CSS to a static file
    * - Clearing all caches.
    *
-   * @return array
+   * @return array<string, mixed>
    *   An associative array containing:
    *   - 'classes_count': Number of unique utility classes found
    *   - 'scanned_count': Total number of entities scanned

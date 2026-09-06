@@ -51,7 +51,7 @@ class UtilikitReferenceController extends ControllerBase {
    * Creates a comprehensive reference page with utility class documentation,
    * grouped by category, with interactive examples and quick reference guide.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Render array for the UtiliKit reference page including cheatsheet,
    *   categorized utility class tables, and interactive components.
    */
@@ -143,7 +143,7 @@ class UtilikitReferenceController extends ControllerBase {
    * classes, copy functionality, and a live preview playground for testing
    * utility class combinations.
    *
-   * @param array $rules
+   * @param array<string, array<string, mixed>> $rules
    *   Array of utility class rules from the rules service.
    *
    * @return string
@@ -231,10 +231,10 @@ class UtilikitReferenceController extends ControllerBase {
    * Organizes utility class rules into logical groups for better presentation
    * and sorts items within each group alphabetically by CSS property name.
    *
-   * @param array $rules
+   * @param array<string, array<string, mixed>> $rules
    *   Array of utility class rules from the rules service.
    *
-   * @return array
+   * @return array<string, list<array{0: string, 1: array<string, mixed>}>>
    *   Grouped and sorted rules organized by category.
    */
   protected function groupRules(array $rules): array {
@@ -260,7 +260,7 @@ class UtilikitReferenceController extends ControllerBase {
    *
    * @param string $prefix
    *   The utility class prefix (e.g., 'pd', 'mg', 'bg').
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing type and configuration information.
    *
    * @return string
@@ -387,7 +387,7 @@ class UtilikitReferenceController extends ControllerBase {
    * Determines and returns a human-readable description of the value type
    * accepted by a utility class rule.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing type flags and configuration.
    *
    * @return string
@@ -434,7 +434,7 @@ class UtilikitReferenceController extends ControllerBase {
    * Provides detailed usage notes and syntax information for specific
    * utility class types to help users understand proper usage patterns.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing type flags and configuration.
    * @param string $prefix
    *   The utility class prefix for context-specific notes.
@@ -514,7 +514,7 @@ class UtilikitReferenceController extends ControllerBase {
    * Provides concise summary notes suitable for table display with limited
    * space, focusing on the most important usage information.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The rule definition containing type flags and configuration.
    * @param string $prefix
    *   The utility class prefix for context-specific notes.

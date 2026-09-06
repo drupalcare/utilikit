@@ -60,6 +60,17 @@ function utilikit_test_help(string $route_name, RouteMatchInterface $route_match
  *
  * @see TestSuiteController::render()
  * @see utilikit-test-suite.html.twig
+ * @param array<string, mixed> $existing
+ *   Parameter.
+ * @param string $type
+ *   Parameter.
+ * @param string $theme
+ *   Parameter.
+ * @param string $path
+ *   Parameter.
+ *
+ * @return array<string, mixed>
+ *   Result.
  */
 function utilikit_test_theme($existing, $type, $theme, $path): array {
   return [
@@ -80,6 +91,8 @@ function utilikit_test_theme($existing, $type, $theme, $path): array {
  * and predictable test execution regardless of global settings.
  *
  * @see _utilikit_attach_inline_settings()
+ * @param array<string, mixed> $attachments
+ *   Parameter.
  */
 function utilikit_test_page_attachments(array &$attachments): void {
   if (\Drupal::routeMatch()->getRouteName() !== 'utilikit_test.suite') {

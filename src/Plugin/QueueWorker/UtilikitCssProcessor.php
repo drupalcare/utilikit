@@ -35,11 +35,11 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
   /**
    * Constructs a new UtilikitCssProcessor object.
    *
-   * @param array $configuration
+   * @param array<string, mixed> $configuration
    *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
    *   The plugin_id for the plugin instance.
-   * @param array $plugin_definition
+   * @param array<string, mixed> $plugin_definition
    *   The plugin implementation definition.
    * @param \Psr\Log\LoggerInterface $logger
    *   The logger service for recording processing events.
@@ -70,6 +70,9 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
 
   /**
    * {@inheritdoc}
+   *
+   * @param array<string, mixed> $configuration
+   *   Passed through from the parent.
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(

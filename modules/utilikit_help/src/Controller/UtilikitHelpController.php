@@ -17,7 +17,7 @@ class UtilikitHelpController extends ControllerBase {
   /**
    * Displays the main UtiliKit Help documentation page.
    *
-   * @return array
+   * @return array<string, mixed>
    *   A Drupal render array for the help page.
    */
   public function helpPage(): array {

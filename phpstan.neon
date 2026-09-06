@@ -23,7 +23,7 @@
 # strictly, than any local run. A clean local run is evidence about this
 # machine, not about the gate.
 parameters:
-  level: 5
+  level: 6
   paths:
     - src
     - utilikit.module
@@ -64,3 +64,21 @@ parameters:
     - tests
     - modules/*/tests/*
   treatPhpDocTypesAsCertain: false
+
+  # THE ONE SUPPRESSION, AND IT IS NOT A BASELINE.
+  #
+  # `validateForm()` and `submitForm()` take `array &$form` BY REFERENCE, and
+  # Drupal core declares that parameter as a bare `@param array $form`
+  # (FormInterface.php:40, read rather than recalled). PHPStan requires a
+  # by-ref parameter to be INVARIANT with the parent, so shaping it to
+  # `array<string, mixed>` is reported as narrowing — while leaving it bare is
+  # reported as `missingType.iterableValue` at this level. There is no shape
+  # that satisfies both; the contradiction is core's declaration, not this code.
+  #
+  # Scoped to the identifier and to this one file so it cannot quietly cover
+  # anything else, and it disappears on its own the day core shapes that
+  # docblock.
+  ignoreErrors:
+    -
+      identifier: parameterByRef.type
+      path: src/Form/UtilikitSettingsForm.php

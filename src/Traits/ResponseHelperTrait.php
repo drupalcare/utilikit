@@ -26,7 +26,7 @@ trait ResponseHelperTrait {
    *   The response status indicator (e.g., 'success', 'error', 'locked').
    * @param string $message
    *   Human-readable message describing the response.
-   * @param array $data
+   * @param array<string, mixed> $data
    *   Optional additional data to include in the response (e.g., counts,
    *   URLs, timestamps).
    * @param int $statusCode
@@ -52,7 +52,7 @@ trait ResponseHelperTrait {
    *
    * @param string $message
    *   Success message to display to the user.
-   * @param array $data
+   * @param array<string, mixed> $data
    *   Optional additional data to include in the response (e.g., operation
    *   results, counts, generated URLs).
    *
@@ -73,7 +73,7 @@ trait ResponseHelperTrait {
    *   Error message to display to the user.
    * @param int $statusCode
    *   HTTP status code for the error (default: 500 Internal Server Error).
-   * @param array $data
+   * @param array<string, mixed> $data
    *   Optional additional error data (e.g., error codes, debug information).
    *
    * @return \Symfony\Component\HttpFoundation\JsonResponse

@@ -47,7 +47,7 @@ class TestSuiteController extends ControllerBase {
    * Generates test cases, calculates statistics, and groups tests
    * by utility category for the test suite interface.
    *
-   * @return array
+   * @return array<string, mixed>
    *   A Drupal render array with test groups and statistics.
    */
   public function render(): array {

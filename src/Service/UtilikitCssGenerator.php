@@ -44,7 +44,7 @@ class UtilikitCssGenerator {
    * by breakpoints and cached for performance. Handles validation, filtering,
    * and responsive media query generation.
    *
-   * @param array $classes
+   * @param list<string> $classes
    *   Array of utility class names to process.
    *
    * @return string
@@ -274,7 +274,7 @@ class UtilikitCssGenerator {
    * (sides, keywords, transforms, colors, etc.) and generates the
    * corresponding CSS declaration.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The utility rule definition.
    * @param string $prefix
    *   The utility class prefix.
@@ -286,6 +286,9 @@ class UtilikitCssGenerator {
    * @return string|array|null
    *   Generated CSS declaration string, structured array (for color rules
    *   with pseudo-state info), or NULL if rule cannot be applied.
+   *
+   * @return array<string, mixed>
+   *   As declared by the parent.
    */
   private function applyRule(array $rule, string $prefix, string $suffix, string $className): string|array|null {
     if (!empty($rule['sides'])) {
@@ -346,7 +349,7 @@ class UtilikitCssGenerator {
    * left) for properties like padding, margin, border-width, and
    * border-radius.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The utility rule definition.
    * @param string $prefix
    *   The utility class prefix.
@@ -433,6 +436,9 @@ class UtilikitCssGenerator {
    * - "uk-pd--1d5rem" => "padding: 1.5rem;"
    * - "uk-pd--0d5rem-1rem" => "padding: 0.5rem 1rem;"
    * - "uk-mg--0d5rem-auto" => "margin: 0.5rem auto;"
+   *
+   * @param array<string, mixed> $rule
+   *   Passed through from the parent.
    */
   private function applySpacingShorthandRule(array $rule, string $prefix, string $suffix): ?string {
     // Only handle rules with 'sides' property and specific prefixes.
@@ -561,7 +567,7 @@ class UtilikitCssGenerator {
    * Handles utility classes that use CSS keyword values like 'flex',
    * 'center', 'hidden', etc., directly as the CSS property value.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The utility rule definition.
    * @param string $suffix
    *   The keyword value suffix.
@@ -605,7 +611,7 @@ class UtilikitCssGenerator {
    * Handles transform utility classes for rotation (in degrees) and
    * scaling (as percentage values converted to decimal scale factors).
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The utility rule definition with transform type.
    * @param string $suffix
    *   The transform value suffix.
@@ -654,7 +660,7 @@ class UtilikitCssGenerator {
    * Handles CSS Grid and Flexbox gap properties with support for single
    * values (both row and column) or separate row/column gap values.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The utility rule definition.
    * @param string $prefix
    *   The utility class prefix (should be 'gp').
@@ -692,7 +698,7 @@ class UtilikitCssGenerator {
    * integers, decimal fixed values, and flexible numeric values with
    * unit support.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The utility rule definition with numeric type flags.
    * @param string $prefix
    *   The utility class prefix for context.
@@ -782,12 +788,12 @@ class UtilikitCssGenerator {
    * Handles color utility classes supporting 3-digit and 6-digit hex
    * values with optional alpha transparency specified as percentage.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The utility rule definition for color properties.
    * @param string $suffix
    *   The color value suffix (hex with optional alpha).
    *
-   * @return array|null
+   * @return array<string, mixed>|null
    *   The generated colour declaration, or NULL if the colour is invalid.
    */
   private function applyColorRule(array $rule, string $suffix): ?array {
@@ -821,7 +827,7 @@ class UtilikitCssGenerator {
    * Handles utility classes that use CSS Grid fractional units (fr)
    * for flexible track sizing.
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The utility rule definition.
    * @param string $suffix
    *   The fractional value suffix.
@@ -843,7 +849,7 @@ class UtilikitCssGenerator {
    * Handles utility classes that specify grid line ranges using
    * start/end syntax (e.g., "1-3" becomes "1 / 3").
    *
-   * @param array $rule
+   * @param array<string, mixed> $rule
    *   The utility rule definition.
    * @param string $suffix
    *   The range value suffix (start-end format).
@@ -869,7 +875,7 @@ class UtilikitCssGenerator {
    * @param string $suffix
    *   Color suffix with optional alpha and state (e.g., "ff0000-50-h").
    *
-   * @return array|null
+   * @return array<string, mixed>|null
    *   Array with 'color' (CSS value) and 'pseudoState' (h|f|a|null),
    *   or NULL if invalid format.
    */
@@ -912,6 +918,9 @@ class UtilikitCssGenerator {
    * Examples:
    * - "uk-gc--1fr-2d5fr-0d5fr" => "grid-template-columns: 1fr 2.5fr 0.5fr;"
    * - "uk-gc--repeat-3-1d5fr"  => "grid-template-columns: repeat(3, 1.5fr);"
+   *
+   * @param array<string, mixed> $rule
+   *   Passed through from the parent.
    */
   private function parseGridTrackList(string $class, array $rule): ?string {
     // Extract the suffix after prefix--.
@@ -1097,6 +1106,9 @@ class UtilikitCssGenerator {
    * - "1fr-2d5fr-0d5fr" => ["1fr", "2d5fr", "0d5fr"]
    * - "repeat-3-1d5fr"  => ["repeat", "3", "1d5fr"]
    * - "minmax-0d5rem-2fr" => ["minmax", "0d5rem", "2fr"]
+   *
+   * @return list<string> mixed>
+   *   As declared by the parent.
    */
   private function smartSplitGrid(string $str): array {
     $tokens = [];

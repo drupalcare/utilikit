@@ -81,7 +81,7 @@ function _utilikit_helper_render_readme(): string {
  * eliminates duplication of settings, breakpoints, and library attachment
  * logic across sub-module .module files.
  *
- * @param array &$attachments
+ * @param array<string, mixed> $attachments
  *   The page attachments array, passed by reference.
  * @param string $submodule_library
  *   The sub-module's own library to attach (e.g., 'utilikit_help/help').
@@ -142,6 +142,9 @@ function _utilikit_attach_inline_settings(array &$attachments, string $submodule
  * in JavaScript and not in PHP, so `uk-wd--auto` rendered in inline mode and
  * produced NO CSS in static and head mode. A second copy of a fact is not
  * untidiness; it is the bug, waiting.
+ *
+ * @param array<string, mixed> $settings
+ *   Parameter.
  */
 function utilikit_js_settings_alter(array &$settings, AttachedAssetsInterface $assets): void {
   if (!isset($settings['utilikit']) || !is_array($settings['utilikit'])) {
@@ -169,6 +172,9 @@ function utilikit_js_settings_alter(array &$settings, AttachedAssetsInterface $a
  * - Configures JavaScript settings for client-side utilities
  * - Attaches development and debugging libraries when enabled
  * - Sets up cache contexts and tags for proper invalidation
+ *
+ * @param array<string, mixed> $attachments
+ *   Parameter.
  */
 function utilikit_page_attachments(array &$attachments): void {
   if (!\Drupal::config('utilikit.settings')->get('rendering_mode')) {
@@ -398,7 +404,7 @@ function utilikit_entity_presave(EntityInterface $entity): void {
  * be active on the current page. Handles global scope, admin route
  * exclusions, content type restrictions, and special module routes.
  *
- * @param array $config
+ * @param array<string, mixed> $config
  *   Configuration array containing:
  *   - 'scope_global': Whether global scope is enabled
  *   - 'disable_admin': Whether to disable on admin routes
@@ -469,7 +475,7 @@ function utilikit_invalidate_caches(): void {
  * generation. Includes logic to prevent recursive calls when invoked
  * from entity presave operations.
  *
- * @param array $classes
+ * @param list<string> $classes
  *   Array of utility class names to process and add to the CSS.
  * @param bool $force
  *   If TRUE, bypasses the recursive call check. Defaults to FALSE.
@@ -493,6 +499,9 @@ function utilikit_update_classes(array $classes, bool $force = FALSE): void {
  * Implements hook_theme().
  *
  * Defines theme templates provided by the UtiliKit module.
+ *
+ * @return array<string, mixed>
+ *   Result.
  */
 function utilikit_theme() {
   return [
@@ -512,8 +521,11 @@ function utilikit_theme() {
  *
  *   Array of entity type machine names to be processed during cleanup.
  *   Modules can add or remove entity types by modifying this array.
+ *
+ * @param list<string> $entity_types
+ *   Parameter.
  */
-function utilikit_utilikit_cleanup_entity_types_alter(&$entity_types) {
+function utilikit_utilikit_cleanup_entity_types_alter(array &$entity_types): void {
 }
 
 /**
@@ -550,6 +562,9 @@ function utilikit_should_scan_entity(EntityInterface $entity): bool {
  * Replaces the placeholder CSS file in the static-css library with the
  * actual generated CSS file URL. This enables dynamic CSS file attachment
  * while maintaining proper Drupal library integration and cache handling.
+ *
+ * @param array<string, mixed> $libraries
+ *   Parameter.
  */
 function utilikit_library_info_alter(array &$libraries, string $extension): void {
   if ($extension !== 'utilikit') {
@@ -587,6 +602,9 @@ function utilikit_library_info_alter(array &$libraries, string $extension): void
  *
  * Ensures the UtiliKit static CSS file has proper weight and group settings
  * so it loads last and overrides any other styles on the page.
+ *
+ * @param array<string, mixed> $css
+ *   Parameter.
  */
 function utilikit_css_alter(array &$css): void {
   // Only alter for static mode.

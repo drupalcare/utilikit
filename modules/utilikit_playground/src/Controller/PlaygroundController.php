@@ -17,7 +17,7 @@ class PlaygroundController extends ControllerBase {
   /**
    * Renders the UtiliKit Playground interactive interface.
    *
-   * @return array
+   * @return array<string, mixed>
    *   A Drupal render array for the playground page.
    */
   public function preview(): array {

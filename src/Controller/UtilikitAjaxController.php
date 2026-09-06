@@ -454,7 +454,7 @@ class UtilikitAjaxController extends ControllerBase {
    * When the CSS update lock cannot be acquired immediately, this method
    * queues the classes for later processing to ensure eventual consistency.
    *
-   * @param array $classes
+   * @param list<string> $classes
    *   The utility classes to queue for processing.
    *
    * @return void

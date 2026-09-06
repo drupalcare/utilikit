@@ -53,7 +53,7 @@ class UtilikitContentScanner {
    *   Optional maximum execution time in seconds. Defaults to 30 seconds
    *   if not specified. Used to prevent timeouts during large scans.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Results array containing:
    *   - classes: Array of unique utility classes found
    *   - scanned_count: Total number of entities scanned
@@ -163,7 +163,7 @@ class UtilikitContentScanner {
    * @param mixed $entity
    *   The entity to scan. Must implement FieldableEntityInterface.
    *
-   * @return array
+   * @return list<string> mixed>
    *   Array of unique utility classes found in the entity.
    */
   public function scanEntity($entity): array {
@@ -204,7 +204,7 @@ class UtilikitContentScanner {
    * @param string $html
    *   HTML content to scan for utility classes.
    *
-   * @return array
+   * @return list<string> mixed>
    *   Array of unique utility classes found in the HTML.
    */
   public function extractClassesFromHtml(string $html): array {
@@ -269,7 +269,7 @@ class UtilikitContentScanner {
    * Retrieves the list of valid utility class abbreviations that can be
    * used in UtiliKit classes from the rules service.
    *
-   * @return array
+   * @return list<string> mixed>
    *   Array of valid abbreviation strings.
    */
   protected function getValidAbbreviations(): array {
@@ -286,7 +286,7 @@ class UtilikitContentScanner {
    *
    * @param string $class
    *   The utility class name to validate.
-   * @param array|null $validAbbreviations
+   * @param list<string> $validAbbreviations
    *   Optional array of valid abbreviations. If not provided, will be
    *   retrieved from the rules service.
    *
@@ -350,10 +350,10 @@ class UtilikitContentScanner {
    * Filters an array of utility class names to return only those that pass
    * validation according to UtiliKit rules and format requirements.
    *
-   * @param array $classes
+   * @param list<string> $classes
    *   Array of utility class names to validate.
    *
-   * @return array
+   * @return list<string> mixed>
    *   Array containing only the valid utility classes.
    */
   public function validateUtilityClasses(array $classes): array {
@@ -369,10 +369,10 @@ class UtilikitContentScanner {
    * Parses utility class names to extract their abbreviation components,
    * useful for analyzing which types of utility classes are being used.
    *
-   * @param array $classes
+   * @param list<string> $classes
    *   Array of utility class names to parse.
    *
-   * @return array
+   * @return list<string> mixed>
    *   Array of unique abbreviations found in the classes.
    */
   public function getAbbreviationsFromClasses(array $classes): array {
@@ -393,10 +393,10 @@ class UtilikitContentScanner {
    * Processes multiple entities in a single operation for efficient batch
    * scanning when entities are already loaded.
    *
-   * @param array $entities
+   * @param array<string, mixed> $entities
    *   Array of entities to scan for utility classes.
    *
-   * @return array
+   * @return list<mixed> mixed>
    *   Array of unique utility classes found across all entities.
    */
   public function scanEntityBatch(array $entities): array {
@@ -417,10 +417,10 @@ class UtilikitContentScanner {
    * Performs a complete content scan and compares results against a list
    * of known classes to identify newly added utility classes.
    *
-   * @param array $knownClasses
+   * @param array<string, mixed> $knownClasses
    *   Array of already known utility classes to compare against.
    *
-   * @return array
+   * @return array<string, mixed>
    *   Results array containing:
    *   - new_classes: Array of newly found utility classes
    *   - total_scanned: Total number of entities scanned

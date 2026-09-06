@@ -69,7 +69,7 @@ class UtilikitTestCssGenerator implements UtilikitTestCssGeneratorInterface {
    * standard UtiliKit CSS directory and can be used for testing, debugging,
    * or external validation of CSS generation.
    *
-   * @return array
+   * @return array<string, mixed>
    *   An associative array containing the operation result:
    *   - 'success': (bool) TRUE if CSS generation succeeded, FALSE otherwise
    *   - 'error': (string) Error message if success is FALSE
@@ -157,7 +157,7 @@ class UtilikitTestCssGenerator implements UtilikitTestCssGeneratorInterface {
    * generator without generating CSS. Useful for enumerating classes
    * for external tools or validation.
    *
-   * @return array
+   * @return list<string> mixed>
    *   Array of all possible utility class names, or empty array if
    *   test generator is not available.
    */
@@ -205,7 +205,7 @@ class UtilikitTestCssGenerator implements UtilikitTestCssGeneratorInterface {
    * Returns metadata about the generated test CSS file including
    * existence, size, URL, and modification time.
    *
-   * @return array
+   * @return array<string, mixed>
    *   An associative array with file information:
    *   - 'exists': (bool) Whether the file exists
    *   - 'size': (int|null) File size in bytes, NULL if file doesn't exist
