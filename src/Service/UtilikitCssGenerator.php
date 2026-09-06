@@ -287,8 +287,7 @@ class UtilikitCssGenerator {
    *   Generated CSS declaration string, structured array (for color rules
    *   with pseudo-state info), or NULL if rule cannot be applied.
    *
-   * @return array<string, mixed>
-   *   As declared by the parent.
+   * @phpstan-return string|array<string, mixed>|null
    */
   private function applyRule(array $rule, string $prefix, string $suffix, string $className): string|array|null {
     if (!empty($rule['sides'])) {
@@ -438,7 +437,14 @@ class UtilikitCssGenerator {
    * - "uk-mg--0d5rem-auto" => "margin: 0.5rem auto;"
    *
    * @param array<string, mixed> $rule
-   *   Passed through from the parent.
+   *   The rule definition for this prefix.
+   * @param string $prefix
+   *   The utility class prefix.
+   * @param string $suffix
+   *   The utility class value suffix.
+   *
+   * @return string|null
+   *   The CSS declaration, or NULL when the rule does not apply.
    */
   private function applySpacingShorthandRule(array $rule, string $prefix, string $suffix): ?string {
     // Only handle rules with 'sides' property and specific prefixes.
@@ -919,8 +925,13 @@ class UtilikitCssGenerator {
    * - "uk-gc--1fr-2d5fr-0d5fr" => "grid-template-columns: 1fr 2.5fr 0.5fr;"
    * - "uk-gc--repeat-3-1d5fr"  => "grid-template-columns: repeat(3, 1.5fr);"
    *
+   * @param string $class
+   *   The complete utility class name.
    * @param array<string, mixed> $rule
-   *   Passed through from the parent.
+   *   The rule definition for this prefix.
+   *
+   * @return string|null
+   *   The CSS declaration, or NULL when the class does not parse.
    */
   private function parseGridTrackList(string $class, array $rule): ?string {
     // Extract the suffix after prefix--.
@@ -1107,8 +1118,7 @@ class UtilikitCssGenerator {
    * - "repeat-3-1d5fr"  => ["repeat", "3", "1d5fr"]
    * - "minmax-0d5rem-2fr" => ["minmax", "0d5rem", "2fr"]
    *
-   * @return list<string> mixed>
-   *   As declared by the parent.
+   * @phpstan-return list<string>
    */
   private function smartSplitGrid(string $str): array {
     $tokens = [];

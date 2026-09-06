@@ -71,8 +71,7 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
   /**
    * {@inheritdoc}
    *
-   * @param array<string, mixed> $configuration
-   *   Passed through from the parent.
+   * @phpstan-param array<string, mixed> $configuration
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition): static {
     return new static(
@@ -94,8 +93,7 @@ class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPl
    * file if new classes are found. The processing is done asynchronously
    * during cron runs to avoid blocking the main request flow.
    *
-   * @param mixed $data
-   *   Queue item data expected to contain a 'classes' array with utility
+   * @phpstan-param mixed $data
    *   class names to be processed.
    *
    * @throws \Exception

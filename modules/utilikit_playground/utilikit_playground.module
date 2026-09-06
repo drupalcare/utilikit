@@ -34,17 +34,11 @@ function utilikit_playground_help(string $route_name, RouteMatchInterface $route
  * for flexible content rendering.
  * An array of theme hook definitions with template configurations.
  *
- * @param array<string, mixed> $existing
- *   Parameter.
- * @param string $type
- *   Parameter.
- * @param string $theme
- *   Parameter.
- * @param string $path
- *   Parameter.
- *
- * @return array<string, mixed>
- *   Result.
+ * @phpstan-param array<string, mixed> $existing
+ * @phpstan-param string $type
+ * @phpstan-param string $theme
+ * @phpstan-param string $path
+ * @phpstan-return array<string, mixed>
  */
 function utilikit_playground_theme($existing, $type, $theme, $path): array {
   return [
@@ -62,8 +56,7 @@ function utilikit_playground_theme($existing, $type, $theme, $path): array {
  * visual feedback during utility class experimentation.
  *
  * @see _utilikit_attach_inline_settings()
- * @param array<string, mixed> $attachments
- *   Parameter.
+ * @phpstan-param array<string, mixed> $attachments
  */
 function utilikit_playground_page_attachments(array &$attachments): void {
   if (\Drupal::routeMatch()->getRouteName() !== 'utilikit_playground.page') {

@@ -143,8 +143,7 @@ function _utilikit_attach_inline_settings(array &$attachments, string $submodule
  * produced NO CSS in static and head mode. A second copy of a fact is not
  * untidiness; it is the bug, waiting.
  *
- * @param array<string, mixed> $settings
- *   Parameter.
+ * @phpstan-param array<string, mixed> $settings
  */
 function utilikit_js_settings_alter(array &$settings, AttachedAssetsInterface $assets): void {
   if (!isset($settings['utilikit']) || !is_array($settings['utilikit'])) {
@@ -173,8 +172,7 @@ function utilikit_js_settings_alter(array &$settings, AttachedAssetsInterface $a
  * - Attaches development and debugging libraries when enabled
  * - Sets up cache contexts and tags for proper invalidation
  *
- * @param array<string, mixed> $attachments
- *   Parameter.
+ * @phpstan-param array<string, mixed> $attachments
  */
 function utilikit_page_attachments(array &$attachments): void {
   if (!\Drupal::config('utilikit.settings')->get('rendering_mode')) {
@@ -500,8 +498,7 @@ function utilikit_update_classes(array $classes, bool $force = FALSE): void {
  *
  * Defines theme templates provided by the UtiliKit module.
  *
- * @return array<string, mixed>
- *   Result.
+ * @phpstan-return array<string, mixed>
  */
 function utilikit_theme() {
   return [
@@ -522,8 +519,7 @@ function utilikit_theme() {
  *   Array of entity type machine names to be processed during cleanup.
  *   Modules can add or remove entity types by modifying this array.
  *
- * @param list<string> $entity_types
- *   Parameter.
+ * @phpstan-param list<string> $entity_types
  */
 function utilikit_utilikit_cleanup_entity_types_alter(array &$entity_types): void {
 }
@@ -563,8 +559,7 @@ function utilikit_should_scan_entity(EntityInterface $entity): bool {
  * actual generated CSS file URL. This enables dynamic CSS file attachment
  * while maintaining proper Drupal library integration and cache handling.
  *
- * @param array<string, mixed> $libraries
- *   Parameter.
+ * @phpstan-param array<string, mixed> $libraries
  */
 function utilikit_library_info_alter(array &$libraries, string $extension): void {
   if ($extension !== 'utilikit') {
@@ -603,8 +598,7 @@ function utilikit_library_info_alter(array &$libraries, string $extension): void
  * Ensures the UtiliKit static CSS file has proper weight and group settings
  * so it loads last and overrides any other styles on the page.
  *
- * @param array<string, mixed> $css
- *   Parameter.
+ * @phpstan-param array<string, mixed> $css
  */
 function utilikit_css_alter(array &$css): void {
   // Only alter for static mode.

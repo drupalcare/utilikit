@@ -104,8 +104,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    *
-   * @return list<string>
-   *   As declared by the parent.
+   * @phpstan-return list<string>
    */
   protected function getEditableConfigNames(): array {
     return ['utilikit.settings'];
@@ -114,11 +113,9 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    *
-   * @param array<string, mixed> $form
-   *   Passed through from the parent.
+   * @phpstan-param array<string, mixed> $form
    *
-   * @return array<string, mixed>
-   *   As declared by the parent.
+   * @phpstan-return array<string, mixed>
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
     // Attach the CSS library.
@@ -148,9 +145,6 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *
    * @return array<string, mixed>
    *   Form elements for rendering mode selection.
-   *
-   * @return array<string, mixed>
-   *   As declared by the parent.
    */
   private function buildRenderingModeSection(StorableConfigBase $config): array {
     return [
@@ -175,9 +169,6 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *
    * @return array<string, mixed>
    *   Form elements for performance and optimization settings.
-   *
-   * @return array<string, mixed>
-   *   As declared by the parent.
    */
   private function buildPerformanceSection(StorableConfigBase $config): array {
     return [
@@ -250,9 +241,6 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *
    * @return array<string, mixed>
    *   Form elements for scope control settings.
-   *
-   * @return array<string, mixed>
-   *   As declared by the parent.
    */
   private function buildScopeSection(StorableConfigBase $config): array {
     return [
@@ -290,9 +278,6 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *
    * @return array<string, mixed>
    *   Form elements for content types selection.
-   *
-   * @return array<string, mixed>
-   *   As declared by the parent.
    */
   private function buildContentTypesField(StorableConfigBase $config): array {
     $node_types = $this->entityTypeManager->getStorage('node_type')->loadMultiple();
@@ -328,9 +313,6 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *
    * @return array<string, mixed>
    *   Form elements for automatic update triggers in static mode.
-   *
-   * @return array<string, mixed>
-   *   As declared by the parent.
    */
   private function buildTriggersSection(StorableConfigBase $config): array {
     $description = $this->t('<div class="messages messages--info"><strong>How automatic updates work in Static & Head Modes:</strong><br>@enabled_text<br>@disabled_text<br><br><em>@note_text</em></div>', [
@@ -378,9 +360,6 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *
    * @return array<string, mixed>
    *   Form elements for cache management and test CSS generation.
-   *
-   * @return array<string, mixed>
-   *   As declared by the parent.
    */
   private function buildCacheSection(StorableConfigBase $config): array {
     $knownClasses = $this->serviceProvider->getStateManager()->getKnownClasses();
@@ -553,8 +532,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * Builds the scanning scope section.
    *
-   * @return array<string, mixed>
-   *   As declared by the parent.
+   * @phpstan-return array<string, mixed>
    */
   private function buildScanningScopeSection(StorableConfigBase $config): array {
     $entity_types = $this->entityTypeManager->getDefinitions();
@@ -619,9 +597,6 @@ class UtilikitSettingsForm extends ConfigFormBase {
    *
    * @return array<string, mixed>
    *   Form elements for developer and debugging options.
-   *
-   * @return array<string, mixed>
-   *   As declared by the parent.
    */
   private function buildDeveloperSection(StorableConfigBase $config): array {
     $developerSection = [
@@ -777,8 +752,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    *
-   * @param array<string, mixed> $form
-   *   Passed through from the parent.
+   * @phpstan-param array<string, mixed> $form
    */
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     parent::validateForm($form, $form_state);
@@ -805,8 +779,7 @@ class UtilikitSettingsForm extends ConfigFormBase {
   /**
    * {@inheritdoc}
    *
-   * @param array<string, mixed> $form
-   *   Passed through from the parent.
+   * @phpstan-param array<string, mixed> $form
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
     $oldConfig = $this->config('utilikit.settings');
