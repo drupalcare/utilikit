@@ -37,5 +37,8 @@
             "tbachert/spi": true,
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
+    },
+    "suggest": {
+        "drupal/ai": "^1.2 — required by the utilikit_ai sub-module, which is optional. utilikit itself does not need it."
     }
 }
