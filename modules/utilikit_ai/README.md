@@ -82,19 +82,29 @@ from the page and each has a different fix:
 1. Enable `utilikit_ai`.
 2. Enable `ai_assistant_api`, `ai_agents` and `ai_chatbot` if you want a chat
    surface. They are deliberately **not** dependencies.
-3. **Create an agent, and this is the step people miss.** An assistant built
-   with `ai_assistant_api` alone builds its tool list from `actions_enabled`,
-   which is a *different plugin type*. The tools here are `FunctionCall`
-   plugins and an assistant reaches those **only through an AI Agent**: create
-   one, enable the `utilikit_*` tools on it, and point the assistant at that
-   agent.
+3. **Point your assistant at an agent, and this is the step people miss.** An
+   assistant built with `ai_assistant_api` alone builds its tool list from
+   `actions_enabled`, which is a *different plugin type*. The tools here are
+   `FunctionCall` plugins, and an assistant reaches those **only through an AI
+   Agent**.
+
+   This module ships one — `utilikit_agent`, in `config/optional`, with the
+   four tools already enabled on it — so there is usually nothing to create.
+   Optional config installs only when its dependencies are present **at the
+   time the module is installed**, so if `ai_agents` was enabled *after*
+   `utilikit_ai`, the agent is simply absent. Re-installing `utilikit_ai`
+   brings it in; so does creating one by hand and enabling the `utilikit:*`
+   tools on it.
 
 ## What is not here, and why
 
-**The WYSIWYG.** `apply_classes` writes into stored content, which is where the
-classes actually live. Applying them *interactively while editing* needs a
-CKEditor 5 plugin, and how that should be built is an open decision recorded in
-`docs/UTILIKIT-AI-BRIEF.md` §2.
+**The WYSIWYG — no longer absent, and it is a separate module.** Applying
+classes *interactively while editing* is `utilikit_ckeditor`, a real CKEditor 5
+plugin with its own toolbar button. It is deliberately not part of this module:
+it needs no AI and no `drupal/ai`, so tying it to this one would have made a
+plain editing feature depend on an LLM. `apply_classes` here still writes into
+stored content, which is where the classes actually live; the two are
+complementary rather than alternatives.
 
 **Not the playground.** It was considered as a write surface and is not one:
 the playground is entirely client-side, so there is nothing for a server-side
