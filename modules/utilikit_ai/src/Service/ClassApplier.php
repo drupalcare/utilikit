@@ -304,7 +304,7 @@ final class ClassApplier implements ClassApplierInterface {
     $candidates = [];
 
     foreach ($node->getFieldDefinitions() as $name => $definition) {
-      if (in_array($definition->getType(), ['text_long', 'text_with_summary'], TRUE)) {
+      if (in_array($definition->getType(), self::RICH_TEXT_FIELD_TYPES, TRUE)) {
         $candidates[] = (string) $name;
       }
     }

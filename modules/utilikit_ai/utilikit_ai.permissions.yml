@@ -1,0 +1,6 @@
+'use utilikit ai assistant':
+  title: 'Use the UtiliKit assistant'
+  description: 'Show the UtiliKit assistant on node add and edit forms. The assistant can only do what the person using it may already do by hand — it checks update access on the node, and refuses where the text format would strip the class, on every call.'
+  # Not restricted. The tools check the person's own permissions on every call,
+  # so this grants a surface, not an escalation. Marking it restricted would
+  # imply otherwise.

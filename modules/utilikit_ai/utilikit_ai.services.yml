@@ -42,3 +42,24 @@ services:
       - '@utilikit_ai.setup_doctor'
 
   Drupal\utilikit_ai\Service\ClassApplierInterface: '@utilikit_ai.class_applier'
+
+  # The chat surface. It reads six things that are each invisible from a node
+  # form — a permission, two modules, a setting, an assistant, and whether the
+  # content type has anywhere to write — which is why the decision lives here
+  # where it can be tested one refusal at a time.
+  utilikit_ai.chat_surface:
+    class: Drupal\utilikit_ai\Service\ChatSurface
+    arguments:
+      - '@config.factory'
+      - '@module_handler'
+      - '@entity_type.manager'
+      - '@entity_field.manager'
+      - '@current_user'
+      - '@plugin.manager.block'
+
+  Drupal\utilikit_ai\Service\ChatSurfaceInterface: '@utilikit_ai.chat_surface'
+
+  # Hook classes are services in Drupal 11's OOP hook system, and this one
+  # takes the surface rather than reaching for \Drupal::service().
+  Drupal\utilikit_ai\Hook\UtilikitAiFormHook:
+    autowire: true

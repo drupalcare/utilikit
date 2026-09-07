@@ -1,0 +1,7 @@
+utilikit_ai.settings:
+  path: '/admin/config/utilikit/ai'
+  defaults:
+    _form: 'Drupal\utilikit_ai\Form\UtilikitAiSettingsForm'
+    _title: 'UtiliKit AI'
+  requirements:
+    _permission: 'administer site configuration'

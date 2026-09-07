@@ -77,12 +77,40 @@ from the page and each has a different fix:
 3. **A text format strips the class.** The class never reaches the page, and
    nothing reports it.
 
+## Where you talk to it
+
+A chat bar appears at the bottom of **node add and edit forms** — collapsed
+until you click it, and only for people with the *Use the UtiliKit assistant*
+permission. The node form is where it belongs: `apply_classes` writes into a
+node's formatted text and takes a node id, so it is the one screen where the
+thing the assistant can act on is already in front of you.
+
+It stays hidden unless six things are true, and **not one of them is visible
+from the node form**: the permission, `ai_chatbot`, `ai_assistant_api`, an
+assistant chosen in this module's settings, that assistant still loading, and
+a content type with a formatted-text field to write into.
+
+So the settings page at **Configuration › Development › UtiliKit › AI** prints
+which one is missing, in a sentence. If you turned this on and see nothing,
+that page is the answer — it is the whole reason the page exists. It also
+names any text format that would strip the classes, which is the failure this
+module was built to stop being silent.
+
+The bar is placed for you. This module never writes configuration to do it: it
+does not touch the form display, the block layout, the text formats or the
+assistant.
+
 ## Setting it up
 
 1. Enable `utilikit_ai`.
-2. Enable `ai_assistant_api`, `ai_agents` and `ai_chatbot` if you want a chat
-   surface. They are deliberately **not** dependencies.
-3. **Point your assistant at an agent, and this is the step people miss.** An
+2. Enable `ai_assistant_api`, `ai_agents` and `ai_chatbot` if you want the chat
+   bar. They are deliberately **not** dependencies.
+3. Create an assistant at Configuration › AI › AI Assistants, then choose it at
+   Configuration › Development › UtiliKit › AI. None is shipped: an assistant
+   names an `llm_provider` and `llm_model` that exist on one site only, so a
+   default would install something that looks configured and fails on first
+   use.
+4. **Point your assistant at an agent, and this is the step people miss.** An
    assistant built with `ai_assistant_api` alone builds its tool list from
    `actions_enabled`, which is a *different plugin type*. The tools here are
    `FunctionCall` plugins, and an assistant reaches those **only through an AI

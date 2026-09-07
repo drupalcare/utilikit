@@ -1,0 +1,12 @@
+# Under UtiliKit's own admin item, not Configuration › Content.
+#
+# The two sibling AI modules sit under system.admin_config_content because
+# their parents have no admin section of their own. UtiliKit does —
+# Configuration › Development › UtiliKit — and a submodule's settings belong
+# with its parent's, where someone already looking at UtiliKit will find them.
+utilikit_ai.settings:
+  title: 'AI'
+  description: 'Choose the assistant that appears on node forms, and see why the chat bar is or is not showing.'
+  parent: utilikit.admin
+  route_name: utilikit_ai.settings
+  weight: 20

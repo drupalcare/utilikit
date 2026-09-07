@@ -30,6 +30,26 @@ the record for those.
   declares `<$any-html5-element class>` so the text format does not strip what
   the editor just applied. `js/build/` is committed, following Drupal core.
 
+- **`utilikit_ai` gained a chat surface**, which its two sibling AI modules
+  already had and it did not. A bar on node add and edit forms, a permission
+  (*Use the UtiliKit assistant*), and a settings page at Configuration ›
+  Development › UtiliKit › AI.
+
+  The bar is the small half. **The settings page is the point:** six things
+  must be true before the bar appears and not one of them is visible from the
+  node form, so the page prints which one is missing as a sentence. Without it
+  the module had nowhere on the site to say the thing that costs people an
+  afternoon — that a FunctionCall tool reaches an assistant only through an AI
+  Agent, so an assistant without one answers questions and silently changes
+  nothing. That page also names any text format that would strip the classes,
+  which is the exact failure this module exists to stop being silent.
+
+  The list of field types the assistant can write into now has **one owner**,
+  `ClassApplierInterface::RICH_TEXT_FIELD_TYPES`, read by both the writer and
+  the surface. Two copies would have drifted into a bar offered where nothing
+  can be written, or hidden where something can — and neither reports anything.
+  A test drives itself from the constant, so it fails if they part.
+
 - **`utilikit_ai`** gained `utilikit_apply_classes`, its first tool that
   writes. It adds classes to a page's formatted text under five rules it cannot
   be configured out of: a new revision every time, refusal where the text format
