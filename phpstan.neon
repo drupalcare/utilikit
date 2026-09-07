@@ -82,3 +82,12 @@ parameters:
     -
       identifier: parameterByRef.type
       path: src/Form/UtilikitSettingsForm.php
+    # Same core constraint, second form. FormInterface fixes
+    # submitForm(array &$form, …) with a bare `array`, so a ConfigFormBase
+    # subclass cannot narrow the by-ref type without breaking the interface it
+    # implements. Scoped to the identifier and this one file, exactly like the
+    # entry above, so it covers nothing else and lapses the day core types that
+    # parameter.
+    -
+      identifier: parameterByRef.type
+      path: modules/utilikit_ai/src/Form/UtilikitAiSettingsForm.php
