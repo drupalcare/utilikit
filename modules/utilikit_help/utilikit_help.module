@@ -10,6 +10,8 @@
 
 declare(strict_types=1);
 
+use Drupal\Core\Hook\Attribute\LegacyHook;
+use Drupal\utilikit_help\Hook\UtilikitHelpHooks;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -17,11 +19,9 @@ use Drupal\Core\Routing\RouteMatchInterface;
  *
  * Provides contextual help throughout the Drupal admin interface.
  */
+#[LegacyHook]
 function utilikit_help_help(string $route_name, RouteMatchInterface $route_match): ?string {
-  if ($route_name === 'help.page.utilikit_help') {
-    return _utilikit_helper_render_readme();
-  }
-  return NULL;
+  return \Drupal::service(UtilikitHelpHooks::class)->help($route_name, $route_match);
 }
 
 /**
@@ -33,13 +33,9 @@ function utilikit_help_help(string $route_name, RouteMatchInterface $route_match
  * @phpstan-param string $path
  * @phpstan-return array<string, mixed>
  */
+#[LegacyHook]
 function utilikit_help_theme($existing, $type, $theme, $path): array {
-  return [
-    'utilikit_help_page' => [
-      'variables' => [],
-      'template' => 'utilikit-help-page',
-    ],
-  ];
+  return \Drupal::service(UtilikitHelpHooks::class)->theme($existing, $type, $theme, $path);
 }
 
 /**
@@ -47,10 +43,7 @@ function utilikit_help_theme($existing, $type, $theme, $path): array {
  *
  * @phpstan-param array<string, mixed> $attachments
  */
+#[LegacyHook]
 function utilikit_help_page_attachments(array &$attachments): void {
-  if (\Drupal::routeMatch()->getRouteName() !== 'utilikit_help.documentation') {
-    return;
-  }
-
-  _utilikit_attach_inline_settings($attachments, 'utilikit_help/help');
+  \Drupal::service(UtilikitHelpHooks::class)->pageAttachments($attachments);
 }

@@ -4,18 +4,21 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Kernel;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Drupal\Component\Utility\DeprecationHelper;
 use Drupal\Core\Extension\Requirement\RequirementSeverity;
-use Drupal\utilikit\Hook\UtilikitRequirements;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\Core\File\FileSystemInterface;
+use Drupal\utilikit\Hook\UtilikitRequirements;
 use Drupal\utilikit\Service\UtilikitConstants;
-use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the UtiliKit installation process.
  *
  * @group utilikit
  */
+#[Group('utilikit')]
 #[RunTestsInSeparateProcesses]
 class UtilikitInstallTest extends KernelTestBase {
 
@@ -237,7 +240,7 @@ class UtilikitInstallTest extends KernelTestBase {
 
     // Check directory requirement.
     $this->assertArrayHasKey('utilikit_directory', $requirements);
-    $this->assertEquals(RequirementSeverity::OK, $requirements['utilikit_directory']['severity']);
+    $this->assertEquals(DeprecationHelper::backwardsCompatibleCall(\Drupal::VERSION, '11.2.0', fn() => RequirementSeverity::OK, fn() => REQUIREMENT_OK), $requirements['utilikit_directory']['severity']);
 
     // Test with static mode and missing CSS file.
     $config = $this->configFactory->getEditable('utilikit.settings');
@@ -247,7 +250,7 @@ class UtilikitInstallTest extends KernelTestBase {
       ->get(UtilikitRequirements::class)
       ->runtimeRequirements();
     $this->assertArrayHasKey('utilikit_static_css', $requirements);
-    $this->assertEquals(RequirementSeverity::Warning, $requirements['utilikit_static_css']['severity']);
+    $this->assertEquals(DeprecationHelper::backwardsCompatibleCall(\Drupal::VERSION, '11.2.0', fn() => RequirementSeverity::Warning, fn() => REQUIREMENT_WARNING), $requirements['utilikit_static_css']['severity']);
 
     // Test with many classes (performance warning)
     $manyClasses = [];
@@ -260,7 +263,7 @@ class UtilikitInstallTest extends KernelTestBase {
       ->get(UtilikitRequirements::class)
       ->runtimeRequirements();
     $this->assertArrayHasKey('utilikit_performance', $requirements);
-    $this->assertEquals(RequirementSeverity::Warning, $requirements['utilikit_performance']['severity']);
+    $this->assertEquals(DeprecationHelper::backwardsCompatibleCall(\Drupal::VERSION, '11.2.0', fn() => RequirementSeverity::Warning, fn() => REQUIREMENT_WARNING), $requirements['utilikit_performance']['severity']);
   }
 
   /**

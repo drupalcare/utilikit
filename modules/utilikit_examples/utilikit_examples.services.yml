@@ -1,0 +1,5 @@
+
+services:
+  Drupal\utilikit_examples\Hook\UtilikitExamplesHooks:
+    class: Drupal\utilikit_examples\Hook\UtilikitExamplesHooks
+    autowire: true

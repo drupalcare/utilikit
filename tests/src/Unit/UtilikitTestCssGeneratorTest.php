@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\Group;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\File\FileExists;
@@ -21,6 +22,7 @@ use Drupal\utilikit_test\Service\TestGenerator;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitTestCssGenerator
  */
+#[Group('utilikit')]
 class UtilikitTestCssGeneratorTest extends UnitTestCase {
 
   /**

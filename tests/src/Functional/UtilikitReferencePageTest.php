@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Functional;
 
-use Drupal\Tests\BrowserTestBase;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
+use Drupal\Tests\BrowserTestBase;
 
 /**
  * Tests the UtiliKit reference page functionality.
  *
  * @group utilikit
  */
+#[Group('utilikit')]
 #[RunTestsInSeparateProcesses]
 class UtilikitReferencePageTest extends BrowserTestBase {
 

@@ -20,11 +20,11 @@
 
 declare(strict_types=1);
 
-use Drupal\Component\Utility\Crypt;
+use Drupal\Core\Hook\Attribute\LegacyHook;
+use Drupal\utilikit\Hook\UtilikitHooks;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\node\NodeInterface;
-use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\utilikit\Service\UtilikitRules;
@@ -35,11 +35,9 @@ use Drupal\utilikit\Service\UtilikitRules;
  * Provides help information for the UtiliKit module by rendering the
  * README.md file when accessed through the help system.
  */
+#[LegacyHook]
 function utilikit_help(string $route_name, RouteMatchInterface $route_match): ?string {
-  if ($route_name === 'help.page.utilikit') {
-    return _utilikit_helper_render_readme();
-  }
-  return NULL;
+  return \Drupal::service(UtilikitHooks::class)->help($route_name, $route_match);
 }
 
 /**
@@ -174,154 +172,9 @@ function utilikit_js_settings_alter(array &$settings, AttachedAssetsInterface $a
  *
  * @phpstan-param array<string, mixed> $attachments
  */
+#[LegacyHook]
 function utilikit_page_attachments(array &$attachments): void {
-  if (!\Drupal::config('utilikit.settings')->get('rendering_mode')) {
-    return;
-  }
-
-  $config = \Drupal::config('utilikit.settings');
-
-  $settings = [
-    'scope_global' => (bool) $config->get('scope_global'),
-    'disable_admin' => (bool) $config->get('disable_admin'),
-    'scope_content_types' => (bool) $config->get('scope_content_types'),
-    'enabled_content_types' => $config->get('enabled_content_types') ?? [],
-  ];
-
-  if (!utilikit_should_apply($settings)) {
-    return;
-  }
-
-  $activeBreakpoints = array_keys(array_filter($config->get('active_breakpoints') ?? UtilikitConstants::DEFAULT_BREAKPOINTS));
-  $rendering_mode = $config->get('rendering_mode') ?? 'inline';
-
-  if ($rendering_mode === 'static') {
-    $fileManager = \Drupal::service('utilikit.file_manager');
-    $fileManager->ensureStaticCssFile();
-
-    $css_url = $fileManager->getStaticCssUrl();
-    if (!$css_url) {
-      \Drupal::logger('utilikit')->warning('Static CSS file not found. Falling back to inline mode.');
-      $rendering_mode = 'inline';
-    }
-  }
-  elseif ($rendering_mode === 'head') {
-    $stateManager = \Drupal::service('utilikit.state_manager');
-    $knownClasses = $stateManager->getKnownClasses();
-
-    if (!empty($knownClasses)) {
-      $css = $stateManager->getGeneratedCss();
-
-      if (empty($css)) {
-        $cssGenerator = \Drupal::service('utilikit.css_generator');
-        $css = $cssGenerator->generateCssFromClasses($knownClasses);
-        $stateManager->setGeneratedCss($css);
-      }
-
-      if (!empty($css)) {
-        // Apply optimization if enabled (same as static mode)
-        if ($config->get('optimize_css')) {
-          $fileManager = \Drupal::service('utilikit.file_manager');
-          $css = $fileManager->minifyCss($css);
-        }
-
-        $attachments['#attached']['html_head'][] = [
-          [
-            '#type' => 'html_tag',
-            '#tag' => 'style',
-            '#value' => $css,
-            '#attributes' => ['id' => 'utilikit-head-mode'],
-            '#weight' => 900,
-          ],
-          'utilikit_head_css',
-        ];
-      }
-    }
-  }
-
-  $stateManager = \Drupal::service('utilikit.state_manager');
-
-  // Developer tools (devMode, adminPreview, showPageErrors, logLevel) are
-  // restricted to the admin user (uid 1) only.
-  $isAdmin = (int) \Drupal::currentUser()->id() === 1;
-
-  $attachments['#attached']['drupalSettings']['utilikit'] = [
-    'devMode' => $isAdmin && (bool) $config->get('dev_mode'),
-    'showPageErrors' => $isAdmin && (bool) $config->get('show_page_errors'),
-    'enableTransitions' => (bool) $config->get('enable_transitions'),
-    'debounce' => (int) ($config->get('debounce') ?? 50),
-    'logLevel' => $isAdmin ? ($config->get('log_level') ?? 'warnings') : 'off',
-    'adminPreview' => $isAdmin && (bool) $config->get('admin_preview'),
-    'activeBreakpoints' => $activeBreakpoints,
-    'renderingMode' => $rendering_mode,
-    'csrfToken' => \Drupal::csrfToken()->get('utilikit/update-css'),
-    'cssTimestamp' => $stateManager->getCssTimestamp(),
-    'breakpoints' => UtilikitConstants::BREAKPOINT_VALUES,
-  ];
-
-  if ($rendering_mode === 'static') {
-    // Ensure the static CSS file exists.
-    $fileManager = \Drupal::service('utilikit.file_manager');
-    $fileManager->ensureStaticCssFile();
-
-    // Attach the static mode JS library.
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.static';
-
-    // Attach the generated CSS via library (weight 999 ensures it loads last).
-    // The actual file URL is injected via hook_library_info_alter().
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.static.css';
-  }
-  elseif ($rendering_mode === 'head') {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.static';
-  }
-  else {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine';
-  }
-
-  if ($isAdmin && $config->get('show_page_errors')) {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.engine.message';
-  }
-
-  if ($isAdmin && $config->get('dev_mode')) {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.debug';
-  }
-
-  if (\Drupal::currentUser()->hasPermission('use utilikit update button')
-    && in_array($rendering_mode, ['static', 'head'], TRUE)) {
-    $attachments['#attached']['library'][] = 'utilikit/utilikit.update.button';
-
-    $attachments['#attached']['drupalSettings']['utilikit']['updateButton'] = [
-      'enabled' => TRUE,
-      'autoUpdate' => [
-        'node' => (bool) $config->get('update_on_node_save'),
-        'block' => (bool) $config->get('update_on_block_save'),
-        'paragraph' => (bool) $config->get('update_on_paragraph_save'),
-      ],
-    ];
-  }
-
-  // CSP nonce only needed for inline mode (dynamic JS injection)
-  if ($rendering_mode === 'inline') {
-    $nonce = Crypt::randomBytesBase64(16);
-    $attachments['#attached']['drupalSettings']['utilikit']['cspNonce'] = $nonce;
-  }
-
-  // Add cache metadata based on rendering mode.
-  $attachments['#cache']['tags'][] = UtilikitConstants::CACHE_TAG_CONFIG;
-  $attachments['#cache']['tags'][] = UtilikitConstants::CACHE_TAG_CSS;
-  $attachments['#cache']['contexts'][] = 'user.permissions';
-  $attachments['#cache']['contexts'][] = 'route';
-  $attachments['#cache']['tags'][] = 'utilikit:mode:' . $rendering_mode;
-
-  // Inline mode: must not leak into page cache since output varies dynamically.
-  // Set max-age to 0 to prevent caching of user-specific/dynamic content.
-  if ($rendering_mode === 'inline') {
-    $attachments['#cache']['max-age'] = 0;
-  }
-  else {
-    // Static/head: theme tag so CSS varies by theme.
-    $attachments['#cache']['tags'][] = UtilikitConstants::CACHE_TAG_THEME;
-  }
+  \Drupal::service(UtilikitHooks::class)->pageAttachments($attachments);
 }
 
 /**
@@ -336,63 +189,9 @@ function utilikit_page_attachments(array &$attachments): void {
  * updates gracefully. If a lock cannot be acquired, the update is queued
  * for later processing to avoid blocking entity saves.
  */
+#[LegacyHook]
 function utilikit_entity_presave(EntityInterface $entity): void {
-  $config = \Drupal::config('utilikit.settings');
-  $entity_type = $entity->getEntityTypeId();
-
-  if (!isset(UtilikitConstants::AUTO_UPDATE_ENTITY_TYPES[$entity_type])) {
-    return;
-  }
-
-  $setting_key = UtilikitConstants::AUTO_UPDATE_ENTITY_TYPES[$entity_type];
-  $auto_update_enabled = (bool) $config->get($setting_key);
-
-  if (!$auto_update_enabled) {
-    return;
-  }
-
-  if (!$entity instanceof FieldableEntityInterface) {
-    return;
-  }
-
-  $serviceProvider = \Drupal::service('utilikit.service_provider');
-  $classes = $serviceProvider->getContentScanner()->scanEntity($entity);
-
-  if (empty($classes)) {
-    return;
-  }
-
-  $mode = $config->get('rendering_mode') ?? 'inline';
-
-  if (in_array($mode, ['static', 'head'], TRUE)) {
-    $lock = \Drupal::lock();
-    $locked = $lock->acquire(UtilikitConstants::LOCK_CSS_UPDATE, UtilikitConstants::CSS_UPDATE_LOCK_WAIT);
-
-    if (!$locked) {
-      $queue = \Drupal::queue(UtilikitConstants::QUEUE_CSS_PROCESSOR);
-      $queue->createItem([
-        'classes' => $classes,
-        'entity_type' => $entity->getEntityTypeId(),
-        'entity_id' => $entity->id(),
-        'timestamp' => time(),
-      ]);
-
-      \Drupal::messenger()->addWarning(t(
-        'UtiliKit CSS update is in progress. Your content was saved, but styles will be updated shortly.'
-      ));
-
-      return;
-    }
-
-    try {
-      utilikit_update_classes($classes, TRUE);
-    } finally {
-      $lock->release(UtilikitConstants::LOCK_CSS_UPDATE);
-    }
-  }
-  else {
-    utilikit_update_classes($classes, TRUE);
-  }
+  \Drupal::service(UtilikitHooks::class)->entityPresave($entity);
 }
 
 /**
@@ -500,13 +299,9 @@ function utilikit_update_classes(array $classes, bool $force = FALSE): void {
  *
  * @phpstan-return array<string, mixed>
  */
+#[LegacyHook]
 function utilikit_theme() {
-  return [
-    'utilikit_update_button' => [
-      'variables' => [],
-      'template' => 'utilikit-update-button',
-    ],
-  ];
+  return \Drupal::service(UtilikitHooks::class)->theme();
 }
 
 /**
@@ -561,35 +356,9 @@ function utilikit_should_scan_entity(EntityInterface $entity): bool {
  *
  * @phpstan-param array<string, mixed> $libraries
  */
+#[LegacyHook]
 function utilikit_library_info_alter(array &$libraries, string $extension): void {
-  if ($extension !== 'utilikit') {
-    return;
-  }
-
-  // Only alter for static mode.
-  $config = \Drupal::config('utilikit.settings');
-  $rendering_mode = $config->get('rendering_mode') ?? 'inline';
-
-  if ($rendering_mode !== 'static') {
-    return;
-  }
-
-  // Get the generated CSS file URL.
-  $fileManager = \Drupal::service('utilikit.file_manager');
-  $css_url = $fileManager->getStaticCssUrl();
-
-  if (!$css_url) {
-    return;
-  }
-
-  // Replace placeholder with actual generated file.
-  if (isset($libraries['utilikit.static.css']['css']['theme'])) {
-    unset($libraries['utilikit.static.css']['css']['theme']['css/utilikit-static-placeholder.css']);
-    $libraries['utilikit.static.css']['css']['theme'][$css_url] = [
-      'weight' => 999,
-      'preprocess' => TRUE,
-    ];
-  }
+  \Drupal::service(UtilikitHooks::class)->libraryInfoAlter($libraries, $extension);
 }
 
 /**
@@ -600,23 +369,9 @@ function utilikit_library_info_alter(array &$libraries, string $extension): void
  *
  * @phpstan-param array<string, mixed> $css
  */
+#[LegacyHook]
 function utilikit_css_alter(array &$css): void {
-  // Only alter for static mode.
-  $config = \Drupal::config('utilikit.settings');
-  $rendering_mode = $config->get('rendering_mode') ?? 'inline';
-
-  if ($rendering_mode !== 'static') {
-    return;
-  }
-
-  // Find and update UtiliKit static CSS entry.
-  foreach ($css as $key => $item) {
-    if (isset($item['data']) && str_contains($item['data'], 'utilikit') && str_contains($item['data'], 'utilikit-static-style.css')) {
-      $css[$key]['group'] = CSS_AGGREGATE_THEME;
-      $css[$key]['weight'] = 999;
-      break;
-    }
-  }
+  \Drupal::service(UtilikitHooks::class)->cssAlter($css);
 }
 
 /**
@@ -625,16 +380,7 @@ function utilikit_css_alter(array &$css): void {
  * Regenerates the static CSS file during cache rebuilds to ensure
  * the CSS is always current after cache operations.
  */
+#[LegacyHook]
 function utilikit_cache_flush(): void {
-  $config = \Drupal::config('utilikit.settings');
-  $rendering_mode = $config->get('rendering_mode') ?? 'inline';
-
-  // Only regenerate for static and head modes.
-  if (!in_array($rendering_mode, ['static', 'head'], TRUE)) {
-    return;
-  }
-
-  if (\Drupal::hasService('utilikit.service_provider')) {
-    \Drupal::service('utilikit.service_provider')->regenerateStaticCss();
-  }
+  \Drupal::service(UtilikitHooks::class)->cacheFlush();
 }

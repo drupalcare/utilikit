@@ -1,0 +1,5 @@
+
+services:
+  Drupal\utilikit_playground\Hook\UtilikitPlaygroundHooks:
+    class: Drupal\utilikit_playground\Hook\UtilikitPlaygroundHooks
+    autowire: true

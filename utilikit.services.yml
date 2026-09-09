@@ -147,6 +147,8 @@ services:
       - '@config.factory'  # For reading optimize_css setting
       - '@?utilikit_test.test_generator'  # Optional: Test class generator (if test module enabled)
 
+  # ======================================================================
+
   # =============================================================================
   # SERVICE DEPENDENCY NOTES
   # =============================================================================
@@ -167,4 +169,8 @@ services:
   # class docblock). Autowired so its three dependencies stay injected rather
   # than fetched statically.
   Drupal\utilikit\Hook\UtilikitRequirements:
+    autowire: true
+
+  Drupal\utilikit\Hook\UtilikitHooks:
+    class: Drupal\utilikit\Hook\UtilikitHooks
     autowire: true

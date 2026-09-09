@@ -12,6 +12,8 @@
 
 declare(strict_types=1);
 
+use Drupal\Core\Hook\Attribute\LegacyHook;
+use Drupal\utilikit_examples\Hook\UtilikitExamplesHooks;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -19,11 +21,9 @@ use Drupal\Core\Routing\RouteMatchInterface;
  *
  * Provides contextual help throughout the Drupal admin interface.
  */
+#[LegacyHook]
 function utilikit_examples_help(string $route_name, RouteMatchInterface $route_match): ?string {
-  if ($route_name === 'help.page.utilikit_examples') {
-    return _utilikit_helper_render_readme();
-  }
-  return NULL;
+  return \Drupal::service(UtilikitExamplesHooks::class)->help($route_name, $route_match);
 }
 
 /**
@@ -52,13 +52,9 @@ function utilikit_examples_help(string $route_name, RouteMatchInterface $route_m
  * @phpstan-param string $path
  * @phpstan-return array<string, mixed>
  */
+#[LegacyHook]
 function utilikit_examples_theme($existing, $type, $theme, $path): array {
-  return [
-    'utilikit_examples' => [
-      'variables' => [],
-      'template' => 'utilikit-examples',
-    ],
-  ];
+  return \Drupal::service(UtilikitExamplesHooks::class)->theme($existing, $type, $theme, $path);
 }
 
 /**
@@ -70,10 +66,7 @@ function utilikit_examples_theme($existing, $type, $theme, $path): array {
  * @see _utilikit_attach_inline_settings()
  * @phpstan-param array<string, mixed> $attachments
  */
+#[LegacyHook]
 function utilikit_examples_page_attachments(array &$attachments): void {
-  if (\Drupal::routeMatch()->getRouteName() !== 'utilikit_examples.page') {
-    return;
-  }
-
-  _utilikit_attach_inline_settings($attachments, 'utilikit_examples/utilikit.examples');
+  \Drupal::service(UtilikitExamplesHooks::class)->pageAttachments($attachments);
 }

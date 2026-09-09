@@ -1,0 +1,5 @@
+
+services:
+  Drupal\utilikit_help\Hook\UtilikitHelpHooks:
+    class: Drupal\utilikit_help\Hook\UtilikitHelpHooks
+    autowire: true

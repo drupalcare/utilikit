@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Traits\ResponseHelperTrait;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 /**
@@ -15,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Traits\ResponseHelperTrait
  */
+#[Group('utilikit')]
 class ResponseHelperTraitTest extends UnitTestCase {
 
   /**

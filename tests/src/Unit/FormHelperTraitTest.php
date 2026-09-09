@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\Group;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Traits\FormHelperTrait;
 
@@ -13,6 +14,7 @@ use Drupal\utilikit\Traits\FormHelperTrait;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Traits\FormHelperTrait
  */
+#[Group('utilikit')]
 class FormHelperTraitTest extends UnitTestCase {
 
   /**

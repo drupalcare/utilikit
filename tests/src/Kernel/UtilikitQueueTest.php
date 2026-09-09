@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Kernel;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Drupal\KernelTests\KernelTestBase;
 use Drupal\utilikit\Service\UtilikitConstants;
-use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests the UtiliKit queue worker functionality.
  *
  * @group utilikit
  */
+#[Group('utilikit')]
 #[RunTestsInSeparateProcesses]
 class UtilikitQueueTest extends KernelTestBase {
 

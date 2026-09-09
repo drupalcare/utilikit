@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitContentScanner;
 use Drupal\utilikit\Service\UtilikitRules;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
@@ -27,6 +28,7 @@ use Psr\Log\LoggerInterface;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitContentScanner
  */
+#[Group('utilikit')]
 class UtilikitContentScannerTest extends UnitTestCase {
 
   /**

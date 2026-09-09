@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\Group;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitConstants;
 
@@ -13,6 +14,7 @@ use Drupal\utilikit\Service\UtilikitConstants;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitConstants
  */
+#[Group('utilikit')]
 class UtilikitConstantsTest extends UnitTestCase {
 
   /**

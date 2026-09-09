@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\Group;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitRules;
 
@@ -13,6 +14,7 @@ use Drupal\utilikit\Service\UtilikitRules;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitRules
  */
+#[Group('utilikit')]
 class UtilikitRulesTest extends UnitTestCase {
 
   /**

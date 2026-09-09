@@ -139,7 +139,7 @@ final class ExplainUtility extends FunctionCallBase implements ExecutableFunctio
       '',
       // The single most important thing, and the easiest to leave out.
       'The "utilikit" class in that example is required. UtiliKit only styles '
-      . 'elements carrying it, so uk- classes on their own do nothing at all.',
+        . 'elements carrying it, so uk- classes on their own do nothing at all.',
       'Responsive: put a breakpoint after uk- — uk-md-' . $utility->prefix . '--… applies from medium up.',
     ])));
   }

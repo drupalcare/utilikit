@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Functional;
 
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
@@ -15,6 +16,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  *
  * @group utilikit
  */
+#[Group('utilikit')]
 #[RunTestsInSeparateProcesses]
 class UtilikitAjaxTest extends UtilikitFunctionalTestBase {
 

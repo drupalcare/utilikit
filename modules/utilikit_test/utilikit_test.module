@@ -33,6 +33,8 @@
 
 declare(strict_types=1);
 
+use Drupal\Core\Hook\Attribute\LegacyHook;
+use Drupal\utilikit_test\Hook\UtilikitTestHooks;
 use Drupal\Core\Routing\RouteMatchInterface;
 
 /**
@@ -40,11 +42,9 @@ use Drupal\Core\Routing\RouteMatchInterface;
  *
  * Provides contextual help throughout the Drupal admin interface.
  */
+#[LegacyHook]
 function utilikit_test_help(string $route_name, RouteMatchInterface $route_match): ?string {
-  if ($route_name === 'help.page.utilikit_test') {
-    return _utilikit_helper_render_readme();
-  }
-  return NULL;
+  return \Drupal::service(UtilikitTestHooks::class)->help($route_name, $route_match);
 }
 
 /**
@@ -66,16 +66,9 @@ function utilikit_test_help(string $route_name, RouteMatchInterface $route_match
  * @phpstan-param string $path
  * @phpstan-return array<string, mixed>
  */
+#[LegacyHook]
 function utilikit_test_theme($existing, $type, $theme, $path): array {
-  return [
-    'utilikit_test_suite' => [
-      'variables' => [
-        'test_groups' => [],
-        'statistics' => [],
-      ],
-      'template' => 'utilikit-test-suite',
-    ],
-  ];
+  return \Drupal::service(UtilikitTestHooks::class)->theme($existing, $type, $theme, $path);
 }
 
 /**
@@ -87,10 +80,7 @@ function utilikit_test_theme($existing, $type, $theme, $path): array {
  * @see _utilikit_attach_inline_settings()
  * @phpstan-param array<string, mixed> $attachments
  */
+#[LegacyHook]
 function utilikit_test_page_attachments(array &$attachments): void {
-  if (\Drupal::routeMatch()->getRouteName() !== 'utilikit_test.suite') {
-    return;
-  }
-
-  _utilikit_attach_inline_settings($attachments, 'utilikit_test/test.suite');
+  \Drupal::service(UtilikitTestHooks::class)->pageAttachments($attachments);
 }

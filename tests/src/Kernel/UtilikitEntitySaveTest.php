@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Kernel;
 
+use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use Drupal\user\Entity\User;
 use Drupal\Core\Lock\LockBackendInterface;
 use Drupal\KernelTests\KernelTestBase;
@@ -14,13 +16,13 @@ use Drupal\block_content\Entity\BlockContentType;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\field\Entity\FieldStorageConfig;
 use Drupal\utilikit\Service\UtilikitConstants;
-use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
 /**
  * Tests entity save hooks and CSS auto-update functionality.
  *
  * @group utilikit
  */
+#[Group('utilikit')]
 #[RunTestsInSeparateProcesses]
 class UtilikitEntitySaveTest extends KernelTestBase {
 

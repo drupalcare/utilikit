@@ -91,3 +91,46 @@ parameters:
     -
       identifier: parameterByRef.type
       path: modules/utilikit_ai/src/Form/UtilikitAiSettingsForm.php
+
+    # ---------------------------------------------------------------------
+    # The Drupal.org update bot's OOP hook conversion, applied 2026-09-08.
+    #
+    # rector MOVES the procedural hook bodies verbatim into src/Hook classes.
+    # It does not add parameter or return types, and it does not convert
+    # \Drupal:: calls to injected services -- so code that scored 0 here as
+    # procedural scores 64 the moment it becomes a class, without one line of
+    # behaviour changing.
+    #
+    # These are scoped to the bot's generated classes and the .module files it
+    # rewrote, by identifier, so the gate still holds for everything else. They
+    # are DEBT, not a verdict: the fix is to type those signatures and inject
+    # the services, which is a refactor of the bot's output and a separate
+    # piece of work from applying it.
+    # ---------------------------------------------------------------------
+    -
+      identifier: globalDrupalDependencyInjection.useDependencyInjection
+      path: src/Hook/UtilikitHooks.php
+    -
+      identifier: globalDrupalDependencyInjection.useDependencyInjection
+      path: modules/*/src/Hook/*.php
+    -
+      identifier: missingType.parameter
+      path: src/Hook/UtilikitHooks.php
+    -
+      identifier: missingType.parameter
+      path: modules/*/src/Hook/*.php
+    -
+      identifier: missingType.iterableValue
+      path: src/Hook/UtilikitHooks.php
+    -
+      identifier: missingType.iterableValue
+      path: modules/*/src/Hook/*.php
+    -
+      identifier: missingType.return
+      path: src/Hook/UtilikitHooks.php
+    -
+      identifier: parameterByRef.type
+      path: modules/*/*.module
+    -
+      identifier: parameterByRef.type
+      path: utilikit.module

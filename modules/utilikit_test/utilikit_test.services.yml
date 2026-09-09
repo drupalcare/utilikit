@@ -1,3 +1,7 @@
 services:
   utilikit_test.test_generator:
     class: Drupal\utilikit_test\Service\TestGenerator
+
+  Drupal\utilikit_test\Hook\UtilikitTestHooks:
+    class: Drupal\utilikit_test\Hook\UtilikitTestHooks
+    autowire: true

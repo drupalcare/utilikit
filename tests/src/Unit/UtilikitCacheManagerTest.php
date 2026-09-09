@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\Group;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitCacheManager;
 use Drupal\utilikit\Service\UtilikitConstants;
@@ -20,6 +21,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitCacheManager
  */
+#[Group('utilikit')]
 class UtilikitCacheManagerTest extends UnitTestCase {
 
   /**
