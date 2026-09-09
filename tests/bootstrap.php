@@ -119,7 +119,7 @@ if (!defined('DRUPAL_TEST_IN_CHILD_SITE')) {
 }
 
 // Load any additional test utilities or helpers specific to UtiliKit.
-$utilikit_test_helpers = __DIR__ . '/UtilikitTestHelpers.php';
+$utilikit_test_helpers = __DIR__ . '/UtilikitTestHelpersTrait.php';
 if (file_exists($utilikit_test_helpers)) {
   require_once $utilikit_test_helpers;
 }

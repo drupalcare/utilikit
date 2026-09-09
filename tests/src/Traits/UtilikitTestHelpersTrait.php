@@ -29,7 +29,7 @@ use Drupal\Core\Entity\EntityInterface;
  * Usage:
  * @code
  * class MyUtilikitTest extends UnitTestCase {
- *   use UtilikitTestHelpers;
+ *   use UtilikitTestHelpersTrait;
  *
  *   public function testSomething() {
  *     $classes = $this->getTestUtilityClasses('responsive');
@@ -39,7 +39,7 @@ use Drupal\Core\Entity\EntityInterface;
  * }
  * @endcode
  */
-trait UtilikitTestHelpers {
+trait UtilikitTestHelpersTrait {
 
   /**
    * Creates a sample entity with UtiliKit classes for testing.
