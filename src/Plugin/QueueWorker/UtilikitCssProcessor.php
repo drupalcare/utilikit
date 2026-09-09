@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Drupal\utilikit\Plugin\QueueWorker;
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Queue\Attribute\QueueWorker;
 use Drupal\Core\Queue\QueueWorkerBase;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -30,6 +32,11 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   constructor. This class's constructor is the contract subclasses inherit,
  *   which is what the annotation asserts.
  */
+#[QueueWorker(
+  id: 'utilikit_css_processor',
+  title: new TranslatableMarkup('UtiliKit CSS Processor'),
+  cron: ['time' => 30],
+)]
 class UtilikitCssProcessor extends QueueWorkerBase implements ContainerFactoryPluginInterface {
 
   /**
