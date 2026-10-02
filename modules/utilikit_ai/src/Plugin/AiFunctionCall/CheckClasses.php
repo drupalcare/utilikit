@@ -92,7 +92,7 @@ final class CheckClasses extends FunctionCallBase implements ExecutableFunctionC
   /**
    * {@inheritdoc}
    */
-  public function execute(): void {
+  public function execute(?object $object = NULL): void {
     $value = $this->contextValue('classes');
     $classes = is_string($value) ? trim($value) : '';
 

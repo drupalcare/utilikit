@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Drupal\Core\Entity\Query\QueryInterface;
@@ -28,6 +29,7 @@ use Psr\Log\LoggerInterface;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitContentScanner
  */
+#[CoversClass(\Drupal\utilikit\Service\UtilikitContentScanner::class)]
 #[Group('utilikit')]
 class UtilikitContentScannerTest extends UnitTestCase {
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitStateManager;
@@ -17,6 +18,7 @@ use PHPUnit\Framework\MockObject\MockObject;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitStateManager
  */
+#[CoversClass(\Drupal\utilikit\Service\UtilikitStateManager::class)]
 #[Group('utilikit')]
 class UtilikitStateManagerTest extends UnitTestCase {
 

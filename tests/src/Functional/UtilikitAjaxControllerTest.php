@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Functional;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 
@@ -19,6 +20,7 @@ use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
  *
  * @coversDefaultClass \Drupal\utilikit\Controller\UtilikitAjaxController
  */
+#[CoversClass(\Drupal\utilikit\Controller\UtilikitAjaxController::class)]
 #[Group('utilikit')]
 #[Group('utilikit_functional')]
 #[RunTestsInSeparateProcesses]

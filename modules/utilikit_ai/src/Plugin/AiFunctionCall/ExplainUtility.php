@@ -92,7 +92,7 @@ final class ExplainUtility extends FunctionCallBase implements ExecutableFunctio
   /**
    * {@inheritdoc}
    */
-  public function execute(): void {
+  public function execute(?object $object = NULL): void {
     $value = $this->contextValue('prefix');
     $prefix = is_string($value) ? strtolower(trim($value)) : '';
 

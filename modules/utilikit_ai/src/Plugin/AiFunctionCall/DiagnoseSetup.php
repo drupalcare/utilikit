@@ -83,7 +83,7 @@ final class DiagnoseSetup extends FunctionCallBase implements ExecutableFunction
   /**
    * {@inheritdoc}
    */
-  public function execute(): void {
+  public function execute(?object $object = NULL): void {
     $mode = $this->doctor->renderingMode();
     $lines = [sprintf('UtiliKit is in %s mode on this site.', $mode), ''];
     $problems = 0;

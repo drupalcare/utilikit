@@ -114,7 +114,7 @@ final class ApplyClasses extends FunctionCallBase implements ExecutableFunctionC
   /**
    * {@inheritdoc}
    */
-  public function execute(): void {
+  public function execute(?object $object = NULL): void {
     $nid = $this->contextValue('nid');
     $result = $this->applier->apply(
       is_numeric($nid) ? (int) $nid : NULL,

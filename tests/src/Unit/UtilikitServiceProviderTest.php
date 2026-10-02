@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Tests\UnitTestCase;
@@ -22,6 +23,7 @@ use Psr\Log\LoggerInterface;
  *
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitServiceProvider
  */
+#[CoversClass(\Drupal\utilikit\Service\UtilikitServiceProvider::class)]
 final class UtilikitServiceProviderTest extends UnitTestCase {
 
   /**

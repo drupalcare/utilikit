@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\utilikit\Unit;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
@@ -24,6 +25,7 @@ use Psr\Log\LoggerInterface;
  * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitFileManager
  */
+#[CoversClass(\Drupal\utilikit\Service\UtilikitFileManager::class)]
 #[Group('utilikit')]
 class UtilikitFileManagerTest extends UnitTestCase {
 
