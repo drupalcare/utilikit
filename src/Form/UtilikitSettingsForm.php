@@ -725,8 +725,8 @@ class UtilikitSettingsForm extends ConfigFormBase {
 
       $developerSection['developer']['static_css_info']['regenerate_note'] = [
         '#markup' => '<p><small>' .
-          $this->t('To regenerate the CSS file, use the "Clear All CSS & Reset" button in the Cache Management section above, then save this form.') .
-          '</small></p>',
+        $this->t('To regenerate the CSS file, use the "Clear All CSS & Reset" button in the Cache Management section above, then save this form.') .
+        '</small></p>',
       ];
     }
 
