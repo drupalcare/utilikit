@@ -204,7 +204,17 @@ final class ChatSurfaceTest extends KernelTestBase {
 
     self::assertNotSame([], ClassApplierInterface::RICH_TEXT_FIELD_TYPES);
 
-    foreach (ClassApplierInterface::RICH_TEXT_FIELD_TYPES as $index => $type) {
+    // text_with_summary was removed from core in Drupal 12, so a field of that
+    // type cannot be created there; the writer still lists it for Drupal 11.
+    // Test every listed type the running core can actually create.
+    $fieldTypes = $this->container->get('plugin.manager.field.field_type');
+    $creatable = array_filter(
+      ClassApplierInterface::RICH_TEXT_FIELD_TYPES,
+      static fn (string $type): bool => $fieldTypes->hasDefinition($type),
+    );
+    self::assertNotSame([], $creatable, 'At least one rich-text type exists on this core.');
+
+    foreach ($creatable as $index => $type) {
       $bundle = 'takes_' . $index;
 
       NodeType::create(['type' => $bundle, 'name' => 'Takes ' . $type])->save();
@@ -225,7 +235,7 @@ final class ChatSurfaceTest extends KernelTestBase {
 
     $writable = $this->surface()->writableContentTypes();
 
-    foreach (ClassApplierInterface::RICH_TEXT_FIELD_TYPES as $index => $type) {
+    foreach ($creatable as $index => $type) {
       self::assertArrayHasKey(
         'takes_' . $index,
         $writable,
