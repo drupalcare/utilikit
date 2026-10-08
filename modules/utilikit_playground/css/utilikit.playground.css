@@ -941,6 +941,7 @@
 }
 
 .tutorial-close {
+  all: unset;
   position: absolute !important;
   top: 15px !important;
   right: 15px !important;
@@ -957,7 +958,6 @@
   border-radius: 50% !important;
   background: var(--gin-bg-item, var(--color-white, #fff)) !important;
   font-size: 18px;
-  all: unset;
 }
 
 .tutorial-close:hover {
