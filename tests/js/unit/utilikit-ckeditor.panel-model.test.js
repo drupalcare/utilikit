@@ -203,7 +203,12 @@ describe('colour opacity and state suffixes', () => {
   // hex, then an optional -NN opacity, then an optional -h, -f or -a state.
   // Measured 2026-10-08 on sts.local: the chip for uk-tc--3b82f6-h read
   // "Text color: 3b82f6-h".
-  const tc = { prefix: 'tc', label: 'Text color', group: 'Colors', isColor: true };
+  const tc = {
+    prefix: 'tc',
+    label: 'Text color',
+    group: 'Colors',
+    isColor: true,
+  };
   const withTc = { ...byPrefix, tc };
   const parse = (cls) => model.parseClass(cls, withTc, breakpoints);
 
