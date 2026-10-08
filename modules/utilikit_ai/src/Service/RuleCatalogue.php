@@ -55,7 +55,9 @@ final class RuleCatalogue implements RuleCatalogueInterface {
       }
 
       $group = $rule['group'] ?? '';
-      $flags = array_diff_key($rule, ['css' => 1, 'group' => 1]);
+      // `label` is presentation, not value grammar: it must not reach the
+      // model as if it were a flag.
+      $flags = array_diff_key($rule, ['css' => 1, 'group' => 1, 'label' => 1]);
 
       $out[(string) $prefix] = new Utility(
         (string) $prefix,

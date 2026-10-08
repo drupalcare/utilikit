@@ -151,6 +151,60 @@ final class UtilikitCkeditorPluginTest extends KernelTestBase {
   }
 
   /**
+   * The panel's names and groups are the rules' own, not a second list.
+   *
+   * The panel lists "Max width (xw)" under "Sizing". Both words come from
+   * UtilikitRules::getRules(); if the plugin ever started deriving or
+   * hard-coding them, this is the test that notices.
+   */
+  public function testLabelsAndGroupsComeFromTheRules(): void {
+    $rules = UtilikitRules::getRules();
+
+    foreach ($this->config['utilities'] as $utility) {
+      $rule = $rules[$utility['prefix']];
+      self::assertSame($rule['label'], $utility['label'], $utility['prefix'] . ' label');
+      self::assertSame($rule['group'], $utility['group'], $utility['prefix'] . ' group');
+    }
+
+    self::assertSame(
+      array_keys($rules),
+      array_column($this->config['utilities'], 'prefix'),
+      'Utilities arrive in rule order, which is the order the panel groups them in.',
+    );
+  }
+
+  /**
+   * Whether a value is picked from a list is the rule's flag, not the list.
+   *
+   * `order` has a keyword list in getAllowedKeywords() and is an INTEGER rule.
+   * The old panel decided "keyword" from a non-empty list and offered
+   * "One of: 0, 1, 2…" for it.
+   */
+  public function testKeywordIsTheRuleFlag(): void {
+    $byPrefix = array_column($this->config['utilities'], NULL, 'prefix');
+
+    self::assertTrue($byPrefix['ta']['isKeyword'], 'text-align is a keyword rule.');
+    self::assertFalse($byPrefix['or']['isKeyword'], 'order is an integer rule.');
+    self::assertNotSame([], $byPrefix['or']['keywords'], 'order still has a keyword list, which is the trap.');
+    self::assertTrue($byPrefix['fg']['isDecimalFixed'], 'flex-grow needs the decimal help line.');
+  }
+
+  /**
+   * The class pattern and breakpoint widths are the module's constants.
+   */
+  public function testPatternAndWidthsAreTheModulesConstants(): void {
+    self::assertSame(UtilikitConstants::CLASS_VALIDATION_PATTERN, $this->config['classPattern'] ?? NULL);
+
+    foreach ($this->config['breakpoints'] as $breakpoint) {
+      self::assertSame(
+        UtilikitConstants::BREAKPOINT_VALUES[$breakpoint],
+        $this->config['breakpointWidths'][$breakpoint] ?? NULL,
+        $breakpoint . ' width',
+      );
+    }
+  }
+
+  /**
    * The breakpoints offered are the ones UtiliKit actually generates.
    */
   public function testBreakpointsMatchTheModule(): void {

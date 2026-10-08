@@ -2,50 +2,326 @@
  * @file
  * The UtiliKit panel inside the CKEditor 5 toolbar dropdown.
  *
- * Deliberately plain: it borrows CKEditor's own custom properties so it follows
- * whatever theme the editor is using rather than imposing a second look.
+ * IT IS DRAWN WITH CKEDITOR'S OWN PARTS. Fields carry `ck-input`, the primary
+ * button `ck-button-action`, and every colour, size and spacing below is one
+ * of CKEditor's custom properties, so the panel follows the editor's theme
+ * rather than imposing a second look.
+ *
+ * WHY THE SELECTORS ARE LONGER THAN USUAL. CKEditor resets every element in
+ * its UI with `.ck-reset_all :not(.ck-reset_all-excluded *)` — specificity
+ * (0,2,0) — and injects that stylesheet after this one. A rule here at (0,2,0)
+ * loses the tie; measured 2026-10-08: the previous panel's 12px padding and
+ * its field borders never reached the screen. Every rule below is therefore
+ * scoped `.ck.ck-utilikit-panel …` (0,3,0) or more.
  */
 
-.ck-utilikit-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-inline-size: 260px;
-  padding: 12px;
+/*
+ * A STYLED BLOCK MUST NOT VANISH FROM THE EDITOR. In inline rendering mode
+ * utilikit.engine.css hides every `.utilikit` element until the engine has
+ * processed it — `body:not(…) .utilikit:not([data-utilikit-props])`, (0,3,1).
+ * The engine never processes the editing view, and must not: it would write
+ * attributes into content CKEditor owns. Measured 2026-10-08 on sts.local:
+ * the paragraph the button had just styled was `visibility: hidden` inside
+ * the editor, so applying a class made the text disappear. This (0,4,0) rule
+ * keeps editable content visible; the front end is untouched.
+ */
+.ck.ck-editor__editable .utilikit:not([data-utilikit-props]) {
+  visibility: visible;
 }
 
-.ck-utilikit-panel__label {
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ck-color-text, #333);
-  font-size: 11px;
+/*
+ * NOR MAY IT SHIMMER FOREVER. The same never-processed state also draws the
+ * engine's inline-mode loading indicator: a blue gradient on `::before`,
+ * sliding translateX(-100%) to 100% on an infinite loop, (0,3,2). Measured
+ * 2026-10-08 on sts.local node 37: the animation ran without end on the styled
+ * paragraph, and the slid-out layer widened the editable from 958px to a
+ * 1191px scroll width, so the editor's scrollbar kept growing. The engine
+ * clears it with `display: none` once it processes an element; this (0,4,1)
+ * rule does the same for content it never will.
+ */
+.ck.ck-editor__editable .utilikit:not([data-utilikit-props])::before {
+  display: none;
+}
+
+/*
+ * THE PANEL NEVER RUNS OFF THE SCREEN. utilikitui.js sets max-block-size to
+ * the room left in the window on every open, resize and scroll; only the
+ * body scrolls inside it, so the actions and the footer stay in view.
+ */
+.ck-dropdown__panel .ck.ck-utilikit-panel {
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+  box-sizing: border-box;
+  inline-size: 18.5rem;
+  max-inline-size: calc(100vw - 2 * var(--ck-spacing-large));
+  max-block-size: min(36rem, 80vh);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__body {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overscroll-behavior: contain;
+}
+
+.ck.ck-utilikit-panel [hidden] {
+  display: none !important;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__section {
+  display: flex;
+  flex-direction: column;
+  padding: var(--ck-spacing-standard);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__section_form {
+  border-block-start: 1px solid var(--ck-color-base-border);
+}
+
+/* Drawn as CKEditor's own form header (link, table properties). */
+.ck.ck-utilikit-panel .ck-utilikit-panel__heading {
+  color: var(--ck-color-text);
+  font-size: var(--ck-font-size-base);
   font-weight: bold;
 }
 
-.ck-utilikit-panel__breakpoint,
-.ck-utilikit-panel__prefix,
-.ck-utilikit-panel__value {
-  padding: 4px 6px;
-  color: var(--ck-color-text, #333);
-  border: 1px solid var(--ck-color-base-border, #ccc);
-  border-radius: var(--ck-border-radius, 2px);
-  background: var(--ck-color-base-background, #fff);
-  font: inherit;
+.ck.ck-utilikit-panel .ck-utilikit-panel__count {
+  font-weight: normal;
 }
 
-.ck-utilikit-panel__hint {
-  margin: 2px 0 0;
-  color: var(--ck-color-text, #666);
-  font-size: 11px;
+/*
+ * What is on the block now: one small pill per class. CONDENSED AND CAPPED —
+ * a block can carry dozens of classes, so the list scrolls inside its own
+ * few rows instead of pushing the form out of the panel.
+ */
+.ck.ck-utilikit-panel .ck-utilikit-panel__chips {
+  display: flex;
+  overflow-y: auto;
+  flex-wrap: wrap;
+  max-block-size: 6.75rem;
+  margin: 0;
+  padding: 1px;
+  list-style: none;
+  gap: var(--ck-spacing-tiny);
+  overscroll-behavior: contain;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip {
+  display: inline-flex;
+  align-items: center;
+  max-inline-size: 100%;
+  border: 1px dashed var(--ck-color-base-border);
+  border-radius: 3px;
+  background: var(--ck-color-base-foreground);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-label,
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-remove {
+  padding: 0 1px;
+  cursor: pointer;
+  color: var(--ck-color-text);
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  font-size: var(--ck-font-size-normal);
+  line-height: 1.5;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-label {
+  max-inline-size: 15rem;
+  padding-inline-start: 3px;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-label:disabled {
+  cursor: default;
+  font-family: monospace;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-remove {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 3px;
+  line-height: 1.6;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-remove svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+  fill: var(--ck-color-text);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-label:hover:not(:disabled),
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-remove:hover {
+  background: var(--ck-color-base-border);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-label:focus-visible,
+.ck.ck-utilikit-panel .ck-utilikit-panel__chip-remove:focus-visible {
+  outline: var(--ck-focus-ring);
+  outline-offset: -1px;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__empty,
+.ck.ck-utilikit-panel .ck-utilikit-panel__hint,
+.ck.ck-utilikit-panel .ck-utilikit-panel__preview {
+  margin: 0;
+  white-space: normal;
+  color: var(--ck-color-text);
+  font-size: var(--ck-font-size-small);
   line-height: 1.4;
 }
 
-.ck-utilikit-panel__current {
-  margin-block-start: 4px;
-  padding-block-start: 6px;
-  word-break: break-all;
-  color: var(--ck-color-text, #333);
-  border-block-start: 1px solid var(--ck-color-base-border, #eee);
+.ck.ck-utilikit-panel .ck-utilikit-panel__empty {
+  font-style: italic;
+}
+
+/* The add-or-change fields. */
+.ck.ck-utilikit-panel .ck-utilikit-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ck-spacing-tiny);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__label {
+  color: var(--ck-color-text);
+  font-size: var(--ck-font-size-small);
+}
+
+/*
+ * Selects and the text field drawn exactly as CKEditor's .ck-input: same
+ * height, border, radius and focus ring, so nothing reads as a browser form.
+ */
+.ck.ck-utilikit-panel .ck-utilikit-panel__select,
+.ck.ck-utilikit-panel .ck-utilikit-panel__value {
+  box-sizing: border-box;
+  min-block-size: var(--ck-ui-component-min-height);
+  padding-block: var(--ck-spacing-extra-tiny);
+  padding-inline-start: var(--ck-spacing-medium);
+  border: 1px solid var(--ck-color-input-border);
+  background: var(--ck-color-input-background);
+  box-shadow: none;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__select:focus,
+.ck.ck-utilikit-panel .ck-utilikit-panel__value:focus {
+  border: var(--ck-focus-ring);
+  outline: none;
+  box-shadow:
+    var(--ck-focus-outer-shadow),
+    0 0;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__select-wrap,
+.ck.ck-utilikit-panel .ck-utilikit-panel__value-row {
+  position: relative;
+  display: flex;
+  gap: var(--ck-spacing-small);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__select,
+.ck.ck-utilikit-panel .ck-utilikit-panel__value {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  inline-size: 100%;
+  color: var(--ck-color-input-text);
+  border-radius: var(--ck-border-radius);
+  font-size: var(--ck-font-size-base);
+}
+
+/* A select drawn as a CKEditor field, with CKEditor's dropdown arrow. */
+.ck.ck-utilikit-panel .ck-utilikit-panel__select {
+  padding-inline-end: calc(var(--ck-spacing-medium) * 3);
+  cursor: pointer;
+  appearance: none;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__select-wrap::after {
+  position: absolute;
+  content: "";
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+  border-inline-end: 2px solid var(--ck-color-text);
+  border-block-end: 2px solid var(--ck-color-text);
+  inset-block-start: 50%;
+  inset-inline-end: var(--ck-spacing-medium);
+  inline-size: 0.4em;
+  block-size: 0.4em;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__color {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  inline-size: var(--ck-ui-component-min-height);
+  block-size: var(--ck-ui-component-min-height);
+  padding: 2px;
+  cursor: pointer;
+  border: 1px solid var(--ck-color-input-border);
+  border-radius: var(--ck-border-radius);
+  background: var(--ck-color-input-background);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__color:focus-visible {
+  border: var(--ck-focus-ring);
+  outline: none;
+  box-shadow:
+    var(--ck-focus-outer-shadow),
+    0 0;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__preview {
+  overflow-wrap: anywhere;
   font-family: monospace;
-  font-size: 11px;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__message {
+  margin: 0;
+  white-space: normal;
+  color: var(--ck-color-text);
+  font-size: var(--ck-font-size-small);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__message:empty {
+  display: none;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__actions {
+  display: flex;
+  flex: 0 0 auto;
+  justify-content: space-between;
+  padding: var(--ck-spacing-standard) var(--ck-spacing-large);
+  border-block-start: 1px solid var(--ck-color-base-border);
+  gap: var(--ck-spacing-standard);
+}
+
+/* Small print: where to learn more. Each link opens in a new tab. */
+.ck.ck-utilikit-panel .ck-utilikit-panel__footer {
+  flex: 0 0 auto;
+  padding: var(--ck-spacing-small) var(--ck-spacing-large);
+  text-align: center;
+  color: var(--ck-color-text);
+  border-block-start: 1px solid var(--ck-color-base-border);
+  background: var(--ck-color-base-foreground);
+  font-size: var(--ck-font-size-tiny);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__link {
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--ck-color-link-default, #0000f0);
+}
+
+.ck.ck-utilikit-panel .ck-utilikit-panel__link:focus-visible {
+  border-radius: var(--ck-border-radius);
+  outline: var(--ck-focus-ring);
 }

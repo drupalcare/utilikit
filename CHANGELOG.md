@@ -12,6 +12,63 @@ the record for those.
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **`utilikit_ckeditor`: the toolbar button had no icon.** In *Text formats →
+  Available buttons* it showed as an empty grey box, because the admin library
+  set no background image for `.ckeditor5-toolbar-button-utilikit` — core draws
+  every button there as an empty span and leaves the icon to that CSS. The
+  button now uses the Material Symbols `handyman` icon (Apache-2.0, see
+  `modules/utilikit_ckeditor/icons/`), and the editor toolbar shows the same
+  SVG next to the label. `UtilikitCkeditorToolbarIconTest` fails if any toolbar
+  item lacks an admin icon, or if the built editor plugin stops embedding the
+  same SVG.
+- **`utilikit_ckeditor`: a block styled with the button vanished from the
+  editor.** In inline rendering mode `utilikit.engine.css` hides every
+  `.utilikit` element until the engine processes it, and the engine never
+  processes the editing view — so applying a class made the paragraph
+  invisible while editing. The editor stylesheet now keeps editable content
+  visible; the front end is unchanged.
+- **`utilikit_ckeditor`: changing a value added a second class.** Setting
+  padding to 24px on a block that had 16px left both `uk-pd--16px` and
+  `uk-pd--24px`. A new value now replaces the old one for the same utility,
+  side and screen size.
+- **`utilikit_ckeditor`: any typed value was written as a class.**
+  `uk-ta--banana` was accepted, and a value with a space put a second class on
+  the element. Keyword utilities now offer only their accepted words, colours a
+  picker, and every class is checked against
+  `UtilikitConstants::CLASS_VALIDATION_PATTERN` before it is written.
+- **`utilikit_ckeditor`: an endless blue shimmer ran inside the editor.** The
+  engine's inline-mode loading indicator never stopped on styled blocks in the
+  editing view, and its sliding layer kept widening the editor's scrollbar. It
+  is now hidden inside the editor; the front end is unchanged.
+- **`utilikit_ckeditor`: the panel ran off the bottom of the screen**, hiding
+  Apply. It now opens on the side of the button with more room and caps its
+  height to the space left in the window, on open and on resize or scroll;
+  its body scrolls while Apply and the footer stay in view.
+- **`utilikit_ckeditor`: state and opacity suffixes were read as values.**
+  `uk-tc--3b82f6-h` showed as "Text color: 3b82f6-h"; it now reads
+  "Text color: #3b82f6 · hover" (likewise focus, active and `-50` opacity).
+
+### Changed
+
+- **`utilikit_ckeditor`: the toolbar panel is reorganised.** It shows the
+  styles already on the block as removable, editable chips in plain words
+  ("Padding, top: 16px · 768px+"), then *Style* (grouped, "Max width (xw)"
+  rather than "xw — maxInlineSize"), *Side*, *Value* (with a help line for
+  what to type) and *Screen size* ("768px and wider (md)"), with Apply and
+  Remove all. It is drawn with CKEditor's own field and button styles, every
+  label is tied to its control, and Tab cycles inside the panel. The styles on
+  the block are compact chips with a count, in a list that scrolls when a
+  block carries many. A small footer links to Playground, Help and Reference,
+  each shown only when its module is on and the user may open it, and each
+  opening in a new tab so the edit is not lost.
+- **`UtilikitRules::getRules()`: every rule now carries a `label`.** The plain
+  words for the utility live on the rule, so no consumer keeps its own list of
+  names. `utilikit_ai` excludes it from the flags it reasons about.
+
 ## [1.0.5] — UNRELEASED
 
 ### Added

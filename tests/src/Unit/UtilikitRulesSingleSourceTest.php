@@ -205,6 +205,34 @@ final class UtilikitRulesSingleSourceTest extends UnitTestCase {
   }
 
   /**
+   * Every rule carries a plain-words label, and no two share one.
+   *
+   * The CKEditor panel lists utilities by these labels — "Max width (xw)", not
+   * "xw — maxInlineSize". They live on the rule rather than in the editor so a
+   * rule cannot be added without one and no consumer keeps its own list of
+   * names. Two rules with one label would be indistinguishable in that list.
+   */
+  public function testEveryRuleHasUniquePlainLabel(): void {
+    $labels = [];
+
+    foreach (UtilikitRules::getRules() as $prefix => $rule) {
+      self::assertIsArray($rule);
+      self::assertArrayHasKey('label', $rule, $prefix . ' has no label, so the editor can only show its code.');
+      self::assertIsString($rule['label']);
+      self::assertNotSame('', trim($rule['label']), $prefix . ' has an empty label.');
+      self::assertDoesNotMatchRegularExpression(
+        '/[a-z][A-Z]/',
+        $rule['label'],
+        $prefix . ' label looks like a camelCase property name, not plain words.',
+      );
+      $labels[$prefix] = $rule['label'];
+    }
+
+    $duplicates = array_keys(array_filter(array_count_values($labels), static fn (int $n): bool => $n > 1));
+    self::assertSame([], $duplicates, 'Labels used by more than one rule: ' . implode(', ', $duplicates));
+  }
+
+  /**
    * The auto keyword is allowed exactly where CSS allows it.
    *
    * MEASURED against the browser's own CSS.supports() on 2026-09-05, not

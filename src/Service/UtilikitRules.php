@@ -84,25 +84,53 @@ class UtilikitRules {
    * - isRange: Range values for grid positioning
    * - allowAuto: Allows 'auto' keyword for numeric properties
    * - group: Category for organizational purposes
+   * - label: The utility in plain words, for people choosing one from a list
+   *   (the CKEditor panel). It lives HERE, on the rule, so a rule cannot be
+   *   added without one and no consumer keeps its own copy of the names.
    *
    * @return array<string, mixed>
    *   Array of utility class rules keyed by prefix abbreviation.
    */
   public static function getRules(): array {
     return [
-      'pd' => ['css' => 'padding', 'sides' => TRUE, 'isNumericFlexible' => TRUE, 'group' => 'Box Model'],
+      'pd' => [
+        'css' => 'padding',
+        'label' => 'Padding',
+        'sides' => TRUE,
+        'isNumericFlexible' => TRUE,
+        'group' => 'Box Model',
+      ],
       'mg' => [
         'css' => 'margin',
+        'label' => 'Margin',
         'sides' => TRUE,
         'isNumericFlexible' => TRUE,
         'allowAuto' => TRUE,
         'group' => 'Box Model',
       ],
-      'bw' => ['css' => 'borderWidth', 'sides' => TRUE, 'isNumericFlexible' => TRUE, 'group' => 'Box Model'],
-      'br' => ['css' => 'borderRadius', 'sides' => TRUE, 'isNumericFlexible' => TRUE, 'group' => 'Box Model'],
+      'bw' => [
+        'css' => 'borderWidth',
+        'label' => 'Border width',
+        'sides' => TRUE,
+        'isNumericFlexible' => TRUE,
+        'group' => 'Box Model',
+      ],
+      'br' => [
+        'css' => 'borderRadius',
+        'label' => 'Border radius',
+        'sides' => TRUE,
+        'isNumericFlexible' => TRUE,
+        'group' => 'Box Model',
+      ],
 
-      'bs' => ['css' => 'borderStyle', 'isKeyword' => TRUE, 'sides' => TRUE, 'group' => 'Box Model'],
-      'bc' => ['css' => 'borderColor', 'isColor' => TRUE, 'group' => 'Colors'],
+      'bs' => [
+        'css' => 'borderStyle',
+        'label' => 'Border style',
+        'isKeyword' => TRUE,
+        'sides' => TRUE,
+        'group' => 'Box Model',
+      ],
+      'bc' => ['css' => 'borderColor', 'label' => 'Border color', 'isColor' => TRUE, 'group' => 'Colors'],
 
       // `allowAuto` on wd/ht/nw and NOT on xw/xh is decided by CSS, not by
       // preference — verified against the browser's own CSS.supports() on
@@ -117,58 +145,87 @@ class UtilikitRules {
       // `nh` (min-block-size) does accept `auto` and neither side allows it.
       // That is a missing feature rather than drift, and adding it silently
       // here would be a change nobody asked for.
-      'wd' => ['css' => 'inlineSize', 'isNumericFlexible' => TRUE, 'allowAuto' => TRUE, 'group' => 'Sizing'],
-      'ht' => ['css' => 'blockSize', 'isNumericFlexible' => TRUE, 'allowAuto' => TRUE, 'group' => 'Sizing'],
-      'xw' => ['css' => 'maxInlineSize', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
-      'nw' => ['css' => 'minInlineSize', 'isNumericFlexible' => TRUE, 'allowAuto' => TRUE, 'group' => 'Sizing'],
-      'xh' => ['css' => 'maxBlockSize', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
-      'nh' => ['css' => 'minBlockSize', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
+      'wd' => [
+        'css' => 'inlineSize',
+        'label' => 'Width',
+        'isNumericFlexible' => TRUE,
+        'allowAuto' => TRUE,
+        'group' => 'Sizing',
+      ],
+      'ht' => [
+        'css' => 'blockSize',
+        'label' => 'Height',
+        'isNumericFlexible' => TRUE,
+        'allowAuto' => TRUE,
+        'group' => 'Sizing',
+      ],
+      'xw' => ['css' => 'maxInlineSize', 'label' => 'Max width', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
+      'nw' => [
+        'css' => 'minInlineSize',
+        'label' => 'Min width',
+        'isNumericFlexible' => TRUE,
+        'allowAuto' => TRUE,
+        'group' => 'Sizing',
+      ],
+      'xh' => ['css' => 'maxBlockSize', 'label' => 'Max height', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
+      'nh' => ['css' => 'minBlockSize', 'label' => 'Min height', 'isNumericFlexible' => TRUE, 'group' => 'Sizing'],
 
-      'tp' => ['css' => 'insetBlockStart', 'isNumericFlexible' => TRUE, 'group' => 'Positioning'],
-      'lt' => ['css' => 'insetInlineStart', 'isNumericFlexible' => TRUE, 'group' => 'Positioning'],
-      'ri' => ['css' => 'insetInlineEnd', 'isNumericFlexible' => TRUE, 'group' => 'Positioning'],
-      'bt' => ['css' => 'insetBlockEnd', 'isNumericFlexible' => TRUE, 'group' => 'Positioning'],
+      'tp' => ['css' => 'insetBlockStart', 'label' => 'Top', 'isNumericFlexible' => TRUE, 'group' => 'Positioning'],
+      'lt' => ['css' => 'insetInlineStart', 'label' => 'Left', 'isNumericFlexible' => TRUE, 'group' => 'Positioning'],
+      'ri' => ['css' => 'insetInlineEnd', 'label' => 'Right', 'isNumericFlexible' => TRUE, 'group' => 'Positioning'],
+      'bt' => ['css' => 'insetBlockEnd', 'label' => 'Bottom', 'isNumericFlexible' => TRUE, 'group' => 'Positioning'],
 
-      'fs' => ['css' => 'fontSize', 'isNumericFlexible' => TRUE, 'group' => 'Typography'],
-      'lh' => ['css' => 'lineHeight', 'isNumericFlexible' => TRUE, 'group' => 'Typography'],
-      'fw' => ['css' => 'fontWeight', 'isInteger' => TRUE, 'group' => 'Typography'],
-      'ls' => ['css' => 'letterSpacing', 'isNumericFlexible' => TRUE, 'group' => 'Typography'],
-      'op' => ['css' => 'opacity', 'isInteger' => TRUE, 'isOpacity' => TRUE, 'group' => 'Effects'],
-      'zi' => ['css' => 'zIndex', 'isInteger' => TRUE, 'group' => 'Effects'],
+      'fs' => ['css' => 'fontSize', 'label' => 'Font size', 'isNumericFlexible' => TRUE, 'group' => 'Typography'],
+      'lh' => ['css' => 'lineHeight', 'label' => 'Line height', 'isNumericFlexible' => TRUE, 'group' => 'Typography'],
+      'fw' => ['css' => 'fontWeight', 'label' => 'Font weight', 'isInteger' => TRUE, 'group' => 'Typography'],
+      'ls' => [
+        'css' => 'letterSpacing',
+        'label' => 'Letter spacing',
+        'isNumericFlexible' => TRUE,
+        'group' => 'Typography',
+      ],
+      'op' => [
+        'css' => 'opacity',
+        'label' => 'Opacity',
+        'isInteger' => TRUE,
+        'isOpacity' => TRUE,
+        'group' => 'Effects',
+      ],
+      'zi' => ['css' => 'zIndex', 'label' => 'Z-index', 'isInteger' => TRUE, 'group' => 'Effects'],
 
-      'gp' => ['css' => 'gap', 'isNumericFlexible' => TRUE, 'group' => 'Spacing'],
-      'ar' => ['css' => 'aspectRatio', 'isRange' => TRUE, 'group' => 'Layout'],
+      'gp' => ['css' => 'gap', 'label' => 'Gap', 'isNumericFlexible' => TRUE, 'group' => 'Spacing'],
+      'ar' => ['css' => 'aspectRatio', 'label' => 'Aspect ratio', 'isRange' => TRUE, 'group' => 'Layout'],
 
-      'bg' => ['css' => 'backgroundColor', 'isColor' => TRUE, 'group' => 'Colors'],
-      'tc' => ['css' => 'color', 'isColor' => TRUE, 'group' => 'Colors'],
+      'bg' => ['css' => 'backgroundColor', 'label' => 'Background color', 'isColor' => TRUE, 'group' => 'Colors'],
+      'tc' => ['css' => 'color', 'label' => 'Text color', 'isColor' => TRUE, 'group' => 'Colors'],
 
-      'fg' => ['css' => 'flexGrow', 'isDecimalFixed' => TRUE, 'group' => 'Flexbox'],
-      'fk' => ['css' => 'flexShrink', 'isDecimalFixed' => TRUE, 'group' => 'Flexbox'],
-      'fb' => ['css' => 'flexBasis', 'isNumericFlexible' => TRUE, 'group' => 'Flexbox'],
-      'or' => ['css' => 'order', 'isInteger' => TRUE, 'group' => 'Flexbox'],
+      'fg' => ['css' => 'flexGrow', 'label' => 'Flex grow', 'isDecimalFixed' => TRUE, 'group' => 'Flexbox'],
+      'fk' => ['css' => 'flexShrink', 'label' => 'Flex shrink', 'isDecimalFixed' => TRUE, 'group' => 'Flexbox'],
+      'fb' => ['css' => 'flexBasis', 'label' => 'Flex basis', 'isNumericFlexible' => TRUE, 'group' => 'Flexbox'],
+      'or' => ['css' => 'order', 'label' => 'Order', 'isInteger' => TRUE, 'group' => 'Flexbox'],
 
-      'gc' => ['css' => 'gridTemplateColumns', 'isGridTrackList' => TRUE, 'group' => 'Grid'],
-      'gr' => ['css' => 'gridTemplateRows', 'isGridTrackList' => TRUE, 'group' => 'Grid'],
-      'gl' => ['css' => 'gridColumn', 'isRange' => TRUE, 'group' => 'Grid'],
-      'gw' => ['css' => 'gridRow', 'isRange' => TRUE, 'group' => 'Grid'],
+      'gc' => ['css' => 'gridTemplateColumns', 'label' => 'Grid columns', 'isGridTrackList' => TRUE, 'group' => 'Grid'],
+      'gr' => ['css' => 'gridTemplateRows', 'label' => 'Grid rows', 'isGridTrackList' => TRUE, 'group' => 'Grid'],
+      'gl' => ['css' => 'gridColumn', 'label' => 'Grid column span', 'isRange' => TRUE, 'group' => 'Grid'],
+      'gw' => ['css' => 'gridRow', 'label' => 'Grid row span', 'isRange' => TRUE, 'group' => 'Grid'],
 
-      'rt' => ['css' => 'rotate', 'isTransform' => 'rotate', 'group' => 'Transform'],
-      'sc' => ['css' => 'scale', 'isTransform' => 'scale', 'group' => 'Transform'],
+      'rt' => ['css' => 'rotate', 'label' => 'Rotate', 'isTransform' => 'rotate', 'group' => 'Transform'],
+      'sc' => ['css' => 'scale', 'label' => 'Scale', 'isTransform' => 'scale', 'group' => 'Transform'],
 
-      'ta' => ['css' => 'textAlign', 'isKeyword' => TRUE, 'group' => 'Typography'],
-      'dp' => ['css' => 'display', 'isKeyword' => TRUE, 'group' => 'Layout'],
-      'ps' => ['css' => 'position', 'isKeyword' => TRUE, 'group' => 'Positioning'],
-      'bz' => ['css' => 'backgroundSize', 'isKeyword' => TRUE, 'group' => 'Background'],
-      'fd' => ['css' => 'flexDirection', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
-      'jc' => ['css' => 'justifyContent', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
-      'ai' => ['css' => 'alignItems', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
-      'ac' => ['css' => 'alignContent', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
-      'fx' => ['css' => 'flexWrap', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
-      'ov' => ['css' => 'overflow', 'isKeyword' => TRUE, 'group' => 'Layout'],
-      'cu' => ['css' => 'cursor', 'isKeyword' => TRUE, 'group' => 'Layout'],
-      'fl' => ['css' => 'float', 'isKeyword' => TRUE, 'group' => 'Layout'],
-      'cl' => ['css' => 'clear', 'isKeyword' => TRUE, 'group' => 'Layout'],
-      'us' => ['css' => 'userSelect', 'isKeyword' => TRUE, 'group' => 'Layout'],
+      'ta' => ['css' => 'textAlign', 'label' => 'Text align', 'isKeyword' => TRUE, 'group' => 'Typography'],
+      'dp' => ['css' => 'display', 'label' => 'Display', 'isKeyword' => TRUE, 'group' => 'Layout'],
+      'ps' => ['css' => 'position', 'label' => 'Position', 'isKeyword' => TRUE, 'group' => 'Positioning'],
+      'bz' => ['css' => 'backgroundSize', 'label' => 'Background size', 'isKeyword' => TRUE, 'group' => 'Background'],
+      'fd' => ['css' => 'flexDirection', 'label' => 'Flex direction', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
+      'jc' => ['css' => 'justifyContent', 'label' => 'Justify content', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
+      'ai' => ['css' => 'alignItems', 'label' => 'Align items', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
+      'ac' => ['css' => 'alignContent', 'label' => 'Align content', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
+      'fx' => ['css' => 'flexWrap', 'label' => 'Flex wrap', 'isKeyword' => TRUE, 'group' => 'Flexbox'],
+      'ov' => ['css' => 'overflow', 'label' => 'Overflow', 'isKeyword' => TRUE, 'group' => 'Layout'],
+      'cu' => ['css' => 'cursor', 'label' => 'Cursor', 'isKeyword' => TRUE, 'group' => 'Layout'],
+      'fl' => ['css' => 'float', 'label' => 'Float', 'isKeyword' => TRUE, 'group' => 'Layout'],
+      'cl' => ['css' => 'clear', 'label' => 'Clear', 'isKeyword' => TRUE, 'group' => 'Layout'],
+      'us' => ['css' => 'userSelect', 'label' => 'User select', 'isKeyword' => TRUE, 'group' => 'Layout'],
     ];
   }
 

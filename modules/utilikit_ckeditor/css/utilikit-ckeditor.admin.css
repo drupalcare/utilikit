@@ -1,8 +1,17 @@
 /**
  * @file
  * Styling for the UtiliKit item in the text format toolbar configuration.
+ *
+ * Core's toolbar configuration UI draws every button as an EMPTY span,
+ * `.ckeditor5-toolbar-button-<toolbar item name>`, and leaves the icon to the
+ * plugin's admin library as a background image — the same pattern as
+ * core/modules/ckeditor5/css/alignment.admin.css. Without this rule the
+ * "Available buttons" list shows a blank grey box.
+ *
+ * The SVG is the same file the editor button imports (utilikitui.js), so the
+ * admin icon and the editor icon cannot drift apart.
  */
 
-.ckeditor5-toolbar-item-utilikit .ckeditor5-toolbar-button {
-  font-weight: bold;
+.ckeditor5-toolbar-button-utilikit {
+  background-image: url(../icons/handyman.svg);
 }

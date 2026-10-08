@@ -34,7 +34,7 @@ final readonly class Utility {
    * @param string $group
    *   The functional group, e.g. `Box Model`.
    * @param array<string, mixed> $flags
-   *   The rule's flags, minus `css` and `group`.
+   *   The rule's flags, minus `css`, `group` and `label`.
    * @param list<string> $keywords
    *   Accepted keyword values, empty unless this is a keyword rule.
    * @param array<string, string> $shorthand
