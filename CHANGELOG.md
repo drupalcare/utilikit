@@ -12,7 +12,7 @@ the record for those.
 
 ---
 
-## [Unreleased]
+## [1.0.7] — 2026-10-09
 
 ### Fixed
 
@@ -69,7 +69,15 @@ the record for those.
   words for the utility live on the rule, so no consumer keeps its own list of
   names. `utilikit_ai` excludes it from the flags it reasons about.
 
-## [1.0.5] — UNRELEASED
+## [1.0.6] — 2026-10-07
+
+### Fixed
+
+- **CSS: `all: unset` now comes first in its rule.** It resets every
+  property, so placed after the rule's other declarations it erased them
+  (size, border, radius, background).
+
+## [1.0.5] — 2026-10-05
 
 ### Added
 
