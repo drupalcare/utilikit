@@ -37,7 +37,7 @@ use Drupal\utilikit\Service\UtilikitRules;
  */
 #[LegacyHook]
 function utilikit_help(string $route_name, RouteMatchInterface $route_match): ?string {
-  return \Drupal::service(UtilikitHooks::class)->help($route_name, $route_match);
+  return \Drupal::classResolver(UtilikitHooks::class)->help($route_name, $route_match);
 }
 
 /**
@@ -174,7 +174,7 @@ function utilikit_js_settings_alter(array &$settings, AttachedAssetsInterface $a
  */
 #[LegacyHook]
 function utilikit_page_attachments(array &$attachments): void {
-  \Drupal::service(UtilikitHooks::class)->pageAttachments($attachments);
+  \Drupal::classResolver(UtilikitHooks::class)->pageAttachments($attachments);
 }
 
 /**
@@ -191,7 +191,7 @@ function utilikit_page_attachments(array &$attachments): void {
  */
 #[LegacyHook]
 function utilikit_entity_presave(EntityInterface $entity): void {
-  \Drupal::service(UtilikitHooks::class)->entityPresave($entity);
+  \Drupal::classResolver(UtilikitHooks::class)->entityPresave($entity);
 }
 
 /**
@@ -301,7 +301,7 @@ function utilikit_update_classes(array $classes, bool $force = FALSE): void {
  */
 #[LegacyHook]
 function utilikit_theme() {
-  return \Drupal::service(UtilikitHooks::class)->theme();
+  return \Drupal::classResolver(UtilikitHooks::class)->theme();
 }
 
 /**
@@ -358,7 +358,7 @@ function utilikit_should_scan_entity(EntityInterface $entity): bool {
  */
 #[LegacyHook]
 function utilikit_library_info_alter(array &$libraries, string $extension): void {
-  \Drupal::service(UtilikitHooks::class)->libraryInfoAlter($libraries, $extension);
+  \Drupal::classResolver(UtilikitHooks::class)->libraryInfoAlter($libraries, $extension);
 }
 
 /**
@@ -371,7 +371,7 @@ function utilikit_library_info_alter(array &$libraries, string $extension): void
  */
 #[LegacyHook]
 function utilikit_css_alter(array &$css): void {
-  \Drupal::service(UtilikitHooks::class)->cssAlter($css);
+  \Drupal::classResolver(UtilikitHooks::class)->cssAlter($css);
 }
 
 /**
@@ -382,5 +382,5 @@ function utilikit_css_alter(array &$css): void {
  */
 #[LegacyHook]
 function utilikit_cache_flush(): void {
-  \Drupal::service(UtilikitHooks::class)->cacheFlush();
+  \Drupal::classResolver(UtilikitHooks::class)->cacheFlush();
 }

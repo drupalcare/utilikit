@@ -44,7 +44,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
  */
 #[LegacyHook]
 function utilikit_test_help(string $route_name, RouteMatchInterface $route_match): ?string {
-  return \Drupal::service(UtilikitTestHooks::class)->help($route_name, $route_match);
+  return \Drupal::classResolver(UtilikitTestHooks::class)->help($route_name, $route_match);
 }
 
 /**
@@ -68,7 +68,7 @@ function utilikit_test_help(string $route_name, RouteMatchInterface $route_match
  */
 #[LegacyHook]
 function utilikit_test_theme($existing, $type, $theme, $path): array {
-  return \Drupal::service(UtilikitTestHooks::class)->theme($existing, $type, $theme, $path);
+  return \Drupal::classResolver(UtilikitTestHooks::class)->theme($existing, $type, $theme, $path);
 }
 
 /**
@@ -82,5 +82,5 @@ function utilikit_test_theme($existing, $type, $theme, $path): array {
  */
 #[LegacyHook]
 function utilikit_test_page_attachments(array &$attachments): void {
-  \Drupal::service(UtilikitTestHooks::class)->pageAttachments($attachments);
+  \Drupal::classResolver(UtilikitTestHooks::class)->pageAttachments($attachments);
 }

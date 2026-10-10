@@ -23,7 +23,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
  */
 #[LegacyHook]
 function utilikit_examples_help(string $route_name, RouteMatchInterface $route_match): ?string {
-  return \Drupal::service(UtilikitExamplesHooks::class)->help($route_name, $route_match);
+  return \Drupal::classResolver(UtilikitExamplesHooks::class)->help($route_name, $route_match);
 }
 
 /**
@@ -54,7 +54,7 @@ function utilikit_examples_help(string $route_name, RouteMatchInterface $route_m
  */
 #[LegacyHook]
 function utilikit_examples_theme($existing, $type, $theme, $path): array {
-  return \Drupal::service(UtilikitExamplesHooks::class)->theme($existing, $type, $theme, $path);
+  return \Drupal::classResolver(UtilikitExamplesHooks::class)->theme($existing, $type, $theme, $path);
 }
 
 /**
@@ -68,5 +68,5 @@ function utilikit_examples_theme($existing, $type, $theme, $path): array {
  */
 #[LegacyHook]
 function utilikit_examples_page_attachments(array &$attachments): void {
-  \Drupal::service(UtilikitExamplesHooks::class)->pageAttachments($attachments);
+  \Drupal::classResolver(UtilikitExamplesHooks::class)->pageAttachments($attachments);
 }

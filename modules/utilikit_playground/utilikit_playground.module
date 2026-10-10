@@ -23,7 +23,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
  */
 #[LegacyHook]
 function utilikit_playground_help(string $route_name, RouteMatchInterface $route_match): ?string {
-  return \Drupal::service(UtilikitPlaygroundHooks::class)->help($route_name, $route_match);
+  return \Drupal::classResolver(UtilikitPlaygroundHooks::class)->help($route_name, $route_match);
 }
 
 /**
@@ -42,7 +42,7 @@ function utilikit_playground_help(string $route_name, RouteMatchInterface $route
  */
 #[LegacyHook]
 function utilikit_playground_theme($existing, $type, $theme, $path): array {
-  return \Drupal::service(UtilikitPlaygroundHooks::class)->theme($existing, $type, $theme, $path);
+  return \Drupal::classResolver(UtilikitPlaygroundHooks::class)->theme($existing, $type, $theme, $path);
 }
 
 /**
@@ -56,5 +56,5 @@ function utilikit_playground_theme($existing, $type, $theme, $path): array {
  */
 #[LegacyHook]
 function utilikit_playground_page_attachments(array &$attachments): void {
-  \Drupal::service(UtilikitPlaygroundHooks::class)->pageAttachments($attachments);
+  \Drupal::classResolver(UtilikitPlaygroundHooks::class)->pageAttachments($attachments);
 }

@@ -21,7 +21,7 @@ use Drupal\Core\Routing\RouteMatchInterface;
  */
 #[LegacyHook]
 function utilikit_help_help(string $route_name, RouteMatchInterface $route_match): ?string {
-  return \Drupal::service(UtilikitHelpHooks::class)->help($route_name, $route_match);
+  return \Drupal::classResolver(UtilikitHelpHooks::class)->help($route_name, $route_match);
 }
 
 /**
@@ -35,7 +35,7 @@ function utilikit_help_help(string $route_name, RouteMatchInterface $route_match
  */
 #[LegacyHook]
 function utilikit_help_theme($existing, $type, $theme, $path): array {
-  return \Drupal::service(UtilikitHelpHooks::class)->theme($existing, $type, $theme, $path);
+  return \Drupal::classResolver(UtilikitHelpHooks::class)->theme($existing, $type, $theme, $path);
 }
 
 /**
@@ -45,5 +45,5 @@ function utilikit_help_theme($existing, $type, $theme, $path): array {
  */
 #[LegacyHook]
 function utilikit_help_page_attachments(array &$attachments): void {
-  \Drupal::service(UtilikitHelpHooks::class)->pageAttachments($attachments);
+  \Drupal::classResolver(UtilikitHelpHooks::class)->pageAttachments($attachments);
 }
