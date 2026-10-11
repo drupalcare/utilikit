@@ -295,7 +295,7 @@ class UtilikitQueueTest extends KernelTestBase {
    */
   public function testQueueErrorHandling() {
     // Create a mock service provider that throws exception.
-    $mockServiceProvider = $this->createMock('\Drupal\utilikit\Service\UtilikitServiceProvider');
+    $mockServiceProvider = $this->createStub('\Drupal\utilikit\Service\UtilikitServiceProvider');
     $mockServiceProvider->method('getContentScanner')
       ->willThrowException(new \Exception('Test exception'));
 

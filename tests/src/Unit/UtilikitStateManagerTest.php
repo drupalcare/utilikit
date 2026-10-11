@@ -10,7 +10,7 @@ use Drupal\Tests\UnitTestCase;
 use Drupal\utilikit\Service\UtilikitStateManager;
 use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\Core\State\StateInterface;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 /**
  * Tests the UtilikitStateManager service.
@@ -32,9 +32,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
   /**
    * Mock state service.
    *
-   * @var \Drupal\Core\State\StateInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\State\StateInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected StateInterface&MockObject $state;
+  protected StateInterface&Stub $state;
 
   /**
    * {@inheritdoc}
@@ -42,7 +42,17 @@ class UtilikitStateManagerTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->state = $this->createMock(StateInterface::class);
+    $this->state = $this->createStub(StateInterface::class);
+    $this->buildSubject();
+  }
+
+  /**
+   * Builds the subject under test from the current collaborators.
+   *
+   * Collaborators are stubs by default; a test that asserts calls on one
+   * replaces it with a mock and calls this again.
+   */
+  private function buildSubject(): void {
     $this->stateManager = new UtilikitStateManager($this->state);
   }
 
@@ -52,6 +62,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::getKnownClasses
    */
   public function testGetKnownClasses(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $classes = ['uk-pd--20', 'uk-mg--10'];
 
     $this->state->expects($this->once())
@@ -69,6 +82,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::setKnownClasses
    */
   public function testSetKnownClasses(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $classes = ['uk-pd--20', 'uk-mg--10'];
 
     $this->state->expects($this->once())
@@ -87,6 +103,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::addKnownClasses
    */
   public function testAddKnownClasses(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $existing = ['uk-pd--20'];
     $newClasses = ['uk-mg--10', 'uk-pd--20'];
 
@@ -111,6 +130,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::getGeneratedCss
    */
   public function testGetGeneratedCss(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $css = '.uk-pd--20 { padding: 20px; }';
 
     $this->state->expects($this->once())
@@ -128,6 +150,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::setGeneratedCss
    */
   public function testSetGeneratedCss(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $css = '.uk-pd--20 { padding: 20px; }';
 
     $this->state->expects($this->once())
@@ -143,6 +168,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::getCssTimestamp
    */
   public function testGetCssTimestamp(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $timestamp = 1234567890;
 
     $this->state->expects($this->once())
@@ -160,9 +188,12 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::updateCssTimestamp
    */
   public function testUpdateCssTimestamp(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $this->state->expects($this->once())
       ->method('set')
-      ->with(UtilikitConstants::STATE_CSS_TIMESTAMP, $this->isType('int'));
+      ->with(UtilikitConstants::STATE_CSS_TIMESTAMP, $this->callback(static fn ($value): bool => is_int($value)));
 
     $this->stateManager->updateCssTimestamp();
   }
@@ -173,6 +204,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::clearUtilikitData
    */
   public function testClearUtilikitData(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $this->state->expects($this->once())
       ->method('deleteMultiple')
       ->with([
@@ -189,6 +223,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::getLastCleanup
    */
   public function testGetLastCleanup(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $timestamp = 1234567890;
 
     $this->state->expects($this->once())
@@ -206,6 +243,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::setLastCleanup
    */
   public function testSetLastCleanup(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $timestamp = 1234567890;
 
     $this->state->expects($this->once())
@@ -221,6 +261,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::getRateLimitData
    */
   public function testGetRateLimitData(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $this->state->expects($this->exactly(2))
       ->method('get')
       ->willReturnMap([
@@ -241,6 +284,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::setRateLimitData
    */
   public function testSetRateLimitData(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $calls = [];
     $this->state->expects($this->exactly(2))
       ->method('set')
@@ -262,6 +308,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::clearRateLimitData
    */
   public function testClearRateLimitData(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $this->state->expects($this->once())
       ->method('deleteMultiple')
       ->with([
@@ -278,6 +327,9 @@ class UtilikitStateManagerTest extends UnitTestCase {
    * @covers ::getStateStatistics
    */
   public function testGetStateStatistics(): void {
+    $this->state = $this->createMock(StateInterface::class);
+    $this->buildSubject();
+
     $this->state->expects($this->exactly(4))
       ->method('get')
       ->willReturnMap([

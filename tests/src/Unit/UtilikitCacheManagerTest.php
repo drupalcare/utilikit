@@ -14,7 +14,7 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\CacheTagsInvalidatorInterface;
 use Drupal\Core\Theme\Registry;
 use Drupal\Core\Asset\AssetCollectionOptimizerInterface;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 
 /**
  * Tests the UtilikitCacheManager service.
@@ -36,58 +36,58 @@ class UtilikitCacheManagerTest extends UnitTestCase {
   /**
    * Mock render cache.
    *
-   * @var \Drupal\Core\Cache\CacheBackendInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Cache\CacheBackendInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected CacheBackendInterface&MockObject $renderCache;
+  protected CacheBackendInterface&Stub $renderCache;
 
   /**
    * Mock cache tags invalidator.
    *
-   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected CacheTagsInvalidatorInterface&MockObject $cacheTagsInvalidator;
+  protected CacheTagsInvalidatorInterface&Stub $cacheTagsInvalidator;
 
   /**
    * Mock state manager.
    *
-   * @var \Drupal\utilikit\Service\UtilikitStateManager&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitStateManager&\PHPUnit\Framework\MockObject\Stub
    */
-  protected UtilikitStateManager&MockObject $stateManager;
+  protected UtilikitStateManager&Stub $stateManager;
 
   /**
    * Mock theme registry.
    *
-   * @var \Drupal\Core\Theme\Registry&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Theme\Registry&\PHPUnit\Framework\MockObject\Stub
    */
-  protected Registry&MockObject $themeRegistry;
+  protected Registry&Stub $themeRegistry;
 
   /**
    * Mock CSS optimizer.
    *
-   * @var \Drupal\Core\Asset\AssetCollectionOptimizerInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Asset\AssetCollectionOptimizerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected AssetCollectionOptimizerInterface&MockObject $cssOptimizer;
+  protected AssetCollectionOptimizerInterface&Stub $cssOptimizer;
 
   /**
    * Mock JS optimizer.
    *
-   * @var \Drupal\Core\Asset\AssetCollectionOptimizerInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Asset\AssetCollectionOptimizerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected AssetCollectionOptimizerInterface&MockObject $jsOptimizer;
+  protected AssetCollectionOptimizerInterface&Stub $jsOptimizer;
 
   /**
    * Mock page cache.
    *
-   * @var \Drupal\Core\Cache\CacheBackendInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Cache\CacheBackendInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected CacheBackendInterface&MockObject $pageCache;
+  protected CacheBackendInterface&Stub $pageCache;
 
   /**
    * Mock dynamic page cache.
    *
-   * @var \Drupal\Core\Cache\CacheBackendInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Cache\CacheBackendInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected CacheBackendInterface&MockObject $dynamicPageCache;
+  protected CacheBackendInterface&Stub $dynamicPageCache;
 
   /**
    * {@inheritdoc}
@@ -98,14 +98,24 @@ class UtilikitCacheManagerTest extends UnitTestCase {
     // Create all mocks.
     $this->renderCache = $this->createMock(CacheBackendInterface::class);
     $this->cacheTagsInvalidator = $this->createMock(CacheTagsInvalidatorInterface::class);
-    $this->stateManager = $this->createMock(UtilikitStateManager::class);
-    $this->themeRegistry = $this->createMock(Registry::class);
-    $this->cssOptimizer = $this->createMock(AssetCollectionOptimizerInterface::class);
-    $this->jsOptimizer = $this->createMock(AssetCollectionOptimizerInterface::class);
-    $this->pageCache = $this->createMock(CacheBackendInterface::class);
-    $this->dynamicPageCache = $this->createMock(CacheBackendInterface::class);
+    $this->stateManager = $this->createStub(UtilikitStateManager::class);
+    $this->themeRegistry = $this->createStub(Registry::class);
+    $this->cssOptimizer = $this->createStub(AssetCollectionOptimizerInterface::class);
+    $this->jsOptimizer = $this->createStub(AssetCollectionOptimizerInterface::class);
+    $this->pageCache = $this->createStub(CacheBackendInterface::class);
+    $this->dynamicPageCache = $this->createStub(CacheBackendInterface::class);
 
     // Create cache manager with UtilikitStateManager.
+    $this->buildSubject();
+  }
+
+  /**
+   * Builds the subject under test from the current collaborators.
+   *
+   * Collaborators are stubs by default; a test that asserts calls on one
+   * replaces it with a mock and calls this again.
+   */
+  private function buildSubject(): void {
     $this->cacheManager = new UtilikitCacheManager(
       $this->renderCache,
       $this->cacheTagsInvalidator,
@@ -157,6 +167,13 @@ class UtilikitCacheManagerTest extends UnitTestCase {
    * @covers ::clearAllCaches
    */
   public function testClearAllCaches(): void {
+    $this->cssOptimizer = $this->createMock(AssetCollectionOptimizerInterface::class);
+    $this->dynamicPageCache = $this->createMock(CacheBackendInterface::class);
+    $this->jsOptimizer = $this->createMock(AssetCollectionOptimizerInterface::class);
+    $this->pageCache = $this->createMock(CacheBackendInterface::class);
+    $this->themeRegistry = $this->createMock(Registry::class);
+    $this->buildSubject();
+
     $expectedTags = [
       UtilikitConstants::CACHE_TAG_CONFIG,
       UtilikitConstants::CACHE_TAG_CSS,

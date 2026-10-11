@@ -17,6 +17,7 @@ use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\utilikit\Service\UtilikitFileManager;
 use Drupal\utilikit\Service\UtilikitStateManager;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -39,30 +40,30 @@ class UtilikitFileManagerTest extends UnitTestCase {
   /**
    * Mock state manager.
    *
-   * @var \Drupal\utilikit\Service\UtilikitStateManager&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitStateManager&\PHPUnit\Framework\MockObject\Stub
    */
-  protected UtilikitStateManager&MockObject $stateManager;
+  protected UtilikitStateManager&Stub $stateManager;
 
   /**
    * Mock file URL generator.
    *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected FileUrlGeneratorInterface&MockObject $fileUrlGenerator;
+  protected FileUrlGeneratorInterface&Stub $fileUrlGenerator;
 
   /**
    * Mock logger.
    *
-   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected LoggerInterface&MockObject $logger;
+  protected LoggerInterface&Stub $logger;
 
   /**
    * Mock file system.
    *
-   * @var \Drupal\Core\File\FileSystemInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\File\FileSystemInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected FileSystemInterface&MockObject $fileSystem;
+  protected FileSystemInterface&Stub $fileSystem;
 
   /**
    * Mock config factory.
@@ -74,9 +75,9 @@ class UtilikitFileManagerTest extends UnitTestCase {
   /**
    * Mock CSS optimizer.
    *
-   * @var \Drupal\Core\Asset\AssetOptimizerInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Asset\AssetOptimizerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected AssetOptimizerInterface&MockObject $cssOptimizer;
+  protected AssetOptimizerInterface&Stub $cssOptimizer;
 
   /**
    * Test CSS content.
@@ -89,14 +90,15 @@ class UtilikitFileManagerTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->stateManager = $this->createMock(UtilikitStateManager::class);
-    $this->fileSystem = $this->createMock(FileSystemInterface::class);
-    $this->fileUrlGenerator = $this->createMock(FileUrlGeneratorInterface::class);
+    // Stubs unless a test asserts on them; see buildSubject().
+    $this->stateManager = $this->createStub(UtilikitStateManager::class);
+    $this->fileSystem = $this->createStub(FileSystemInterface::class);
+    $this->fileUrlGenerator = $this->createStub(FileUrlGeneratorInterface::class);
     $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
-    $this->cssOptimizer = $this->createMock(AssetOptimizerInterface::class);
-    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->cssOptimizer = $this->createStub(AssetOptimizerInterface::class);
+    $this->logger = $this->createStub(LoggerInterface::class);
 
-    $config = $this->createMock(ImmutableConfig::class);
+    $config = $this->createStub(ImmutableConfig::class);
     $config->method('get')->willReturnCallback(static function (string $key) {
       return match ($key) {
         'rendering_mode' => 'static',
@@ -106,6 +108,20 @@ class UtilikitFileManagerTest extends UnitTestCase {
     });
     $this->configFactory->method('get')->with('utilikit.settings')->willReturn($config);
 
+    $this->buildSubject();
+
+    $GLOBALS['_utilikit_test_file_exists'] = TRUE;
+    $GLOBALS['_utilikit_test_file_get_contents'] = '';
+    $GLOBALS['_utilikit_test_scandir'] = ['.', '..'];
+  }
+
+  /**
+   * Builds the subject under test from the current collaborators.
+   *
+   * Collaborators are stubs by default; a test that asserts calls on one
+   * replaces it with a mock and calls this again.
+   */
+  private function buildSubject(): void {
     $this->fileManager = new UtilikitFileManager(
       $this->stateManager,
       $this->fileSystem,
@@ -114,10 +130,6 @@ class UtilikitFileManagerTest extends UnitTestCase {
       $this->cssOptimizer,
       $this->logger
     );
-
-    $GLOBALS['_utilikit_test_file_exists'] = TRUE;
-    $GLOBALS['_utilikit_test_file_get_contents'] = '';
-    $GLOBALS['_utilikit_test_scandir'] = ['.', '..'];
   }
 
   /**
@@ -138,6 +150,11 @@ class UtilikitFileManagerTest extends UnitTestCase {
    * @covers ::ensureStaticCssFile
    */
   public function testEnsureStaticCssFileSuccess(): void {
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     // Set up mocks for successful file creation.
     $this->stateManager->expects($this->once())
       ->method('getGeneratedCss')
@@ -178,6 +195,11 @@ class UtilikitFileManagerTest extends UnitTestCase {
    * @covers ::ensureStaticCssFile
    */
   public function testEnsureStaticCssFileEmptyCss(): void {
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $this->stateManager->expects($this->once())
       ->method('getGeneratedCss')
       ->willReturn('');
@@ -199,6 +221,10 @@ class UtilikitFileManagerTest extends UnitTestCase {
    * @covers ::ensureStaticCssFile
    */
   public function testEnsureStaticCssFileDirectoryFailure(): void {
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $this->stateManager->method('getGeneratedCss')
       ->willReturn(self::TEST_CSS);
 
@@ -229,6 +255,10 @@ class UtilikitFileManagerTest extends UnitTestCase {
    * @covers ::ensureStaticCssFile
    */
   public function testEnsureStaticCssFileSaveFailure(): void {
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $this->stateManager->method('getGeneratedCss')
       ->willReturn(self::TEST_CSS);
 
@@ -259,6 +289,9 @@ class UtilikitFileManagerTest extends UnitTestCase {
    * @covers ::cleanupStaticFiles
    */
   public function testCleanupStaticFiles(): void {
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->buildSubject();
+
     // When realpath returns FALSE (file doesn't exist on disk), the method
     // skips delete and directory cleanup. This tests the "no file" path.
     $this->fileSystem->method('dirname')
@@ -280,6 +313,9 @@ class UtilikitFileManagerTest extends UnitTestCase {
    * @covers ::getStaticCssUrl
    */
   public function testGetStaticCssUrlReturnsNullWhenRealPathFails(): void {
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->buildSubject();
+
     $cssUri = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
 
     // When realpath returns a path but file_exists returns false (file was
@@ -299,6 +335,9 @@ class UtilikitFileManagerTest extends UnitTestCase {
    * @covers ::getStaticCssUrl
    */
   public function testGetStaticCssUrlNotExists(): void {
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->buildSubject();
+
     $cssUri = UtilikitConstants::CSS_DIRECTORY . '/' . UtilikitConstants::CSS_FILENAME;
 
     $this->fileSystem->expects($this->once())
@@ -316,6 +355,9 @@ class UtilikitFileManagerTest extends UnitTestCase {
    * @covers ::ensureStaticCssFile
    */
   public function testExceptionHandling(): void {
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $this->stateManager->method('getGeneratedCss')
       ->willThrowException(new \Exception('Test exception'));
 

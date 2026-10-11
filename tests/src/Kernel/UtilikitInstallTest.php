@@ -274,7 +274,7 @@ class UtilikitInstallTest extends KernelTestBase {
     // non-writable
     // We'll test the logic by mocking the conditions.
     // Create a mock file system service.
-    $mockFileSystem = $this->createMock(FileSystemInterface::class);
+    $mockFileSystem = $this->createStub(FileSystemInterface::class);
 
     // Make realpath return a valid path but is_writable check will fail.
     $mockFileSystem->method('realpath')

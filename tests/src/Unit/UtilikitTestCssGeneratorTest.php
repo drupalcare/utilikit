@@ -37,42 +37,42 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
   /**
    * Mock CSS generator service.
    *
-   * @var \Drupal\utilikit\Service\UtilikitCssGenerator|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitCssGenerator&\PHPUnit\Framework\MockObject\Stub
    */
   protected $cssGenerator;
 
   /**
    * Mock file manager service.
    *
-   * @var \Drupal\utilikit\Service\UtilikitFileManager|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitFileManager&\PHPUnit\Framework\MockObject\Stub
    */
   protected $fileManager;
 
   /**
    * Mock file system service.
    *
-   * @var \Drupal\Core\File\FileSystemInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\File\FileSystemInterface&\PHPUnit\Framework\MockObject\Stub
    */
   protected $fileSystem;
 
   /**
    * Mock file URL generator service.
    *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface&\PHPUnit\Framework\MockObject\Stub
    */
   protected $fileUrlGenerator;
 
   /**
    * Mock config factory service.
    *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Config\ConfigFactoryInterface&\PHPUnit\Framework\MockObject\Stub
    */
   protected $configFactory;
 
   /**
    * Mock test generator service.
    *
-   * @var \Drupal\utilikit_test\Service\TestGenerator|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit_test\Service\TestGenerator&\PHPUnit\Framework\MockObject\Stub
    */
   protected $testGenerator;
 
@@ -82,13 +82,23 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
-    $this->fileManager = $this->createMock(UtilikitFileManager::class);
-    $this->fileSystem = $this->createMock(FileSystemInterface::class);
-    $this->fileUrlGenerator = $this->createMock(FileUrlGeneratorInterface::class);
-    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
-    $this->testGenerator = $this->createMock(TestGenerator::class);
+    $this->cssGenerator = $this->createStub(UtilikitCssGenerator::class);
+    $this->fileManager = $this->createStub(UtilikitFileManager::class);
+    $this->fileSystem = $this->createStub(FileSystemInterface::class);
+    $this->fileUrlGenerator = $this->createStub(FileUrlGeneratorInterface::class);
+    $this->configFactory = $this->createStub(ConfigFactoryInterface::class);
+    $this->testGenerator = $this->createStub(TestGenerator::class);
 
+    $this->buildSubject();
+  }
+
+  /**
+   * Builds the subject under test from the current collaborators.
+   *
+   * Collaborators are stubs by default; a test that asserts calls on one
+   * replaces it with a mock and calls this again.
+   */
+  private function buildSubject(): void {
     $this->testCssGenerator = new UtilikitTestCssGenerator(
       $this->cssGenerator,
       $this->fileManager,
@@ -106,6 +116,9 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
    *   Whether CSS optimization is enabled.
    */
   protected function setUpConfigMock(bool $optimizeCss = FALSE): void {
+    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $this->buildSubject();
+
     $config = $this->createMock(ImmutableConfig::class);
     $config->method('get')
       ->with('optimize_css')
@@ -156,6 +169,9 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
    * @covers ::generateAllUtilityClasses
    */
   public function testGenerateAllUtilityClassesWithTestGenerator() {
+    $this->testGenerator = $this->createMock(TestGenerator::class);
+    $this->buildSubject();
+
     $testClasses = [
       'uk-pd--20',
       'uk-mg--auto',
@@ -199,6 +215,12 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCompleteTestCss
    */
   public function testGenerateCompleteTestCss() {
+    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->fileUrlGenerator = $this->createMock(FileUrlGeneratorInterface::class);
+    $this->testGenerator = $this->createMock(TestGenerator::class);
+    $this->buildSubject();
+
     $allClasses = [
       'uk-pd--20',
       'uk-mg--auto',
@@ -255,6 +277,13 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCompleteTestCss
    */
   public function testGenerateCompleteTestCssWithOptimization() {
+    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
+    $this->fileManager = $this->createMock(UtilikitFileManager::class);
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->fileUrlGenerator = $this->createMock(FileUrlGeneratorInterface::class);
+    $this->testGenerator = $this->createMock(TestGenerator::class);
+    $this->buildSubject();
+
     $allClasses = ['uk-pd--20'];
     $rawCss = '.uk-pd--20 { padding: 20px; }';
     $minifiedCss = '.uk-pd--20{padding:20px}';
@@ -303,6 +332,9 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCompleteTestCss
    */
   public function testGenerateCompleteTestCssEmpty() {
+    $this->testGenerator = $this->createMock(TestGenerator::class);
+    $this->buildSubject();
+
     $this->testGenerator->expects($this->once())
       ->method('getAllPossibleClasses')
       ->willReturn([]);
@@ -342,6 +374,11 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCompleteTestCss
    */
   public function testGenerateCompleteTestCssDirectoryFailure() {
+    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->testGenerator = $this->createMock(TestGenerator::class);
+    $this->buildSubject();
+
     $allClasses = ['uk-pd--20'];
     $css = '.uk-pd--20 { padding: 20px; }';
 
@@ -373,6 +410,11 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCompleteTestCss
    */
   public function testGenerateCompleteTestCssSaveFailure() {
+    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->testGenerator = $this->createMock(TestGenerator::class);
+    $this->buildSubject();
+
     $allClasses = ['uk-pd--20'];
     $css = '.uk-pd--20 { padding: 20px; }';
 
@@ -408,6 +450,11 @@ class UtilikitTestCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCompleteTestCss
    */
   public function testGenerateCompleteTestCssException() {
+    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
+    $this->fileSystem = $this->createMock(FileSystemInterface::class);
+    $this->testGenerator = $this->createMock(TestGenerator::class);
+    $this->buildSubject();
+
     $allClasses = ['uk-pd--20'];
     $css = '.uk-pd--20 { padding: 20px; }';
 

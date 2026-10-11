@@ -14,6 +14,7 @@ use Drupal\utilikit\Service\UtilikitConstants;
 use Drupal\utilikit\Service\UtilikitContentScanner;
 use Drupal\utilikit\Service\UtilikitCssGenerator;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -45,30 +46,30 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
   /**
    * The settings config mock.
    *
-   * @var \Drupal\Core\Config\ImmutableConfig|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Config\ImmutableConfig|\PHPUnit\Framework\MockObject\Stub
    */
-  protected ImmutableConfig&MockObject $settingsConfig;
+  protected ImmutableConfig&Stub $settingsConfig;
 
   /**
    * The cache backend mock.
    *
-   * @var \Drupal\Core\Cache\CacheBackendInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Cache\CacheBackendInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected CacheBackendInterface&MockObject $cache;
+  protected CacheBackendInterface&Stub $cache;
 
   /**
    * The content scanner mock.
    *
-   * @var \Drupal\utilikit\Service\UtilikitContentScanner|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitContentScanner|\PHPUnit\Framework\MockObject\Stub
    */
-  protected UtilikitContentScanner&MockObject $contentScanner;
+  protected UtilikitContentScanner&Stub $contentScanner;
 
   /**
    * The logger mock.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected LoggerInterface&MockObject $logger;
+  protected LoggerInterface&Stub $logger;
 
   /**
    * {@inheritdoc}
@@ -77,10 +78,10 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
     parent::setUp();
 
     $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
-    $this->settingsConfig = $this->createMock(ImmutableConfig::class);
-    $this->cache = $this->createMock(CacheBackendInterface::class);
-    $this->contentScanner = $this->createMock(UtilikitContentScanner::class);
-    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->settingsConfig = $this->createStub(ImmutableConfig::class);
+    $this->cache = $this->createStub(CacheBackendInterface::class);
+    $this->contentScanner = $this->createStub(UtilikitContentScanner::class);
+    $this->logger = $this->createStub(LoggerInterface::class);
 
     // UtilikitCssGenerator expects to read utilikit.settings for active
     // breakpoints.
@@ -106,6 +107,16 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
         };
       });
 
+    $this->buildSubject();
+  }
+
+  /**
+   * Builds the subject under test from the current collaborators.
+   *
+   * Collaborators are stubs by default; a test that asserts calls on one
+   * replaces it with a mock and calls this again.
+   */
+  private function buildSubject(): void {
     $this->cssGenerator = new UtilikitCssGenerator(
       $this->configFactory,
       $this->cache,
@@ -120,6 +131,9 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCssFromClasses
    */
   public function testGenerateCssFromClassesFiltersInvalidAndDuplicateValues(): void {
+    $this->cache = $this->createMock(CacheBackendInterface::class);
+    $this->buildSubject();
+
     $classes = [
       'uk-pd--10',
       '',
@@ -142,8 +156,8 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
       ->expects($this->once())
       ->method('set')
       ->with(
-        $this->isType('string'),
-        $this->isType('string'),
+        $this->callback(static fn ($value): bool => is_string($value)),
+        $this->callback(static fn ($value): bool => is_string($value)),
         $this->anything(),
         $this->callback(static function (array $tags): bool {
           return in_array(UtilikitConstants::CACHE_TAG_CSS, $tags, TRUE);
@@ -166,6 +180,9 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCssFromClasses
    */
   public function testGenerateCssFromClassesUsesCacheWhenAvailable(): void {
+    $this->cache = $this->createMock(CacheBackendInterface::class);
+    $this->buildSubject();
+
     $classes = ['uk-pd--10'];
 
     $cacheHit = (object) ['data' => '/* cached css */'];
@@ -189,7 +206,7 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
         $this->callback(static function (string $cid): bool {
           return str_starts_with($cid, 'utilikit:css:');
         }),
-        $this->isType('string'),
+        $this->callback(static fn ($value): bool => is_string($value)),
         $this->anything(),
         $this->callback(static function (array $tags): bool {
           return in_array(UtilikitConstants::CACHE_TAG_CSS, $tags, TRUE);
@@ -210,6 +227,9 @@ final class UtilikitCssGeneratorTest extends UnitTestCase {
    * @covers ::generateCssFromClasses
    */
   public function testGenerateCssFromClassesThrowsWhenClassCountExceedsLimit(): void {
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $classes = [];
     $limit = UtilikitConstants::MAX_CLASSES_WARNING_THRESHOLD + 1;
 

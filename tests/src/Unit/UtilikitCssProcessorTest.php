@@ -13,6 +13,7 @@ use Drupal\utilikit\Service\UtilikitContentScanner;
 use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Service\UtilikitStateManager;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -42,16 +43,16 @@ class UtilikitCssProcessorTest extends UnitTestCase {
   /**
    * Mock cache manager (returned by serviceProvider->getCacheManager()).
    *
-   * @var \Drupal\utilikit\Service\UtilikitCacheManager&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitCacheManager&\PHPUnit\Framework\MockObject\Stub
    */
-  protected UtilikitCacheManager&MockObject $cacheManager;
+  protected UtilikitCacheManager&Stub $cacheManager;
 
   /**
    * Mock logger.
    *
-   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected LoggerInterface&MockObject $logger;
+  protected LoggerInterface&Stub $logger;
 
   /**
    * {@inheritdoc}
@@ -60,9 +61,20 @@ class UtilikitCssProcessorTest extends UnitTestCase {
     parent::setUp();
 
     $this->serviceProvider = $this->createMock(UtilikitServiceProvider::class);
-    $this->cacheManager = $this->createMock(UtilikitCacheManager::class);
-    $this->logger = $this->createMock(LoggerInterface::class);
+    // Stubs unless a test asserts on them; see buildSubject().
+    $this->cacheManager = $this->createStub(UtilikitCacheManager::class);
+    $this->logger = $this->createStub(LoggerInterface::class);
 
+    $this->buildSubject();
+  }
+
+  /**
+   * Builds the subject under test from the current collaborators.
+   *
+   * Collaborators are stubs by default; a test that asserts calls on one
+   * replaces it with a mock and calls this again.
+   */
+  private function buildSubject(): void {
     $configuration = [];
     $plugin_id = 'utilikit_css_processor';
     $plugin_definition = [
@@ -86,6 +98,10 @@ class UtilikitCssProcessorTest extends UnitTestCase {
    * @covers ::processItem
    */
   public function testProcessItemValid(): void {
+    $this->cacheManager = $this->createMock(UtilikitCacheManager::class);
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $data = [
       'classes' => ['uk-pd--20', 'uk-mg--10'],
     ];
@@ -166,6 +182,9 @@ class UtilikitCssProcessorTest extends UnitTestCase {
    * @covers ::processItem
    */
   public function testProcessItemMissingClasses(): void {
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $data = ['user_id' => 1];
 
     $this->serviceProvider->expects($this->never())
@@ -184,6 +203,9 @@ class UtilikitCssProcessorTest extends UnitTestCase {
    * @covers ::processItem
    */
   public function testProcessItemClassesNotArray(): void {
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $data = ['classes' => 'not-array'];
 
     $this->serviceProvider->expects($this->never())
@@ -202,6 +224,9 @@ class UtilikitCssProcessorTest extends UnitTestCase {
    * @covers ::processItem
    */
   public function testProcessItemNoValidClasses(): void {
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $data = ['classes' => ['uk-pd--20', 'invalid']];
 
     $contentScanner = $this->createMock(UtilikitContentScanner::class);
@@ -231,6 +256,9 @@ class UtilikitCssProcessorTest extends UnitTestCase {
    * @covers ::processItem
    */
   public function testProcessItemUpdateFails(): void {
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $data = ['classes' => ['uk-pd--20']];
 
     $contentScanner = $this->createMock(UtilikitContentScanner::class);
@@ -268,6 +296,9 @@ class UtilikitCssProcessorTest extends UnitTestCase {
    * @covers ::processItem
    */
   public function testProcessItemErrorHandling(): void {
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->buildSubject();
+
     $data = ['classes' => ['uk-pd--20']];
 
     $contentScanner = $this->createMock(UtilikitContentScanner::class);
@@ -295,6 +326,9 @@ class UtilikitCssProcessorTest extends UnitTestCase {
    * @covers ::processItem
    */
   public function testProcessItemNoCacheClearOnUpdateFailure(): void {
+    $this->cacheManager = $this->createMock(UtilikitCacheManager::class);
+    $this->buildSubject();
+
     $data = ['classes' => ['uk-pd--20']];
 
     $contentScanner = $this->createMock(UtilikitContentScanner::class);

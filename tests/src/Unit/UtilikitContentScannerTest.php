@@ -21,6 +21,7 @@ use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\TypedData\TypedDataInterface;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -50,16 +51,16 @@ class UtilikitContentScannerTest extends UnitTestCase {
   /**
    * Mock entity type manager.
    *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected EntityTypeManagerInterface&MockObject $entityTypeManager;
+  protected EntityTypeManagerInterface&Stub $entityTypeManager;
 
   /**
    * Mock logger.
    *
-   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected LoggerInterface&MockObject $logger;
+  protected LoggerInterface&Stub $logger;
 
   /**
    * Rules service (real instance so getRules() works).
@@ -79,8 +80,8 @@ class UtilikitContentScannerTest extends UnitTestCase {
     $config->method('get')->with('scanning_entity_types')->willReturn(['node', 'block_content', 'paragraph']);
     $this->configFactory->method('get')->with('utilikit.settings')->willReturn($config);
 
-    $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
-    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->entityTypeManager = $this->createStub(EntityTypeManagerInterface::class);
+    $this->logger = $this->createStub(LoggerInterface::class);
     $this->rulesService = new UtilikitRules();
 
     $this->contentScanner = new UtilikitContentScanner(
@@ -151,10 +152,10 @@ class UtilikitContentScannerTest extends UnitTestCase {
    * @covers ::scanEntity
    */
   public function testScanEntityFieldable(): void {
-    $entity = $this->createMock(FieldableEntityInterface::class);
+    $entity = $this->createStub(FieldableEntityInterface::class);
 
-    $fieldItem = $this->createMock(FieldItemInterface::class);
-    $property = $this->createMock(TypedDataInterface::class);
+    $fieldItem = $this->createStub(FieldItemInterface::class);
+    $property = $this->createStub(TypedDataInterface::class);
 
     $htmlContent = '<div class="utilikit uk-pd--20 uk-mg--10">Test content</div>';
     $property->method('getValue')->willReturn($htmlContent);
@@ -176,7 +177,7 @@ class UtilikitContentScannerTest extends UnitTestCase {
    * @covers ::scanEntity
    */
   public function testScanEntityNonFieldable(): void {
-    $entity = $this->createMock('\Drupal\Core\Entity\EntityInterface');
+    $entity = $this->createStub('\Drupal\Core\Entity\EntityInterface');
     $result = $this->contentScanner->scanEntity($entity);
     $this->assertEquals([], $result);
   }
@@ -190,9 +191,9 @@ class UtilikitContentScannerTest extends UnitTestCase {
     $entities = [];
 
     for ($i = 0; $i < 3; $i++) {
-      $entity = $this->createMock(FieldableEntityInterface::class);
-      $fieldItem = $this->createMock(FieldItemInterface::class);
-      $property = $this->createMock(TypedDataInterface::class);
+      $entity = $this->createStub(FieldableEntityInterface::class);
+      $fieldItem = $this->createStub(FieldItemInterface::class);
+      $property = $this->createStub(TypedDataInterface::class);
 
       $classes = ['uk-pd--' . (20 + $i * 10), 'uk-mg--' . (10 + $i * 5)];
       $htmlContent = sprintf(
@@ -290,7 +291,7 @@ class UtilikitContentScannerTest extends UnitTestCase {
     $classIndex = 0;
 
     foreach ($entityTypes as $entityType) {
-      $storage = $this->createMock(EntityStorageInterface::class);
+      $storage = $this->createStub(EntityStorageInterface::class);
       $entityTypeDefinition = $this->createMock(EntityTypeInterface::class);
       $entityTypeDefinition->method('entityClassImplements')
         ->with(FieldableEntityInterface::class)
@@ -306,9 +307,9 @@ class UtilikitContentScannerTest extends UnitTestCase {
       // Mock entities for each type with unique classes.
       $entities = [];
       for ($i = 0; $i < 2; $i++) {
-        $entity = $this->createMock(FieldableEntityInterface::class);
-        $fieldItem = $this->createMock(FieldItemInterface::class);
-        $property = $this->createMock(TypedDataInterface::class);
+        $entity = $this->createStub(FieldableEntityInterface::class);
+        $fieldItem = $this->createStub(FieldItemInterface::class);
+        $property = $this->createStub(TypedDataInterface::class);
 
         $classIndex++;
         $class = sprintf('uk-pd--%d', $classIndex * 10);
@@ -325,7 +326,7 @@ class UtilikitContentScannerTest extends UnitTestCase {
       $storage->method('loadMultiple')->willReturn($entities);
 
       // Mock getQuery to return entity IDs then empty on second call.
-      $query = $this->createMock(QueryInterface::class);
+      $query = $this->createStub(QueryInterface::class);
       $query->method('accessCheck')->willReturnSelf();
       $query->method('condition')->willReturnSelf();
       $query->method('sort')->willReturnSelf();
@@ -397,11 +398,11 @@ class UtilikitContentScannerTest extends UnitTestCase {
    * @param array $items
    *   The field items to iterate over.
    *
-   * @return \Drupal\Core\Field\FieldItemListInterface&\PHPUnit\Framework\MockObject\MockObject
-   *   A mock field item list.
+   * @return \Drupal\Core\Field\FieldItemListInterface&\PHPUnit\Framework\MockObject\Stub
+   *   A stub field item list.
    */
-  protected function createFieldItemListMock(array $items): FieldItemListInterface&MockObject {
-    $field = $this->createMock(FieldItemListInterface::class);
+  protected function createFieldItemListMock(array $items): FieldItemListInterface&Stub {
+    $field = $this->createStub(FieldItemListInterface::class);
     $iterator = new \ArrayIterator($items);
     $field->method('current')->willReturnCallback(function () use ($iterator) {
       return $iterator->current();

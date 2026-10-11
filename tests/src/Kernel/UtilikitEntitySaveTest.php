@@ -331,7 +331,7 @@ class UtilikitEntitySaveTest extends KernelTestBase {
     // Mock the lock service so acquire() always returns FALSE, simulating
     // another process holding the lock. DatabaseLockBackend allows re-entrant
     // locks from the same process, so we must mock it.
-    $mockLock = $this->createMock(LockBackendInterface::class);
+    $mockLock = $this->createStub(LockBackendInterface::class);
     $mockLock->method('acquire')->willReturn(FALSE);
     $this->container->set('lock', $mockLock);
 

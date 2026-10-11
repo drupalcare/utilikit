@@ -16,7 +16,7 @@ use Drupal\utilikit\Service\UtilikitFileManager;
 use Drupal\utilikit\Service\UtilikitServiceProvider;
 use Drupal\utilikit\Service\UtilikitStateManager;
 use Drupal\utilikit\Service\UtilikitTestCssGenerator;
-use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\MockObject\Stub;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -39,56 +39,56 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
   /**
    * The CSS generator mock.
    *
-   * @var \Drupal\utilikit\Service\UtilikitCssGenerator|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitCssGenerator&\PHPUnit\Framework\MockObject\Stub
    */
-  protected UtilikitCssGenerator&MockObject $cssGenerator;
+  protected UtilikitCssGenerator&Stub $cssGenerator;
 
   /**
    * The file manager mock.
    *
-   * @var \Drupal\utilikit\Service\UtilikitFileManager|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitFileManager&\PHPUnit\Framework\MockObject\Stub
    */
-  protected UtilikitFileManager&MockObject $fileManager;
+  protected UtilikitFileManager&Stub $fileManager;
 
   /**
    * The content scanner mock.
    *
-   * @var \Drupal\utilikit\Service\UtilikitContentScanner|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitContentScanner&\PHPUnit\Framework\MockObject\Stub
    */
-  protected UtilikitContentScanner&MockObject $contentScanner;
+  protected UtilikitContentScanner&Stub $contentScanner;
 
   /**
    * The state manager mock.
    *
-   * @var \Drupal\utilikit\Service\UtilikitStateManager|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitStateManager&\PHPUnit\Framework\MockObject\Stub
    */
-  protected UtilikitStateManager&MockObject $stateManager;
+  protected UtilikitStateManager&Stub $stateManager;
 
   /**
    * The cache manager mock.
    *
-   * @var \Drupal\utilikit\Service\UtilikitCacheManagerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\utilikit\Service\UtilikitCacheManagerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected UtilikitCacheManagerInterface&MockObject $cacheManager;
+  protected UtilikitCacheManagerInterface&Stub $cacheManager;
 
   /**
    * The logger mock.
    *
-   * @var \Psr\Log\LoggerInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Psr\Log\LoggerInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected LoggerInterface&MockObject $logger;
+  protected LoggerInterface&Stub $logger;
 
   /**
    * The config factory mock.
    *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Config\ConfigFactoryInterface&\PHPUnit\Framework\MockObject\Stub
    */
-  protected ConfigFactoryInterface&MockObject $configFactory;
+  protected ConfigFactoryInterface&Stub $configFactory;
 
   /**
    * The test CSS generator mock.
    *
-   * @var \Drupal\utilikit\Service\UtilikitTestCssGenerator|\PHPUnit\Framework\MockObject\MockObject|null
+   * @var \Drupal\utilikit\Service\UtilikitTestCssGenerator|\PHPUnit\Framework\MockObject\Stub|null
    */
   protected ?UtilikitTestCssGenerator $testCssGenerator = NULL;
 
@@ -98,15 +98,25 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
-    $this->fileManager = $this->createMock(UtilikitFileManager::class);
-    $this->contentScanner = $this->createMock(UtilikitContentScanner::class);
-    $this->stateManager = $this->createMock(UtilikitStateManager::class);
-    $this->cacheManager = $this->createMock(UtilikitCacheManagerInterface::class);
-    $this->logger = $this->createMock(LoggerInterface::class);
-    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
-    $this->testCssGenerator = $this->createMock(UtilikitTestCssGenerator::class);
+    $this->cssGenerator = $this->createStub(UtilikitCssGenerator::class);
+    $this->fileManager = $this->createStub(UtilikitFileManager::class);
+    $this->contentScanner = $this->createStub(UtilikitContentScanner::class);
+    $this->stateManager = $this->createStub(UtilikitStateManager::class);
+    $this->cacheManager = $this->createStub(UtilikitCacheManagerInterface::class);
+    $this->logger = $this->createStub(LoggerInterface::class);
+    $this->configFactory = $this->createStub(ConfigFactoryInterface::class);
+    $this->testCssGenerator = $this->createStub(UtilikitTestCssGenerator::class);
 
+    $this->buildSubject();
+  }
+
+  /**
+   * Builds the subject under test from the current collaborators.
+   *
+   * Collaborators are stubs by default; a test that asserts calls on one
+   * replaces it with a mock and calls this again.
+   */
+  private function buildSubject(): void {
     $this->serviceProvider = new UtilikitServiceProvider(
       $this->cssGenerator,
       $this->fileManager,
@@ -145,6 +155,9 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
    * @covers ::getRenderingMode
    */
   public function testGetRenderingModeReturnsConfiguredValue(): void {
+    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $this->buildSubject();
+
     $config = $this->createMock(ImmutableConfig::class);
     $config->expects($this->once())
       ->method('get')
@@ -165,6 +178,9 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
    * @covers ::getRenderingMode
    */
   public function testGetRenderingModeReturnsDefaultWhenNotConfigured(): void {
+    $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
+    $this->buildSubject();
+
     $config = $this->createMock(ImmutableConfig::class);
     $config->expects($this->once())
       ->method('get')
@@ -185,6 +201,12 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
    * @covers ::switchToStaticMode
    */
   public function testSwitchToStaticModeWithKnownClasses(): void {
+    $this->contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
+    $this->fileManager = $this->createMock(UtilikitFileManager::class);
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
+    $this->buildSubject();
+
     $scanResult = [
       'classes' => ['uk-m--10'],
       'scanned_count' => 10,
@@ -236,6 +258,11 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
    * @covers ::switchToStaticMode
    */
   public function testSwitchToStaticModeWithoutClasses(): void {
+    $this->contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $this->fileManager = $this->createMock(UtilikitFileManager::class);
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
+    $this->buildSubject();
+
     $scanResult = [
       'classes' => [],
       'scanned_count' => 5,
@@ -275,6 +302,11 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
    * @covers ::switchToInlineMode
    */
   public function testSwitchToInlineMode(): void {
+    $this->cacheManager = $this->createMock(UtilikitCacheManagerInterface::class);
+    $this->fileManager = $this->createMock(UtilikitFileManager::class);
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
+    $this->buildSubject();
+
     $known = ['uk-m--10', 'uk-p--4'];
 
     $this->fileManager
@@ -305,6 +337,13 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
    * @covers ::updateCssAndFile
    */
   public function testUpdateCssAndFileWithValidClasses(): void {
+    $this->cacheManager = $this->createMock(UtilikitCacheManagerInterface::class);
+    $this->contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
+    $this->fileManager = $this->createMock(UtilikitFileManager::class);
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
+    $this->buildSubject();
+
     $input = ['uk-m--10', 'uk-p--4'];
     $valid = ['uk-m--10', 'uk-p--4'];
     $all = ['uk-m--10', 'uk-p--4', 'uk-gap--2'];
@@ -356,6 +395,9 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
    * @covers ::updateCssAndFile
    */
   public function testUpdateCssAndFileWithEmptyInputReturnsFalse(): void {
+    $this->contentScanner = $this->createMock(UtilikitContentScanner::class);
+    $this->buildSubject();
+
     $this->contentScanner
       ->expects($this->never())
       ->method('validateUtilityClasses');
@@ -369,6 +411,10 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
    * @covers ::regenerateStaticCss
    */
   public function testRegenerateStaticCssWithNoKnownClasses(): void {
+    $this->logger = $this->createMock(LoggerInterface::class);
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
+    $this->buildSubject();
+
     $this->stateManager
       ->expects($this->once())
       ->method('getKnownClasses')
@@ -388,6 +434,12 @@ final class UtilikitServiceProviderTest extends UnitTestCase {
    * @covers ::regenerateStaticCss
    */
   public function testRegenerateStaticCssWithKnownClasses(): void {
+    $this->cacheManager = $this->createMock(UtilikitCacheManagerInterface::class);
+    $this->cssGenerator = $this->createMock(UtilikitCssGenerator::class);
+    $this->fileManager = $this->createMock(UtilikitFileManager::class);
+    $this->stateManager = $this->createMock(UtilikitStateManager::class);
+    $this->buildSubject();
+
     $known = ['uk-m--10'];
 
     $this->stateManager

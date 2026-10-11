@@ -39,7 +39,7 @@ class UtilikitServiceTest extends UnitTestCase {
   /**
    * Mock config object.
    *
-   * @var \Drupal\Core\Config\ImmutableConfig|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Config\ImmutableConfig|\PHPUnit\Framework\MockObject\Stub
    */
   protected $config;
 
@@ -49,12 +49,14 @@ class UtilikitServiceTest extends UnitTestCase {
   protected function setUp(): void {
     parent::setUp();
 
-    $this->config = $this->createMock(ImmutableConfig::class);
+    // A stub unless a test asserts on it; a test that does replaces
+    // $this->config with a mock, which the factory then returns.
+    $this->config = $this->createStub(ImmutableConfig::class);
     $this->configFactory = $this->createMock(ConfigFactoryInterface::class);
     $this->configFactory->expects($this->any())
       ->method('get')
       ->with('utilikit.settings')
-      ->willReturn($this->config);
+      ->willReturnCallback(fn (): ImmutableConfig => $this->config);
 
     $this->utilikitService = new UtilikitService($this->configFactory);
   }
@@ -86,6 +88,7 @@ class UtilikitServiceTest extends UnitTestCase {
    */
   #[DataProvider('renderingModeProvider')]
   public function testGetRenderingModeValid($configValue, $expectedResult) {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('rendering_mode')
@@ -116,6 +119,7 @@ class UtilikitServiceTest extends UnitTestCase {
    * @covers ::getRenderingMode
    */
   public function testGetRenderingModeInvalid() {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('rendering_mode')
@@ -131,6 +135,7 @@ class UtilikitServiceTest extends UnitTestCase {
    * @covers ::getRenderingMode
    */
   public function testGetRenderingModeNull() {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('rendering_mode')
@@ -147,6 +152,7 @@ class UtilikitServiceTest extends UnitTestCase {
    */
   #[DataProvider('scopeProvider')]
   public function testGetScopeValid($configValue, $expectedResult) {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('scope')
@@ -177,6 +183,7 @@ class UtilikitServiceTest extends UnitTestCase {
    * @covers ::getScope
    */
   public function testGetScopeInvalid() {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('scope')
@@ -193,6 +200,7 @@ class UtilikitServiceTest extends UnitTestCase {
    */
   #[DataProvider('staticModeProvider')]
   public function testIsStaticMode($configValue, $expectedResult) {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('rendering_mode')
@@ -224,6 +232,7 @@ class UtilikitServiceTest extends UnitTestCase {
    */
   #[DataProvider('devModeProvider')]
   public function testIsDevMode($configValue, $expectedResult) {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('dev_mode')
@@ -263,6 +272,7 @@ class UtilikitServiceTest extends UnitTestCase {
       'xxl' => 'xxl',
     ];
 
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('active_breakpoints')
@@ -291,6 +301,7 @@ class UtilikitServiceTest extends UnitTestCase {
       'xxl' => 'xxl',
     ];
 
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('active_breakpoints')
@@ -308,6 +319,7 @@ class UtilikitServiceTest extends UnitTestCase {
   #[DataProvider('entityUpdateProvider')]
   public function testShouldUpdateOnEntitySave($entityType, $configKey, $configValue, $expectedResult) {
     if ($configKey) {
+      $this->config = $this->createMock(ImmutableConfig::class);
       $this->config->expects($this->once())
         ->method('get')
         ->with($configKey)
@@ -363,6 +375,7 @@ class UtilikitServiceTest extends UnitTestCase {
    */
   #[DataProvider('debounceProvider')]
   public function testGetDebounceMs($configValue, $expectedResult) {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('debounce')
@@ -393,6 +406,7 @@ class UtilikitServiceTest extends UnitTestCase {
    * @covers ::getLogLevel
    */
   public function testGetLogLevel() {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('log_level')
@@ -408,6 +422,7 @@ class UtilikitServiceTest extends UnitTestCase {
    * @covers ::getLogLevel
    */
   public function testGetLogLevelDefault() {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with('log_level')
@@ -425,6 +440,7 @@ class UtilikitServiceTest extends UnitTestCase {
    */
   #[DataProvider('booleanConfigProvider')]
   public function testBooleanConfigMethods($method, $configKey, $configValue, $expectedResult) {
+    $this->config = $this->createMock(ImmutableConfig::class);
     $this->config->expects($this->once())
       ->method('get')
       ->with($configKey)
