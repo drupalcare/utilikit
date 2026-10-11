@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Drupal\Tests\utilikit\Unit;
 
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Config\ImmutableConfig;
@@ -18,11 +19,13 @@ use Psr\Log\LoggerInterface;
 /**
  * Tests for the UtilikitCssGenerator service.
  *
+ * @group utilikit
  * @coversDefaultClass \Drupal\utilikit\Service\UtilikitCssGenerator
  *
  * Aligned with the current UtilikitCssGenerator implementation.
  */
 #[CoversClass(\Drupal\utilikit\Service\UtilikitCssGenerator::class)]
+#[Group('utilikit')]
 final class UtilikitCssGeneratorTest extends UnitTestCase {
 
   /**
