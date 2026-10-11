@@ -3,6 +3,12 @@
 # alternative — ai_ckeditor's choice — leaves anyone installing from the dev
 # branch with an editor button that silently does not load, because the file the
 # library points at does not exist until someone runs webpack.
+#
+# TWO BUILDS, ONE LIBRARY. js/build/utilikit.js below is the DLL build that
+# Drupal 11 loads. When core's own core/ckeditor5 library loads the UMD runtime
+# (Drupal 12), UtilikitCkeditorHooks::libraryInfoAlter() swaps this one key for
+# js/build/utilikit.externals.js with the same options, so the library ID and
+# every caller stay the same. Both files come from one `npm run build`.
 utilikit_ckeditor:
   js:
     js/build/utilikit.js: { preprocess: false, minified: true }

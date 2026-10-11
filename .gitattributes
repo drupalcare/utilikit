@@ -31,3 +31,13 @@
 #
 # `export-ignore` only affects the archive; every local run and CI job sees
 # these files either way.
+
+# utilikit_ckeditor: files hashed as RAW BYTES. UtilikitCkeditorToolbarIconTest
+# recomputes a sha256 over the plugin source, the toolbar SVG and
+# webpack.config.js and compares it with the banner in each js/build file. A
+# checkout that converted line endings (a Windows clone set to use CRLF) would
+# change those bytes and fail the test with nothing actually stale, so they
+# are pinned to LF. All of them were LF when this was added (measured 2026-10-11).
+/modules/utilikit_ckeditor/js/** text eol=lf
+/modules/utilikit_ckeditor/icons/*.svg text eol=lf
+/modules/utilikit_ckeditor/webpack.config.js text eol=lf

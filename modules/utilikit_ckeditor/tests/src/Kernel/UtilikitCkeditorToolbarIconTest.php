@@ -44,6 +44,14 @@ final class UtilikitCkeditorToolbarIconTest extends KernelTestBase {
   ];
 
   /**
+   * The two committed editor plugin builds: DLL first, then externals.
+   */
+  private const BUILDS = [
+    'js/build/utilikit.js',
+    'js/build/utilikit.externals.js',
+  ];
+
+  /**
    * The module's path, relative to the Drupal root.
    */
   private string $modulePath;
@@ -120,13 +128,65 @@ final class UtilikitCkeditorToolbarIconTest extends KernelTestBase {
       'The icon has path data.',
     );
 
-    $bundle = (string) file_get_contents($this->modulePath . '/js/build/utilikit.js');
-    self::assertStringContainsString(
-      $match[1],
-      $bundle,
-      'The built editor plugin embeds the same SVG the admin CSS uses — '
-      . 'rebuild js/build after changing icons/handyman.svg.',
+    foreach (self::BUILDS as $build) {
+      $bundle = (string) file_get_contents($this->modulePath . '/' . $build);
+      self::assertStringContainsString(
+        $match[1],
+        $bundle,
+        "$build embeds the same SVG the admin CSS uses — "
+        . 'rebuild js/build after changing icons/handyman.svg.',
+      );
+    }
+  }
+
+  /**
+   * Both committed builds come from the current source and the right config.
+   *
+   * Webpack.config.js stamps each build with `utilikit-src-sha256:<hash>`,
+   * a sha256 over js/ckeditor5_plugins/utilikit/src/*.js in sorted order,
+   * then icons/handyman.svg, then webpack.config.js itself. This recomputes
+   * it, so editing the source or the build config and committing without
+   * `npm run build` fails here — CI never rebuilds. The recipe is defined
+   * twice, here and in webpack.config.js sourceHash(); if they drift this
+   * test goes red, never silently green.
+   */
+  public function testBothBuildsMatchTheCurrentSource(): void {
+    $srcDir = $this->modulePath . '/js/ckeditor5_plugins/utilikit/src';
+    $files = glob($srcDir . '/*.js') ?: [];
+    self::assertNotEmpty($files, 'The plugin source is shipped.');
+    sort($files, SORT_STRING);
+    $files[] = $this->modulePath . '/icons/handyman.svg';
+    $files[] = $this->modulePath . '/webpack.config.js';
+
+    $context = hash_init('sha256');
+    foreach ($files as $file) {
+      hash_update($context, (string) file_get_contents($file));
+    }
+    $expected = 'utilikit-src-sha256:' . hash_final($context);
+
+    foreach (self::BUILDS as $build) {
+      $bundle = (string) file_get_contents($this->modulePath . '/' . $build);
+      self::assertSame(
+        1,
+        preg_match('/utilikit-src-sha256:[0-9a-f]{64}/', $bundle, $stamp),
+        "$build carries a source stamp — it was built by webpack.config.js.",
+      );
+      self::assertSame(
+        $expected,
+        $stamp[0],
+        "$build is stale: run `npm run build` in modules/utilikit_ckeditor.",
+      );
+    }
+
+    $dll = (string) file_get_contents($this->modulePath . '/' . self::BUILDS[0]);
+    $externals = (string) file_get_contents($this->modulePath . '/' . self::BUILDS[1]);
+    self::assertStringContainsString('CKEditor5.dll', $dll, 'The DLL build links to the Drupal 11 runtime.');
+    self::assertStringNotContainsString(
+      'CKEditor5.dll',
+      $externals,
+      'The externals build must not touch the DLL — on Drupal 12 that is the deprecated shim.',
     );
+    self::assertStringContainsString('CKEDITOR', $externals, 'The externals build uses the UMD global.');
   }
 
 }

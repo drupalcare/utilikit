@@ -224,10 +224,14 @@ final class UtilikitCkeditorPluginTest extends KernelTestBase {
   public function testTheBuiltPluginFileIsShipped(): void {
     $path = \Drupal::service('extension.list.module')->getPath('utilikit_ckeditor');
 
-    self::assertFileExists(
-      $path . '/js/build/utilikit.js',
-      'The built plugin is committed, not left for the installer to compile.',
-    );
+    // Both builds: the DLL build for Drupal 11 and the externals build for a
+    // core shipping the UMD runtime. UtilikitCkeditorHooks picks one per site.
+    foreach (['js/build/utilikit.js', 'js/build/utilikit.externals.js'] as $build) {
+      self::assertFileExists(
+        $path . '/' . $build,
+        'The built plugin is committed, not left for the installer to compile.',
+      );
+    }
   }
 
   /**

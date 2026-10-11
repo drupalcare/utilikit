@@ -4,7 +4,9 @@
     "allowCompoundWords": false,
     "globRoot": ".",
     "minWordLength": 4,
-    "ignorePaths": [],
+    "ignorePaths": [
+        "**/js/build/**"
+    ],
     "dictionaries": [],
     "dictionaryDefinitions": [],
     "ignoreRegExpList": [

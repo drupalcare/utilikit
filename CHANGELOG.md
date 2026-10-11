@@ -12,6 +12,22 @@ the record for those.
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- **`utilikit_ckeditor`: Drupal 12 raised "CKEditor5.dll() is deprecated" on
+  every editor page.** Drupal 12 ships CKEditor 5 as a UMD bundle and reaches
+  DLL-built plugins only through a deprecated shim; Drupal 11 can load only the
+  DLL build. `npm run build` now writes two files from the one source —
+  `js/build/utilikit.js` (DLL, Drupal 11) and `js/build/utilikit.externals.js`
+  (externals to `CKEDITOR`, Drupal 12) — and `UtilikitCkeditorHooks` serves the
+  one matching the runtime core's own `core/ckeditor5` library loads. The editor
+  button behaves the same on both. `UtilikitCkeditorBuildSelectionTest` pins
+  the choice; `UtilikitCkeditorToolbarIconTest` now fails if either build is
+  stale against the plugin source or its build config. Run a cache rebuild
+  after updating.
+
 ## [1.0.7] — 2026-10-09
 
 ### Fixed

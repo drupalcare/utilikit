@@ -83,22 +83,50 @@ image (`css/utilikit-ckeditor.admin.css`), and the editor button imports it
 
 ## Building the JavaScript
 
-`js/build/utilikit.js` **is committed**, following Drupal core, which commits
+`js/build/` **is committed**, following Drupal core, which commits
 `core/modules/ckeditor5/js/build/*.js`. A module that gitignores its build
 output ships a toolbar button that silently fails to load for anyone installing
 from the dev branch, because the file the library points at is not there.
 
-To rebuild after changing anything under `js/ckeditor5_plugins/`:
+To rebuild after changing anything under `js/ckeditor5_plugins/` or `icons/`:
 
 ```
 npm install
 npm run build
 ```
 
-The webpack configuration is core's own, reduced to this module's single
-plugin. It shares core's CKEditor 5 runtime through `DllReferencePlugin` rather
-than bundling a second copy — two CKEditor instances do not recognise each
-other's classes, and that fails at runtime rather than at build time.
+`npm run watch` is for local development only: it writes unminified
+development builds over the same two files. **Never commit a watch build** —
+run `npm run build` before committing. The drift check below cannot tell the
+two apart, because both are stamped from the same inputs.
+
+**One source, two builds — `npm run build` always writes both:**
+
+| File | Loaded on | How it reaches CKEditor 5 |
+|---|---|---|
+| `js/build/utilikit.js` | Drupal 11 (DLL runtime) | `DllReferencePlugin` against `CKEditor5.dll` |
+| `js/build/utilikit.externals.js` | Drupal 12 (UMD runtime) | `externals` mapping every CKEditor import to `CKEDITOR` |
+
+Drupal 12 ships CKEditor 5 as a UMD bundle and keeps `CKEditor5.dll()` only as
+a deprecated shim ([change record](https://www.drupal.org/node/3581531));
+Drupal 11 can load only the DLL build. Both configurations are core's own for
+the matching major, so the plugin shares core's runtime rather than bundling a
+second copy — two CKEditor instances do not recognise each other's classes.
+
+The library always declares the DLL build. `UtilikitCkeditorHooks` swaps it for
+the externals build when core's own `core/ckeditor5` library loads
+`ckeditor5.umd.js` — it reads core's library, not its version number. The
+choice is cached with the library definitions, so it follows a core upgrade at
+the next cache rebuild.
+
+**The drift check.** Each build starts with `utilikit-src-sha256:<hash>`, a
+sha256 over `src/*.js` (sorted), `icons/handyman.svg` and `webpack.config.js`.
+These files are pinned to LF in the project's `.gitattributes`, because the
+hash is taken over their raw bytes.
+`UtilikitCkeditorToolbarIconTest` recomputes it, so a source or build-config
+change committed without rebuilding both files fails the suite; CI does not
+rebuild.
+`UtilikitCkeditorBuildSelectionTest` pins which build a site receives.
 
 ## With utilikit_ai
 
