@@ -7,7 +7,7 @@ and the project follows [Semantic
 Versioning](https://semver.org/spec/v2.0.0.html).
 
 **This file starts at 1.0.5.** Releases 1.0.0 through 1.0.4 shipped without a
-changelog, and their contents are not reconstructed here — the git history is
+changelog, and their contents are not reconstructed here. The git history is
 the record for those.
 
 ---
@@ -21,20 +21,20 @@ the record for those.
   DLL-built plugins only through a deprecated shim; Drupal 11 can load only the
   DLL build. `npm run build` now writes two files from the one source —
   `js/build/utilikit.js` (DLL, Drupal 11) and `js/build/utilikit.externals.js`
-  (externals to `CKEDITOR`, Drupal 12) — and `UtilikitCkeditorHooks` serves the
+  (externals to `CKEDITOR`, Drupal 12), and `UtilikitCkeditorHooks` serves the
   one matching the runtime core's own `core/ckeditor5` library loads. The editor
   button behaves the same on both. `UtilikitCkeditorBuildSelectionTest` pins
   the choice; `UtilikitCkeditorToolbarIconTest` now fails if either build is
   stale against the plugin source or its build config. Run a cache rebuild
   after updating.
 
-## [1.0.7] — 2026-10-09
+## [1.0.7] (2026-10-09)
 
 ### Fixed
 
 - **`utilikit_ckeditor`: the toolbar button had no icon.** In *Text formats →
-  Available buttons* it showed as an empty grey box, because the admin library
-  set no background image for `.ckeditor5-toolbar-button-utilikit` — core draws
+  Available buttons* it showed as an empty gray box, because the admin library
+  set no background image for `.ckeditor5-toolbar-button-utilikit`. Core draws
   every button there as an empty span and leaves the icon to that CSS. The
   button now uses the Material Symbols `handyman` icon (Apache-2.0, see
   `modules/utilikit_ckeditor/icons/`), and the editor toolbar shows the same
@@ -44,7 +44,7 @@ the record for those.
 - **`utilikit_ckeditor`: a block styled with the button vanished from the
   editor.** In inline rendering mode `utilikit.engine.css` hides every
   `.utilikit` element until the engine processes it, and the engine never
-  processes the editing view — so applying a class made the paragraph
+  processes the editing view, so applying a class made the paragraph
   invisible while editing. The editor stylesheet now keeps editable content
   visible; the front end is unchanged.
 - **`utilikit_ckeditor`: changing a value added a second class.** Setting
@@ -53,7 +53,7 @@ the record for those.
   side and screen size.
 - **`utilikit_ckeditor`: any typed value was written as a class.**
   `uk-ta--banana` was accepted, and a value with a space put a second class on
-  the element. Keyword utilities now offer only their accepted words, colours a
+  the element. Keyword utilities now offer only their accepted words, colors a
   picker, and every class is checked against
   `UtilikitConstants::CLASS_VALIDATION_PATTERN` before it is written.
 - **`utilikit_ckeditor`: an endless blue shimmer ran inside the editor.** The
@@ -70,7 +70,7 @@ the record for those.
 
 ### Changed
 
-- **`utilikit_ckeditor`: the toolbar panel is reorganised.** It shows the
+- **`utilikit_ckeditor`: the toolbar panel is reorganized.** It shows the
   styles already on the block as removable, editable chips in plain words
   ("Padding, top: 16px · 768px+"), then *Style* (grouped, "Max width (xw)"
   rather than "xw — maxInlineSize"), *Side*, *Value* (with a help line for
@@ -85,7 +85,7 @@ the record for those.
   words for the utility live on the rule, so no consumer keeps its own list of
   names. `utilikit_ai` excludes it from the flags it reasons about.
 
-## [1.0.6] — 2026-10-07
+## [1.0.6] (2026-10-07)
 
 ### Fixed
 
@@ -93,11 +93,11 @@ the record for those.
   property, so placed after the rule's other declarations it erased them
   (size, border, radius, background).
 
-## [1.0.5] — 2026-10-05
+## [1.0.5] (2026-10-05)
 
 ### Added
 
-- **`utilikit_ckeditor`** — optional CKEditor 5 plugin. Adds a toolbar control
+- **`utilikit_ckeditor`**: optional CKEditor 5 plugin. Adds a toolbar control
   that applies UtiliKit classes to the block you are editing.
 
   Core's Style plugin can already put a class on an element, so the reason this
@@ -120,7 +120,7 @@ the record for those.
   must be true before the bar appears and not one of them is visible from the
   node form, so the page prints which one is missing as a sentence. Without it
   the module had nowhere on the site to say the thing that costs people an
-  afternoon — that a FunctionCall tool reaches an assistant only through an AI
+  afternoon, that a FunctionCall tool reaches an assistant only through an AI
   Agent, so an assistant without one answers questions and silently changes
   nothing. That page also names any text format that would strip the classes,
   which is the exact failure this module exists to stop being silent.
@@ -128,7 +128,7 @@ the record for those.
   The list of field types the assistant can write into now has **one owner**,
   `ClassApplierInterface::RICH_TEXT_FIELD_TYPES`, read by both the writer and
   the surface. Two copies would have drifted into a bar offered where nothing
-  can be written, or hidden where something can — and neither reports anything.
+  can be written, or hidden where something can, and neither reports anything.
   A test drives itself from the constant, so it fails if they part.
 
 - **`utilikit_ai`** gained `utilikit_apply_classes`, its first tool that
@@ -142,13 +142,13 @@ the record for those.
   plugin reaches an assistant only through `ai_agents`, so without an agent the
   tools were unreachable by anything on the site.
 
-- `UtilikitConstants::MARKER_CLASS` — the `utilikit` marker string now has one
+- `UtilikitConstants::MARKER_CLASS`: the `utilikit` marker string now has one
   owner. It had begun to spread: the AI writer kept a private copy and a
   constant encodes it in a regular expression.
 
 ### Fixed
 
-- `@media (prefers-contrast: high)` — `high` is not a value the specification
+- `@media (prefers-contrast: high)`: `high` is not a value the specification
   defines, so that accessibility rule had never applied in any current browser.
   It is `more`.
 - A keyframe name, a file header naming the wrong filename, and a typo in a
@@ -158,7 +158,7 @@ the record for those.
   `attach()` long after the file executes.
 - **`utilikit_ckeditor` left its toolbar item behind on uninstall.** The text
   format kept a `utilikit` button pointing at a plugin that no longer existed.
-  This is core behaviour rather than an oversight — `Editor::calculateDependencies()`
+  This is core behavior rather than an oversight: `Editor::calculateDependencies()`
   records only the *editor* plugin's provider, so no config dependency on a
   CKEditor 5 plugin's module ever exists for the uninstall machinery to act on
   (core carries a `@todo` about it). The module now removes its own item, and

@@ -1,6 +1,6 @@
 # UtiliKit AI
 
-Optional. Helps compose and diagnose UtiliKit utility classes — which prefix to
+Optional. Helps compose and diagnose UtiliKit utility classes, which prefix to
 use, what values it accepts, and why a class that looks right is doing nothing.
 
 It is a separate module on purpose. `utilikit` and every other submodule stay
@@ -29,7 +29,7 @@ installable without `drupal/ai`; nothing here is referenced from them.
 5. **Every precondition is re-checked by the writer itself**, not trusted from
    an earlier tool call, because a model can skip those.
 
-It only ever adds a class attribute — never text, never structure, never a
+It only ever adds a class attribute, never text, never structure, never a
 whole field.
 
 ## Why tools rather than a good prompt
@@ -40,7 +40,7 @@ which grammar applies is not predictable from the CSS property:
 - `fw` is font-weight and takes a **number**, so `uk-fw--700` works and
   `uk-fw--bold` does not.
 - `ta` is text-align and takes a **keyword**, and only from this site's list.
-- `bg` takes hex digits with **no leading hash** — `uk-bg--3b82f6`.
+- `bg` takes hex digits with **no leading hash**: `uk-bg--3b82f6`.
 
 A model writes all three the CSS way and gets two of them wrong. Neither
 mistake raises anything: the class sits in the markup looking correct and no
@@ -48,7 +48,7 @@ style appears. Every answer here is read from `UtilikitRules` at runtime, so it
 describes the site in front of you rather than a remembered version of UtiliKit.
 
 *An earlier draft of this file said `fw` was a keyword rule. It is not. The
-error survived until the tool was run against a real site — which is the
+error survived until the tool was run against a real site, which is the
 argument for the tool, made at the documentation's expense.*
 
 ## The marker class
@@ -79,7 +79,7 @@ from the page and each has a different fix:
 
 ## Where you talk to it
 
-A chat bar appears at the bottom of **node add and edit forms** — collapsed
+A chat bar appears at the bottom of **node add and edit forms**: collapsed
 until you click it, and only for people with the *Use the UtiliKit assistant*
 permission. The node form is where it belongs: `apply_classes` writes into a
 node's formatted text and takes a node id, so it is the one screen where the
@@ -92,7 +92,7 @@ a content type with a formatted-text field to write into.
 
 So the settings page at **Configuration › Development › UtiliKit › AI** prints
 which one is missing, in a sentence. If you turned this on and see nothing,
-that page is the answer — it is the whole reason the page exists. It also
+that page is the answer. It is the whole reason the page exists. It also
 names any text format that would strip the classes, which is the failure this
 module was built to stop being silent.
 
@@ -116,8 +116,8 @@ assistant.
    `FunctionCall` plugins, and an assistant reaches those **only through an AI
    Agent**.
 
-   This module ships one — `utilikit_agent`, in `config/optional`, with the
-   four tools already enabled on it — so there is usually nothing to create.
+   This module ships one: `utilikit_agent`, in `config/optional`, with the
+   four tools already enabled on it, so there is usually nothing to create.
    Optional config installs only when its dependencies are present **at the
    time the module is installed**, so if `ai_agents` was enabled *after*
    `utilikit_ai`, the agent is simply absent. Re-installing `utilikit_ai`
@@ -126,7 +126,7 @@ assistant.
 
 ## What is not here, and why
 
-**The WYSIWYG — no longer absent, and it is a separate module.** Applying
+**The WYSIWYG: no longer absent, and it is a separate module.** Applying
 classes *interactively while editing* is `utilikit_ckeditor`, a real CKEditor 5
 plugin with its own toolbar button. It is deliberately not part of this module:
 it needs no AI and no `drupal/ai`, so tying it to this one would have made a
@@ -145,8 +145,8 @@ vendor/bin/phpunit web/modules/contrib/utilikit/modules/utilikit_ai
 ```
 
 The kernel tests cover each tool, each rejection with its reason, and a probe
-asserting the validator judges against the shared catalogue rather than a list
-of its own — because a second copy of the rules is the defect this module was
+asserting the validator judges against the shared catalog rather than a list
+of its own, because a second copy of the rules is the defect this module was
 built after fixing.
 
 ## Requirements

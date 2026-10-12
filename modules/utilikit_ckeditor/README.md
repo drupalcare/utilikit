@@ -1,14 +1,14 @@
 # UtiliKit CKEditor
 
 Adds a **UtiliKit classes** button to the CKEditor 5 toolbar. Put the caret in
-a block — a paragraph, heading, list item, blockquote — and open it:
+a block (a paragraph, heading, list item, blockquote) and open it:
 
 - **On this block** lists the UtiliKit styles already there, in words
   ("Padding, top: 16px · 768px+"). Select one to edit it; its × removes it.
 - **Add or change a style**: pick a *Style* (grouped, e.g. "Max width (xw)"),
-  a *Side* where the style has sides, a *Value* — a list of the accepted words
-  for keyword styles, a colour picker for colours, otherwise a field with an
-  example and a help line — and a *Screen size*. The class it will write is
+  a *Side* where the style has sides, a *Value*: a list of the accepted words
+  for keyword styles, a color picker for colors, otherwise a field with an
+  example and a help line, and a *Screen size*. The class it will write is
   shown before you press **Apply**.
 - A new value **replaces** the old one for the same style, side and screen
   size. **Remove all** takes every UtiliKit class off the block.
@@ -22,7 +22,7 @@ is why UtiliKit ships its own.
 
 Style works from a list someone types into the text format settings: every
 class it can ever apply has to be written out in advance. UtiliKit's classes are
-*composed* — `uk-pd--16px`, `uk-pd--t-40px`, `uk-md-bg--3b82f6` — so the useful
+*composed*: `uk-pd--16px`, `uk-pd--t-40px`, `uk-md-bg--3b82f6`, so the useful
 set is effectively unbounded and cannot be enumerated.
 
 So this plugin is given the **rules** rather than a list of classes, and
@@ -31,7 +31,7 @@ and the keyword values where a rule takes keywords.
 
 ## Where the rules come from
 
-`UtilikitRules` — the same single declaration the CSS generator and the
+`UtilikitRules`: the same single declaration the CSS generator and the
 JavaScript engine read. The editor is a third consumer of one source of truth,
 not a fourth copy of the facts. `UtilikitCkeditorPluginTest` asserts the editor
 sees exactly the rules that class declares, so a rule added there reaches the
@@ -56,7 +56,7 @@ group, how to word a value's help line, and the replace-not-append rule.
   survives editing, and *Remove all* removes UtiliKit's classes while leaving it
   alone. The upcast matches the marker and the `uk-` namespace, nothing else.
 - **Classes survive the round trip.** A class attribute CKEditor does not know
-  about is discarded when content passes through the editor — the author sees
+  about is discarded when content passes through the editor. The author sees
   their styling vanish on the next save with nothing to explain it. The
   attribute is declared on every block and converted both ways.
 - **A styled block stays visible while editing.** In inline rendering mode
@@ -73,13 +73,13 @@ group, how to word a value's help line, and the replace-not-append rule.
 `icons/handyman.svg` is the Material Symbols **handyman** icon (Outlined,
 weight 400, 24 px), from Google's official repository:
 https://github.com/google/material-design-icons/blob/master/symbols/web/handyman/materialsymbolsoutlined/handyman_24px.svg
-It is licensed Apache-2.0; the licence is in `icons/LICENSE-APACHE.txt`. Only
+It is licensed Apache-2.0; the license is in `icons/LICENSE-APACHE.txt`. Only
 `width`/`height` were removed and `fill="currentColor"` added.
 
 **One file, two consumers.** The text format admin UI draws it as a background
 image (`css/utilikit-ckeditor.admin.css`), and the editor button imports it
 (`utilikitui.js`, inlined at build time). After changing the SVG, rebuild
-`js/build` — `UtilikitCkeditorToolbarIconTest` fails until you do.
+`js/build`: `UtilikitCkeditorToolbarIconTest` fails until you do.
 
 ## Building the JavaScript
 
@@ -100,7 +100,7 @@ development builds over the same two files. **Never commit a watch build** —
 run `npm run build` before committing. The drift check below cannot tell the
 two apart, because both are stamped from the same inputs.
 
-**One source, two builds — `npm run build` always writes both:**
+**One source, two builds: `npm run build` always writes both:**
 
 | File | Loaded on | How it reaches CKEditor 5 |
 |---|---|---|
@@ -111,11 +111,11 @@ Drupal 12 ships CKEditor 5 as a UMD bundle and keeps `CKEditor5.dll()` only as
 a deprecated shim ([change record](https://www.drupal.org/node/3581531));
 Drupal 11 can load only the DLL build. Both configurations are core's own for
 the matching major, so the plugin shares core's runtime rather than bundling a
-second copy — two CKEditor instances do not recognise each other's classes.
+second copy. Two CKEditor instances do not recognize each other's classes.
 
 The library always declares the DLL build. `UtilikitCkeditorHooks` swaps it for
 the externals build when core's own `core/ckeditor5` library loads
-`ckeditor5.umd.js` — it reads core's library, not its version number. The
+`ckeditor5.umd.js`: it reads core's library, not its version number. The
 choice is cached with the library definitions, so it follows a core upgrade at
 the next cache rebuild.
 

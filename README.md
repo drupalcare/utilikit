@@ -41,7 +41,7 @@ UtiliKit accepts **any numerical value with any unit**. Want `uk-pd--247px`,
 
 ### 47 Utility Prefixes
 Complete coverage of CSS properties across box model, sizing, positioning,
-typography, colors, effects, layout, flexbox, grid, and transforms — all using
+typography, colors, effects, layout, flexbox, grid, and transforms, all using
 a consistent 2-letter prefix system.
 
 ### CSS Specificity Control
@@ -136,9 +136,9 @@ process its utility classes.
 ### Inline Mode (Development)
 
 - JavaScript processes classes dynamically in the browser
-- Immediate visual feedback — no page refreshes needed
+- Immediate visual feedback: no page refreshes needed
 - Ideal for development, prototyping, and content editing
-- Zero build process — no CSS file generation required
+- Zero build process: no CSS file generation required
 - Real-time class validation and error reporting
 
 ### Static Mode (Production)
@@ -324,7 +324,7 @@ Use `pr` suffix for percentage values since `%` is not valid in class names:
 - **With alpha (0-100)**: `uk-bg--ff0000-50` → `background-color: rgba(255, 0, 0, 0.5)`
 - **Short hex with alpha**: `uk-bg--f00-25` → `background-color: rgba(255, 0, 0, 0.25)`
 - **Pseudo-state suffix** (static/head modes): append `-h` (hover), `-f` (focus),
-  or `-a` (active) — e.g., `uk-bg--007bff-h`, `uk-tc--ff0000-50-f`
+  or `-a` (active), e.g., `uk-bg--007bff-h`, `uk-tc--ff0000-50-f`
 
 ### Directional Sides
 
@@ -607,12 +607,12 @@ UtiliKit supports all modern browsers:
 
 ### Hooks Implemented
 
-- `hook_page_attachments()` — Attaches CSS/JS based on rendering mode
-- `hook_entity_presave()` — Triggers auto-update on content save
-- `hook_library_info_alter()` — Injects dynamic CSS file URL for static mode
-- `hook_css_alter()` — Adjusts CSS weight/group for proper cascade
-- `hook_cache_flush()` — Regenerates static CSS during cache rebuilds
-- `hook_theme()` — Defines update button template
+- `hook_page_attachments()`: Attaches CSS/JS based on rendering mode
+- `hook_entity_presave()`: Triggers auto-update on content save
+- `hook_library_info_alter()`: Injects dynamic CSS file URL for static mode
+- `hook_css_alter()`: Adjusts CSS weight/group for proper cascade
+- `hook_cache_flush()`: Regenerates static CSS during cache rebuilds
+- `hook_theme()`: Defines update button template
 
 ### Module Compatibility
 
@@ -637,7 +637,7 @@ UtiliKit supports all modern browsers:
 
 You can run the same tests and lint as GitLab CI without pushing to drupalcode.org.
 
-**Option A — Use the script (recommended)**
+**Option A: Use the script (recommended)**
 
 From the module repo root:
 
@@ -648,12 +648,12 @@ chmod +x scripts/run-ci-locally.sh
 
 This creates a Drupal 11 project in `./build/drupal` (if needed), copies the module in, and runs unit, kernel, functional, and PHPCS. Optional env vars:
 
-- `DRUPAL_ROOT=/path/to/your/drupal` — use an existing Drupal root (syncs this repo into `web/modules/contrib/utilikit` and runs tests).
-- `SKIP_FUNCTIONAL=1` — skip functional tests (avoids starting the PHP built-in server).
-- `SKIP_PHPCS=1` — skip coding standards.
-- `BUILD_DIR=/path` — where to create Drupal when not using `DRUPAL_ROOT` (default: `./build/drupal`).
+- `DRUPAL_ROOT=/path/to/your/drupal`: use an existing Drupal root (syncs this repo into `web/modules/contrib/utilikit` and runs tests).
+- `SKIP_FUNCTIONAL=1`: skip functional tests (avoids starting the PHP built-in server).
+- `SKIP_PHPCS=1`: skip coding standards.
+- `BUILD_DIR=/path`: where to create Drupal when not using `DRUPAL_ROOT` (default: `./build/drupal`).
 
-**Option B — Use an existing Drupal site**
+**Option B: Use an existing Drupal site**
 
 If the module is already at `web/modules/contrib/utilikit` in your Drupal project, from the **Drupal project root** (parent of `web/`):
 
