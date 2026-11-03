@@ -270,10 +270,10 @@ class UtilikitSettingsFormTest extends BrowserTestBase {
     $this->drupalGet('admin/config/utilikit/settings');
 
     // Check the clear button exists.
-    $this->assertSession()->buttonExists('Clear All CSS & Reset');
+    $this->assertSession()->buttonExists('Reset all CSS');
 
     // Test clear cache button.
-    $this->submitForm([], 'Clear All CSS & Reset');
+    $this->submitForm([], 'Reset all CSS');
 
     // Verify success message.
     $this->assertSession()->pageTextContains('reset to defaults');
@@ -304,12 +304,11 @@ class UtilikitSettingsFormTest extends BrowserTestBase {
 
     $this->drupalGet('admin/config/utilikit/settings');
 
-    // Check CSS file info is displayed.
-    $this->assertSession()->pageTextContains('Generated CSS (Static Mode)');
-    $this->assertSession()->pageTextContains('CSS File Generated');
-    $this->assertSession()->pageTextContains('View Generated CSS File');
-    $this->assertSession()->pageTextContains('Classes: 2');
-    $this->assertSession()->pageTextContains('Last Updated:');
+    // Check CSS file info is displayed in the page header.
+    $this->assertSession()->pageTextContains('Generated CSS, updated');
+    $this->assertSession()->pageTextContains('View generated CSS file');
+    $this->assertSession()->elementTextEquals('xpath', '//div[contains(@class, "utilikit-settings__chip")][span[normalize-space()="Tracked classes"]]/b', '2');
+    $this->assertSession()->pageTextNotContains('No CSS file found');
   }
 
   /**

@@ -348,6 +348,8 @@
       )
         passed = actual === '0px' || actual === 'normal';
       else if (expected === 'auto' && (actual === '0px' || actual === '0')) {
+        // Browsers report "auto" as 0px for margins, and for min sizes on
+        // boxes that are not flex or grid items, where auto behaves as 0.
         if (
           [
             'margin',
@@ -355,6 +357,10 @@
             'marginInlineEnd',
             'marginBlockEnd',
             'marginInlineStart',
+            'minInlineSize',
+            'minBlockSize',
+            'minWidth',
+            'minHeight',
           ].some((p) => cssProp.includes(p))
         ) {
           return { passed: true, actual: `${actual} (auto)`, expected };

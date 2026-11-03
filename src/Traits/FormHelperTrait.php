@@ -220,7 +220,8 @@ trait FormHelperTrait {
    *   (e.g., ['button--primary', 'button--danger']).
    * @param array<string, mixed> $attributes
    *   Optional array of HTML attributes to apply to the button
-   *   (e.g., ['onclick' => 'return confirm("Are you sure?")']').
+   *   (e.g., ['data-utilikit-confirm' => 'Are you sure?']). Never inline
+   *   event handlers: a strict Content Security Policy blocks them.
    *
    * @return array<string, mixed>
    *   Submit button form element render array.

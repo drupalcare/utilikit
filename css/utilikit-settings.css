@@ -1,70 +1,539 @@
-form.utilikit-settings-form {
-  max-width: 1400px;
-  margin: 0 auto;
+/**
+ * UtiliKit settings form ("Pipeline").
+ *
+ * Layout is ours; colors are the admin theme's. Surfaces, text, inputs,
+ * buttons and focus inherit from the theme. The brand accent appears only as
+ * a thin left or bottom border, an icon color, and small dots and counters.
+ * Every selector starts with .utilikit-settings; no ids, no important flags.
+ */
+.utilikit-settings {
+  --uk-accent: #3b3fb0;
+  --uk-danger: #a8221a;
+  --uk-line: color-mix(in srgb, currentcolor 20%, transparent);
+  --uk-ctl: color-mix(in srgb, currentcolor 45%, transparent);
+  --uk-muted: color-mix(in srgb, currentcolor 72%, transparent);
+  --uk-mono: ui-monospace, sfmono-regular, menlo, consolas, monospace;
+
+  container: uk-form / inline-size;
+  display: block;
+  box-sizing: border-box;
+  max-inline-size: 72rem;
+  margin: 1rem auto 0;
+  padding: 0 clamp(0.75rem, 2.5vw, 1.5rem) 1.5rem;
+  counter-reset: uk-step;
 }
 
-#edit-developer > .details-wrapper,
-#edit-triggers > .details-wrapper,
-#edit-scope > .details-wrapper,
-#edit-performance > .details-wrapper,
-#edit-rendering-mode--wrapper .fieldset__wrapper .form-radios,
-form.utilikit-settings-form .form-wrapper .form-radios,
-form.utilikit-settings-form .form-wrapper .form-checkboxes {
+.dark .utilikit-settings,
+.dark-mode .utilikit-settings,
+.gin--dark-mode .utilikit-settings {
+  --uk-accent: #a9b0ff;
+  --uk-danger: #ffb0a8;
+}
+
+.utilikit-settings *,
+.utilikit-settings *::before,
+.utilikit-settings *::after {
+  box-sizing: border-box;
+}
+
+/* SVG icons: drawn with a mask so the accent color is the icon color. */
+.utilikit-settings__mode--inline label::before,
+.utilikit-settings__mode--static label::before,
+.utilikit-settings__mode--head label::before,
+.utilikit-settings .uk-group > legend::before,
+.utilikit-settings .utilikit-settings__danger h3::before,
+.utilikit-settings .utilikit-settings__note::before {
+  content: "";
+  display: inline-block;
+  flex: none;
+  inline-size: 1.15em;
+  block-size: 1.15em;
+  margin-inline-end: 0.5rem;
+  vertical-align: -0.2em;
+  background-color: var(--uk-accent);
+  mask: var(--uk-icon) center / contain no-repeat;
+}
+
+.utilikit-settings__mode--inline label {
+  --uk-icon: url("../icons/bolt.svg");
+}
+
+.utilikit-settings__mode--static label {
+  --uk-icon: url("../icons/code.svg");
+}
+
+.utilikit-settings__mode--head label {
+  --uk-icon: url("../icons/sync.svg");
+}
+
+.utilikit-settings .uk-group--tune > legend {
+  --uk-icon: url("../icons/tune.svg");
+}
+
+.utilikit-settings .uk-group--code > legend {
+  --uk-icon: url("../icons/code.svg");
+}
+
+.utilikit-settings .uk-group--eye > legend {
+  --uk-icon: url("../icons/visibility.svg");
+}
+
+.utilikit-settings .utilikit-settings__danger h3 {
+  --uk-icon: url("../icons/warning.svg");
+}
+
+.utilikit-settings .utilikit-settings__note {
+  --uk-icon: url("../icons/info.svg");
+}
+
+.utilikit-settings .utilikit-settings__danger h3::before {
+  background-color: var(--uk-danger);
+}
+
+/* Header band: a bordered panel with a thin accent edge; no fill. */
+.utilikit-settings__band {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem 2rem;
+  align-items: center;
+  margin: 0 0 1.5rem;
+  padding: 1.5rem 1.75rem;
+  border: 1px solid var(--uk-line);
+  border-inline-start: 4px solid var(--uk-accent);
+  border-radius: 16px;
 }
 
-#edit-developer > .details-wrapper #edit-static-css-info,
-#edit-triggers > .details-wrapper > *:first-child,
-#edit-performance > .details-wrapper > *:first-child {
+.utilikit-settings__brand {
+  min-inline-size: 0;
+}
+
+.utilikit-settings__name {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.utilikit-settings__purpose {
+  max-inline-size: 48ch;
+  margin: 0.25rem 0 0;
+  font-size: 15px;
+  color: var(--uk-muted);
+}
+
+.utilikit-settings__status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.utilikit-settings__chip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-inline-size: 7.5rem;
+  margin: 0;
+  padding: 0.6rem 0.85rem;
+  border: 1px solid var(--uk-line);
+  border-block-end: 3px solid var(--uk-accent);
+  border-radius: 10px;
+}
+
+.utilikit-settings__chip b {
+  font: 600 17px/1.2 var(--uk-mono);
+}
+
+.utilikit-settings__chip span,
+.utilikit-settings__chip a {
+  font-size: 12px;
+}
+
+.utilikit-settings__chip span {
+  color: var(--uk-muted);
+}
+
+/* Steps: numbered details on a thin rail. */
+.utilikit-settings details.uk-step {
+  position: relative;
+  margin: 0 0 0.5rem 2.75rem;
+  padding: 0;
+  border: 1px solid var(--uk-line);
+  border-radius: 12px;
+  box-shadow: none;
+  counter-increment: uk-step;
+}
+
+.utilikit-settings details.uk-step[open] {
+  border-color: var(--uk-ctl);
+}
+
+.utilikit-settings details.uk-step::before {
+  content: "";
+  position: absolute;
+  inset-block: 2.8rem -0.6rem;
+  inset-inline-start: -1.7rem;
+  border-inline-start: 2px solid var(--uk-line);
+}
+
+.utilikit-settings details.uk-step:last-of-type::before {
+  display: none;
+}
+
+/* Block padding only: Claro keeps the inline-start padding for its arrow
+   (claro/css/components/details.css .claro-details__summary). */
+.utilikit-settings details.uk-step > summary {
+  display: flex;
+  align-items: center;
+  min-block-size: 3.25rem;
+  padding-block: 0.75rem;
+  padding-inline-end: 1rem;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.utilikit-settings__head {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.75rem;
+  align-items: baseline;
+  min-inline-size: 0;
+}
+
+.utilikit-settings__head::before {
+  content: counter(uk-step);
+  position: absolute;
+  inset-block-start: 0.6rem;
+  inset-inline-start: -2.75rem;
+  display: grid;
+  place-items: center;
+  inline-size: 2.1rem;
+  block-size: 2.1rem;
+  border: 2px solid var(--uk-line);
+  border-radius: 50%;
+  font: 600 13px/1 var(--uk-mono);
+  color: var(--uk-muted);
+}
+
+.utilikit-settings details[open] > summary .utilikit-settings__head::before {
+  border-color: var(--uk-accent);
+  color: inherit;
+}
+
+.utilikit-settings__title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.utilikit-settings__hint {
+  font-size: 13px;
+  color: var(--uk-muted);
+}
+
+.utilikit-settings__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.05rem 0.5rem;
+  border: 1px solid var(--uk-line);
+  border-block-end: 2px solid var(--uk-accent);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.utilikit-settings details.uk-step > .details-wrapper,
+.utilikit-settings details.uk-step > .claro-details__wrapper,
+.utilikit-settings details.uk-step > .details__wrapper {
+  padding: 0.25rem 1.25rem 1.25rem;
+  border-block-start: 1px solid var(--uk-line);
+}
+
+.utilikit-settings details.uk-step > .details-description,
+.utilikit-settings details.uk-step > .claro-details__description,
+.utilikit-settings details.uk-step .details__description {
+  max-inline-size: none;
+  margin: 0.9rem 1.25rem 0;
+  font-size: 13px;
+  color: var(--uk-muted);
+}
+
+/* Fields: our grid, the theme's controls. */
+.utilikit-settings .form-item {
+  margin-block: 0;
+}
+
+.utilikit-settings details.uk-step > .details-wrapper,
+.utilikit-settings details.uk-step > .claro-details__wrapper,
+.utilikit-settings details.uk-step > .details__wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1rem 1.5rem;
+  align-items: start;
+}
+
+.utilikit-settings .uk-group,
+.utilikit-settings__modes,
+.utilikit-settings__entities,
+.utilikit-settings__bps,
+.utilikit-settings fieldset.js-form-wrapper {
   grid-column: 1 / -1;
 }
 
-/* Tablet: 2 Columns */
-@media (min-width: 768px) {
-  #edit-developer > .details-wrapper,
-  #edit-triggers > .details-wrapper,
-  #edit-scope > .details-wrapper,
-  #edit-performance > .details-wrapper,
-  form.utilikit-settings-form .form-wrapper .form-radios,
-  form.utilikit-settings-form .form-wrapper .form-checkboxes {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px 24px;
+.utilikit-settings fieldset.uk-group {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--uk-line);
+  border-radius: 10px;
+}
+
+/* Claro floats the legend at 100% width (fieldset.css .fieldset__legend);
+   a float that wide squeezes the grid wrapper into a strip beside it. */
+.utilikit-settings fieldset.uk-group > legend {
+  display: flex;
+  float: none;
+  align-items: center;
+  inline-size: auto;
+  margin: 0;
+  padding: 0 0.35rem;
+  font-weight: 600;
+}
+
+.utilikit-settings fieldset.uk-group > legend > .fieldset__label {
+  padding: 0;
+  line-height: 1.3;
+}
+
+.utilikit-settings fieldset.uk-group > .fieldset__wrapper,
+.utilikit-settings fieldset.uk-group > .claro-details__wrapper {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0.5rem 0 0;
+}
+
+/* Radios and checkboxes render as a fieldset that carries our class too.
+   The fieldset is a plain block; the grid goes on the option list. */
+.utilikit-settings fieldset:is(.utilikit-settings__modes, .utilikit-settings__entities, .utilikit-settings__bps) {
+  display: block;
+  min-inline-size: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: none;
+}
+
+.utilikit-settings fieldset:is(.utilikit-settings__modes, .utilikit-settings__entities, .utilikit-settings__bps) > legend {
+  float: none;
+  inline-size: auto;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+
+.utilikit-settings fieldset:is(.utilikit-settings__modes, .utilikit-settings__entities, .utilikit-settings__bps) > legend > .fieldset__label {
+  padding: 0;
+}
+
+.utilikit-settings fieldset:is(.utilikit-settings__modes, .utilikit-settings__entities, .utilikit-settings__bps) > .fieldset__wrapper {
+  margin: 0;
+}
+
+.utilikit-settings code {
+  padding: 0.05rem 0.3rem;
+  border: 1px solid var(--uk-line);
+  border-radius: 4px;
+  font: 12.5px var(--uk-mono);
+}
+
+.utilikit-settings__count {
+  margin-inline-start: 0.4rem;
+  font: 600 12.5px var(--uk-mono);
+  color: var(--uk-accent);
+}
+
+.utilikit-settings :is(div.utilikit-settings__entities, fieldset.utilikit-settings__entities .form-checkboxes) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: 0.6rem 1.5rem;
+}
+
+/* Mode cards (rendering_mode). */
+.utilikit-settings :is(div.utilikit-settings__modes, fieldset.utilikit-settings__modes .form-radios) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0.75rem;
+  margin-block-start: 0.5rem;
+}
+
+/* Claro indents boolean items (form--checkbox-radio.css .form-type--boolean). */
+.utilikit-settings :is(.utilikit-settings__mode, .utilikit-settings__entities .form-item, .utilikit-settings__bps .form-item) {
+  margin-inline-start: 0;
+}
+
+.utilikit-settings .utilikit-settings__mode {
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--uk-line);
+  border-radius: 12px;
+}
+
+.utilikit-settings__mode:hover {
+  border-color: var(--uk-ctl);
+}
+
+.utilikit-settings__mode:has(:checked) {
+  border-color: var(--uk-ctl);
+  border-inline-start: 4px solid var(--uk-accent);
+}
+
+.utilikit-settings__mode label {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.utilikit-settings__mode .description {
+  margin-block-start: 0.35rem;
+  color: var(--uk-muted);
+  font-size: 13px;
+}
+
+/* Breakpoint chips. */
+.utilikit-settings :is(div.utilikit-settings__bps, fieldset.utilikit-settings__bps .form-checkboxes) {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+.utilikit-settings__bps .form-item {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  min-block-size: 2.75rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--uk-ctl);
+  border-radius: 8px;
+}
+
+.utilikit-settings__bps .form-item:has(:checked) {
+  border-block-end: 3px solid var(--uk-accent);
+}
+
+.utilikit-settings__bps label {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 0.35rem;
+  align-items: baseline;
+  line-height: 1.25;
+}
+
+.utilikit-settings__bp-name {
+  font: 600 13px var(--uk-mono);
+}
+
+.utilikit-settings__bp-from {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--uk-muted);
+}
+
+/* Maintenance: danger row, thin danger edge, no fill. */
+.utilikit-settings__danger {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: center;
+  margin-block-start: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--uk-line);
+  border-inline-start: 4px solid var(--uk-danger);
+  border-radius: 10px;
+}
+
+.utilikit-settings__danger h3 {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 14px;
+}
+
+.utilikit-settings__danger p {
+  margin: 0.25rem 0 0;
+  font-size: 13px;
+  color: var(--uk-muted);
+}
+
+.utilikit-settings__danger .form-submit {
+  margin: 0;
+}
+
+.utilikit-settings__note {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: flex-start;
+  margin: 1rem 0 0;
+  font-size: 13px;
+  color: var(--uk-muted);
+}
+
+.utilikit-settings__note::before {
+  margin-block-start: 0.15rem;
+}
+
+.utilikit-settings .form-actions {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1;
+  margin: 1.25rem 0 0;
+  /* Opaque, so fields scrolling under the sticky buttons do not show through. */
+  background: var(--gin-bg-app, var(--color-white, Canvas));
+}
+
+.utilikit-settings :focus {
+  scroll-margin-block: 6rem;
+}
+
+@container uk-form (max-width: 48rem) {
+  .utilikit-settings__band {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 1.25rem;
   }
 
-  #edit-developer > .details-wrapper #edit-static-css-info,
-  #edit-triggers > .details-wrapper > *:first-child,
-  #edit-performance > .details-wrapper > *:first-child {
-    grid-column: 1 / -1;
+  .utilikit-settings__status {
+    justify-content: flex-start;
+  }
+
+  .utilikit-settings__chip {
+    flex: 1 1 6.5rem;
+    min-inline-size: 0;
+  }
+
+  .utilikit-settings__modes,
+  .utilikit-settings__danger {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .utilikit-settings details.uk-step {
+    margin-inline-start: 2.25rem;
+  }
+
+  .utilikit-settings details.uk-step::before {
+    inset-inline-start: -1.45rem;
+  }
+
+  .utilikit-settings__head::before {
+    inset-inline-start: -2.25rem;
+    inline-size: 1.75rem;
+    block-size: 1.75rem;
+    font-size: 12px;
   }
 }
 
-/* Desktop: 3 Columns */
-@media (min-width: 1024px) {
-  #edit-developer > .details-wrapper,
-  #edit-triggers > .details-wrapper,
-  #edit-scope > .details-wrapper,
-  #edit-performance > .details-wrapper,
-  form.utilikit-settings-form .form-wrapper .form-radios,
-  form.utilikit-settings-form .form-wrapper .form-checkboxes {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px 32px;
+@media (forced-colors: active) {
+  .utilikit-settings__mode:has(:checked),
+  .utilikit-settings__bps .form-item:has(:checked) {
+    border-color: highlight;
   }
-
-  #edit-scope > .details-wrapper {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px 32px;
-  }
-
-  #edit-scope > .details-wrapper > :last-child,
-  #edit-developer > .details-wrapper #edit-static-css-info,
-  #edit-triggers > .details-wrapper > *:first-child,
-  #edit-performance > .details-wrapper > *:first-child {
-    grid-column: 1 / -1;
-  }
-}
-
-#edit-rendering-mode--wrapper .form-radios input[type="radio"]:checked + label {
-  color: #090 !important;
 }

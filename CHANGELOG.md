@@ -14,8 +14,23 @@ the record for those.
 
 ## [Unreleased]
 
+### Changed
+
+- **Settings page redesigned.** The same settings, grouped into numbered
+  steps with icons, a header showing the current mode and generated-CSS facts,
+  and sticky Save buttons. No setting was added, removed or renamed.
+
 ### Fixed
 
+- **"Reset all CSS" turned on "Disable on admin pages".** It now restores the
+  install default (off), like the other values it resets.
+- **Log level showed "Warnings" when nothing was saved.** The fallback now
+  matches the install default, "Off".
+- **The "Reset all CSS" confirmation did not appear under a strict Content
+  Security Policy.** The inline `onclick` handler is replaced by a small
+  script (`js/utilikit.settings-confirm.js`), so Cancel works everywhere.
+- **The Inline, Static and Head explanations were not announced by screen
+  readers.** Each one is now linked to its radio with `aria-describedby`.
 - **`utilikit_ckeditor`: Drupal 12 raised "CKEditor5.dll() is deprecated" on
   every editor page.** Drupal 12 ships CKEditor 5 as a UMD bundle and reaches
   DLL-built plugins only through a deprecated shim; Drupal 11 can load only the

@@ -684,6 +684,10 @@ Ensure the Drupal project has dev dependencies: `composer require --dev drupal/c
 - Include browser and Drupal version information
 - Attach relevant error logs or screenshots
 
+## Icons
+
+The settings form icons in `icons/` are Google Material Symbols (Outlined), Apache License 2.0, copied unchanged with the viewBox trimmed to the drawing.
+
 ## License
 
 UtiliKit is distributed under the GPL-2.0-or-later license.

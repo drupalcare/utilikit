@@ -228,3 +228,8 @@ utilikit-settings:
   css:
     theme:
       css/utilikit-settings.css: {}
+  js:
+    js/utilikit.settings-confirm.js: {}
+  dependencies:
+    - core/drupal
+    - core/once
