@@ -14,6 +14,8 @@ the record for those.
 
 ## [Unreleased]
 
+- Extend and Appearance pages: every module and theme description is a short, professional statement that begins with a verb; credits, links and version notes moved out of the info files.
+
 ### Changed
 
 - **Settings page redesigned.** The same settings, grouped into numbered

@@ -1,6 +1,6 @@
 name: 'UtiliKit CKEditor'
 type: module
-description: 'Optional. Adds a CKEditor 5 toolbar button for applying UtiliKit utility classes to the element you are editing, with the values this site actually accepts.'
+description: 'Adds a CKEditor 5 toolbar button that applies UtiliKit utility classes to the selected element, offering only the values this site accepts.'
 package: UtiliKit
 
 # Matches utilikit itself. Nothing here needs drupal/ai — this is the editor

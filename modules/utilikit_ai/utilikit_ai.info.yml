@@ -1,6 +1,6 @@
 name: 'UtiliKit AI'
 type: module
-description: 'Optional. Helps compose and diagnose UtiliKit utility classes — which prefix to use, what values it accepts, and why a class is not doing anything. Reads the rules from UtiliKit itself; it never invents one.'
+description: 'Helps write and troubleshoot UtiliKit utility classes: which prefix to use, which values it accepts and why a class has no effect. Answers come from UtiliKit''s own rules.'
 package: UtiliKit
 
 # NOT `^11.2 || ^12`, and the difference is deliberate.

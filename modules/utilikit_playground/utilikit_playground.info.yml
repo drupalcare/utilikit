@@ -1,6 +1,6 @@
 name: 'UtiliKit Playground'
 type: module
-description: 'Interactive playground to test UtiliKit utility classes'
+description: 'Provides an interactive page for trying UtiliKit utility classes.'
 package: UtiliKit
 # Matches the parent exactly, and must keep matching it. Every module here
 # declares `utilikit:utilikit` as a dependency, so it can only ever run where

@@ -1,6 +1,6 @@
 name: 'UtiliKit Test Suite'
 type: module
-description: 'Automated test suite for UtiliKit utility classes'
+description: 'Provides a test suite for UtiliKit utility classes. For development sites only.'
 package: UtiliKit
 # Matches the parent exactly, and must keep matching it. Every module here
 # declares `utilikit:utilikit` as a dependency, so it can only ever run where

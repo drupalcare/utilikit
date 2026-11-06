@@ -1,6 +1,6 @@
 name: 'UtiliKit Help'
 type: module
-description: 'Comprehensive documentation and help system for UtiliKit module with interactive examples and user-friendly guides.'
+description: 'Provides UtiliKit documentation and guides with interactive examples.'
 package: 'UtiliKit'
 configure: utilikit_help.documentation
 # Matches the parent exactly, and must keep matching it. Every module here
