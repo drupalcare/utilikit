@@ -125,6 +125,35 @@ final class UtilikitAiSettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $decision = $this->surface->decide();
 
+    $form['#attached']['library'][] = 'utilikit_ai/settings';
+    $form['band'] = [
+      '#type' => 'html_tag',
+      '#tag' => 'header',
+      '#attributes' => ['class' => ['utilikit-ai-settings__band']],
+      '#weight' => -100,
+      'logo' => [
+        '#type' => 'html_tag',
+        '#tag' => 'span',
+        '#attributes' => ['class' => ['utilikit-ai-settings__logo'], 'aria-hidden' => 'true'],
+      ],
+      'text' => [
+        '#type' => 'container',
+        '#attributes' => ['class' => ['utilikit-ai-settings__text']],
+        'name' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('UtiliKit AI'),
+          '#attributes' => ['class' => ['utilikit-ai-settings__name']],
+        ],
+        'purpose' => [
+          '#type' => 'html_tag',
+          '#tag' => 'p',
+          '#value' => $this->t('A chat bar on node forms that applies UtiliKit classes through your AI assistant.'),
+          '#attributes' => ['class' => ['utilikit-ai-settings__purpose']],
+        ],
+      ],
+    ];
+
     $form['status'] = [
       '#theme' => 'status_messages',
       '#message_list' => $decision->show

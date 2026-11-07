@@ -1045,3 +1045,18 @@
     font-size: 11px;
   }
 }
+
+/* The UtiliKit logo leads the Live Preview title. */
+.utilikit-playground-wrapper .preview-controls .block-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.utilikit-playground-wrapper .preview-controls .block-title::before {
+  flex: none;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  content: "";
+  background: url("../../../images/logo.svg") no-repeat center / contain;
+}

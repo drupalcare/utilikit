@@ -1,0 +1,10 @@
+/* The UtiliKit logo heads the examples hero, on a white tile so it reads on
+   the dark hero. The only rule on this page that is not a utility class. */
+.utilikit-examples__logo {
+  display: block;
+  inline-size: 4rem;
+  block-size: 4rem;
+  margin: 0 auto 1.25rem;
+  border-radius: 1rem;
+  background: #fff url("../../../images/logo.svg") no-repeat center / 70%;
+}

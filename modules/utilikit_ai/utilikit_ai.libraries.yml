@@ -1,0 +1,4 @@
+settings:
+  css:
+    theme:
+      css/utilikit-ai-settings.css: {}

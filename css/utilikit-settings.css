@@ -7,7 +7,7 @@
  * Every selector starts with .utilikit-settings; no ids, no important flags.
  */
 .utilikit-settings {
-  --uk-accent: #3b3fb0;
+  --uk-accent: #397563;
   --uk-danger: #a8221a;
   --uk-line: color-mix(in srgb, currentcolor 20%, transparent);
   --uk-ctl: color-mix(in srgb, currentcolor 45%, transparent);
@@ -26,7 +26,7 @@
 .dark .utilikit-settings,
 .dark-mode .utilikit-settings,
 .gin--dark-mode .utilikit-settings {
-  --uk-accent: #a9b0ff;
+  --uk-accent: #a2c19b;
   --uk-danger: #ffb0a8;
 }
 
@@ -536,4 +536,20 @@
   .utilikit-settings__bps .form-item:has(:checked) {
     border-color: highlight;
   }
+}
+
+/* The UtiliKit logo beside the name and purpose in the header band. */
+.utilikit-settings .utilikit-settings__brand {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 1rem;
+}
+
+.utilikit-settings .utilikit-settings__brand::before {
+  grid-row: 1 / span 2;
+  inline-size: 3rem;
+  block-size: 3.25rem;
+  content: "";
+  background: url("../images/logo.svg") no-repeat center / contain;
 }

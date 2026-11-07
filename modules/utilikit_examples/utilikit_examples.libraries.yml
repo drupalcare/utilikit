@@ -1,4 +1,7 @@
 utilikit.examples:
+  css:
+    theme:
+      css/utilikit-examples-brand.css: {}
   js:
     js/utilikit-examples.js: {}
   dependencies:
