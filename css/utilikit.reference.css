@@ -9,6 +9,25 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
+/* The UtiliKit logo leads the page introduction, as on the settings page. */
+.utilikit-reference-page .utilikit-reference__intro {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-block-end: 1.5rem;
+}
+
+.utilikit-reference-page .utilikit-reference__intro p {
+  margin: 0;
+}
+
+.utilikit-reference-page .utilikit-reference__logo {
+  flex: none;
+  inline-size: 3rem;
+  block-size: 3.25rem;
+  background: url("../images/logo.svg") no-repeat center / contain;
+}
+
 /* Cheatsheet styles */
 .out-wrapper {
   margin-bottom: 40px;

@@ -68,7 +68,16 @@ class UtilikitReferenceController extends ControllerBase {
         'library' => ['utilikit/utilikit.reference', 'utilikit/utilikit.engine'],
       ],
       'description' => [
-        '#markup' => '<p>' . $this->t('This reference page lists all available UtiliKit dynamic utility classes, their prefixes, and usage examples for your site.') . '</p>',
+        '#type' => 'container',
+        '#attributes' => ['class' => ['utilikit-reference__intro']],
+        'logo' => [
+          '#type' => 'html_tag',
+          '#tag' => 'span',
+          '#attributes' => ['class' => ['utilikit-reference__logo'], 'aria-hidden' => 'true'],
+        ],
+        'text' => [
+          '#markup' => '<p>' . $this->t('This reference page lists all available UtiliKit dynamic utility classes, their prefixes, and usage examples for your site.') . '</p>',
+        ],
       ],
     ];
 

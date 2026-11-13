@@ -9,9 +9,9 @@
 .utilikit-settings {
   --uk-accent: #397563;
   --uk-danger: #a8221a;
-  --uk-line: color-mix(in srgb, currentcolor 20%, transparent);
-  --uk-ctl: color-mix(in srgb, currentcolor 45%, transparent);
-  --uk-muted: color-mix(in srgb, currentcolor 72%, transparent);
+  --uk-line: color-mix(in sRGB, currentColor 20%, transparent);
+  --uk-ctl: color-mix(in sRGB, currentColor 45%, transparent);
+  --uk-muted: color-mix(in sRGB, currentColor 72%, transparent);
   --uk-mono: ui-monospace, sfmono-regular, menlo, consolas, monospace;
 
   container: uk-form / inline-size;
@@ -43,14 +43,14 @@
 .utilikit-settings .uk-group > legend::before,
 .utilikit-settings .utilikit-settings__danger h3::before,
 .utilikit-settings .utilikit-settings__note::before {
-  content: "";
   display: inline-block;
   flex: none;
-  inline-size: 1.15em;
-  block-size: 1.15em;
   margin-inline-end: 0.5rem;
+  content: "";
   vertical-align: -0.2em;
   background-color: var(--uk-accent);
+  inline-size: 1.15em;
+  block-size: 1.15em;
   mask: var(--uk-icon) center / contain no-repeat;
 }
 
@@ -115,10 +115,10 @@
 }
 
 .utilikit-settings__purpose {
-  max-inline-size: 48ch;
   margin: 0.25rem 0 0;
-  font-size: 15px;
   color: var(--uk-muted);
+  font-size: 15px;
+  max-inline-size: 48ch;
 }
 
 .utilikit-settings__status {
@@ -158,10 +158,10 @@
   position: relative;
   margin: 0 0 0.5rem 2.75rem;
   padding: 0;
+  counter-increment: uk-step;
   border: 1px solid var(--uk-line);
   border-radius: 12px;
   box-shadow: none;
-  counter-increment: uk-step;
 }
 
 .utilikit-settings details.uk-step[open] {
@@ -169,11 +169,11 @@
 }
 
 .utilikit-settings details.uk-step::before {
-  content: "";
   position: absolute;
+  content: "";
+  border-inline-start: 2px solid var(--uk-line);
   inset-block: 2.8rem -0.6rem;
   inset-inline-start: -1.7rem;
-  border-inline-start: 2px solid var(--uk-line);
 }
 
 .utilikit-settings details.uk-step:last-of-type::before {
@@ -185,11 +185,11 @@
 .utilikit-settings details.uk-step > summary {
   display: flex;
   align-items: center;
+  padding-inline-end: 1rem;
+  cursor: pointer;
+  border-radius: 12px;
   min-block-size: 3.25rem;
   padding-block: 0.75rem;
-  padding-inline-end: 1rem;
-  border-radius: 12px;
-  cursor: pointer;
 }
 
 .utilikit-settings__head {
@@ -201,23 +201,23 @@
 }
 
 .utilikit-settings__head::before {
-  content: counter(uk-step);
   position: absolute;
-  inset-block-start: 0.6rem;
-  inset-inline-start: -2.75rem;
   display: grid;
   place-items: center;
-  inline-size: 2.1rem;
-  block-size: 2.1rem;
+  content: counter(uk-step);
+  color: var(--uk-muted);
   border: 2px solid var(--uk-line);
   border-radius: 50%;
   font: 600 13px/1 var(--uk-mono);
-  color: var(--uk-muted);
+  inset-block-start: 0.6rem;
+  inset-inline-start: -2.75rem;
+  inline-size: 2.1rem;
+  block-size: 2.1rem;
 }
 
 .utilikit-settings details[open] > summary .utilikit-settings__head::before {
-  border-color: var(--uk-accent);
   color: inherit;
+  border-color: var(--uk-accent);
 }
 
 .utilikit-settings__title {
@@ -226,20 +226,20 @@
 }
 
 .utilikit-settings__hint {
-  font-size: 13px;
   color: var(--uk-muted);
+  font-size: 13px;
 }
 
 .utilikit-settings__tag {
   display: inline-flex;
   align-items: center;
   padding: 0.05rem 0.5rem;
+  white-space: nowrap;
   border: 1px solid var(--uk-line);
   border-block-end: 2px solid var(--uk-accent);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
-  white-space: nowrap;
 }
 
 .utilikit-settings details.uk-step > .details-wrapper,
@@ -252,10 +252,10 @@
 .utilikit-settings details.uk-step > .details-description,
 .utilikit-settings details.uk-step > .claro-details__description,
 .utilikit-settings details.uk-step .details__description {
-  max-inline-size: none;
   margin: 0.9rem 1.25rem 0;
-  font-size: 13px;
   color: var(--uk-muted);
+  font-size: 13px;
+  max-inline-size: none;
 }
 
 /* Fields: our grid, the theme's controls. */
@@ -316,13 +316,13 @@
    The fieldset is a plain block; the grid goes on the option list. */
 .utilikit-settings fieldset:is(.utilikit-settings__modes, .utilikit-settings__entities, .utilikit-settings__bps) {
   display: block;
-  min-inline-size: 0;
   margin: 0;
   padding: 0;
   border: 0;
   border-radius: 0;
-  box-shadow: none;
   background: none;
+  box-shadow: none;
+  min-inline-size: 0;
 }
 
 .utilikit-settings fieldset:is(.utilikit-settings__modes, .utilikit-settings__entities, .utilikit-settings__bps) > legend {
@@ -349,8 +349,8 @@
 
 .utilikit-settings__count {
   margin-inline-start: 0.4rem;
-  font: 600 12.5px var(--uk-mono);
   color: var(--uk-accent);
+  font: 600 12.5px var(--uk-mono);
 }
 
 .utilikit-settings :is(div.utilikit-settings__entities, fieldset.utilikit-settings__entities .form-checkboxes) {
@@ -433,23 +433,23 @@
 }
 
 .utilikit-settings__bp-from {
+  color: var(--uk-muted);
   font-size: 12px;
   font-weight: 400;
-  color: var(--uk-muted);
 }
 
 /* Maintenance: danger row, thin danger edge, no fill. */
 .utilikit-settings__danger {
   display: grid;
-  grid-column: 1 / -1;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 1rem;
+  grid-column: 1 / -1;
   align-items: center;
   margin-block-start: 1rem;
   padding: 1rem;
   border: 1px solid var(--uk-line);
   border-inline-start: 4px solid var(--uk-danger);
   border-radius: 10px;
+  gap: 1rem;
 }
 
 .utilikit-settings__danger h3 {
@@ -461,8 +461,8 @@
 
 .utilikit-settings__danger p {
   margin: 0.25rem 0 0;
-  font-size: 13px;
   color: var(--uk-muted);
+  font-size: 13px;
 }
 
 .utilikit-settings__danger .form-submit {
@@ -474,8 +474,8 @@
   grid-column: 1 / -1;
   align-items: flex-start;
   margin: 1rem 0 0;
-  font-size: 13px;
   color: var(--uk-muted);
+  font-size: 13px;
 }
 
 .utilikit-settings__note::before {

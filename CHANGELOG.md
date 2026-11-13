@@ -14,6 +14,7 @@ the record for those.
 
 ## [Unreleased]
 
+- Reference page: the UtiliKit logo now leads the page introduction, so every page UtiliKit creates shows the logo.
 - Extend and Appearance pages: every module and theme description is a short, professional statement that begins with a verb; credits, links and version notes moved out of the info files.
 - New UtiliKit logo in the header of the settings page and of the AI, Playground, Test Suite, Help and Examples pages.
 
