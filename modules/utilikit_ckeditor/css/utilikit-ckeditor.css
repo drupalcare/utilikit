@@ -310,8 +310,10 @@
   border-block-start: 1px solid var(--ck-color-base-border);
   background: var(--ck-color-base-foreground);
   font-size: var(--ck-font-size-tiny);
+  /* stylelint-disable-next-line order/properties-order -- declaration order changes the result here (shorthand and longhand, all, or a physical and logical pair) */
   display: flex;
   justify-content: space-between;
+  /* stylelint-disable-next-line order/properties-order -- declaration order changes the result here (shorthand and longhand, all, or a physical and logical pair) */
   align-items: center;
 }
 
