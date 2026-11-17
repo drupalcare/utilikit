@@ -513,6 +513,21 @@
       ],
     };
 
+    // Class names come from what the user typed, so every value is escaped
+    // before it joins the HTML string.
+    const escapeHtml = (text) =>
+      String(text).replace(
+        /[&<>"']/g,
+        (ch) =>
+          ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+          })[ch],
+      );
+
     let html = '<div class="class-breakdown">';
     html += '<div class="style-group-title">Applied Classes</div>';
 
@@ -520,9 +535,9 @@
       const effect = getClassEffect(cls);
       html += `
         <div class="class-item">
-          <span class="class-name">${cls}</span>
+          <span class="class-name">${escapeHtml(cls)}</span>
           <span class="class-arrow">&rarr;</span>
-          <span class="class-effect">${effect}</span>
+          <span class="class-effect">${escapeHtml(effect)}</span>
         </div>
       `;
     });
@@ -541,13 +556,13 @@
       if (values.length > 0) {
         html += `
           <div class="style-group">
-            <div class="style-group-title">${group}</div>
+            <div class="style-group-title">${escapeHtml(group)}</div>
             ${values
               .map(
                 ({ prop, value }) => `
               <div class="style-item">
-                <span class="style-property">${prop}:</span>
-                <span class="style-value">${value}</span>
+                <span class="style-property">${escapeHtml(prop)}:</span>
+                <span class="style-value">${escapeHtml(value)}</span>
               </div>
             `,
               )
